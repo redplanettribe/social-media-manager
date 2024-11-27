@@ -3,22 +3,25 @@ package api
 import (
 	"net/http"
 
-	"github.com/gorilla/mux"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/auth"
 )
 
-func NewRouter(postHandler *handlers.PostHandler, authenticator auth.Authenticator) http.Handler {
-	router := mux.NewRouter()
-
+// NewRouter creates and returns an http.Handler with all routes defined.
+func NewRouter(
+	healthCheckHandler *handlers.HealthHandler,
+	authenticator auth.Authenticator,
+) http.Handler {
+	router := http.NewServeMux()
+	// Define the middleware
 	authMiddleware := middlewares.AuthMiddleware(authenticator)
 
-	apiRouter := router.PathPrefix("/api").Subrouter()
-	apiRouter.Use(authMiddleware)
+	// Public routes
+	router.HandleFunc("GET /health", healthCheckHandler.HealthCheck)
 
-	apiRouter.HandleFunc("/posts", postHandler.CreatePost).Methods("POST")
-	// Other routes...
+	// Private routes
+	router.Handle("GET /health/auth", authMiddleware(http.HandlerFunc(healthCheckHandler.HealthCheck)))
 
 	return router
 }

@@ -1,8 +1,12 @@
 package auth
 
 import (
+	"log"
+
 	"github.com/google/uuid"
 )
+
+var testUserID = uuid.New()
 
 type Authenticator interface {
 	Authenticate(tokenString string) (uuid.UUID, error)
@@ -18,8 +22,8 @@ func NewJWTAuthenticator(secretKey string) *JWTAuthenticator {
 }
 
 func (a *JWTAuthenticator) Authenticate(tokenString string) (uuid.UUID, error) {
-
-	return uuid.UUID{}, nil
+	log.Printf("Authenticating token: %s", tokenString)
+	return testUserID, nil
 }
 
 func (a *JWTAuthenticator) GenerateToken(userID uuid.UUID) (string, error) {
