@@ -18,7 +18,14 @@ stop:
 	docker stop $(CONTAINER_NAME)
 	@echo "Removing Docker container..."
 	docker rm $(CONTAINER_NAME)
-
-clean:
 	@echo "Removing Docker image..."
 	docker rmi $(IMAGE_NAME)
+
+# Migrations
+create:
+	@echo "Creating new migration..."
+	migrate create -ext sql -dir ./internal/infrastructure/persistence/migrations -seq $(name)
+
+migrate:
+	@echo "Running migrations..."
+	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" up
