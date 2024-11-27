@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
+	"github.com/jackc/pgx"
 	"github.com/pedrodcsjostrom/opencm/internal/application/commands"
 	"github.com/pedrodcsjostrom/opencm/internal/application/interfaces"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
@@ -22,16 +24,21 @@ func main() {
 	}
 
 	// // Initialize database connection
-	// dbConnStr := fmt.Sprintf(
-	// 	"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
-	// 	cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLMode,
-	// )
+	dbConnStr := fmt.Sprintf(
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
+		cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLMode,
+	)
 
-	// dbConn, err := pgx.Connect(context.Background(), dbConnStr)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// defer dbConn.Close(context.Background())
+	connConfig, err := pgx.ParseConnectionString(dbConnStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dbConn, err := pgx.Connect(connConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbConn.Close()
 
 	// Initialize authenticator
 	authenticator := auth.NewJWTAuthenticator(cfg.JWT.SecretKey)

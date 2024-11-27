@@ -60,9 +60,9 @@ func LoadConfig() (*Config, error) {
 		DB: DBConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     dbPort,
-			User:     getEnv("DB_USER", "postgres"),
-			Password: getEnv("DB_PASSWORD", ""),
-			Name:     getEnv("DB_NAME", "postgres"),
+			User:     getEnv("POSTGRES_USER", "postgres"),
+			Password: getEnv("POSTGRES_PASSWORD", ""),
+			Name:     getEnv("POSTGRES_DB", "postgres"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		JWT: JWTConfig{
