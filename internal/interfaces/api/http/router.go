@@ -15,7 +15,7 @@ func NewRouter(
 	authenticator auth.Authenticator,
 ) http.Handler {
 	router := http.NewServeMux()
-	authMiddleware := middlewares.AuthMiddleware(authenticator)
+	authMiddleware := middlewares.AuthMiddleware(authenticator) // make different stacks of middlewares
 
 	// Health check routes
 	router.HandleFunc("GET /health", healthCheckHandler.HealthCheck)
@@ -23,6 +23,7 @@ func NewRouter(
 
 	// User routes
 	router.HandleFunc("POST /users", userHandler.CreateUser)
+	router.Handle("GET /users/{id}", authMiddleware(http.HandlerFunc(userHandler.GetUser)))
 
 	return router
 }

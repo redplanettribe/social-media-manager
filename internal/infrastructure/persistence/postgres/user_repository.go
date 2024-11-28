@@ -27,3 +27,18 @@ func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 	}
 	return nil
 }
+
+func (r *UserRepository) FindByID(ctx context.Context, id user.UserID) (*user.UserResponse, error) {
+	query := `
+		SELECT id, username, email, created_at, updated_at
+		FROM users
+		WHERE id = $1
+	`
+	row := r.db.QueryRow(ctx, query, id.String())
+	u := &user.UserResponse{}
+	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}

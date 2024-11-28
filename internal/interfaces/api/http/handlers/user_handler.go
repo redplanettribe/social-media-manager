@@ -39,3 +39,22 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	// Respond with success
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := r.PathValue("id")
+	if id == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+
+	u, err := h.Service.GetUser(ctx, id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with user
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(u)
+}
