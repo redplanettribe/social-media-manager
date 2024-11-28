@@ -13,11 +13,15 @@ start:
 		--env-file .env \
 		-v my_dbdata:/var/lib/postgresql/data-$(IMAGE_NAME) \
 		$(IMAGE_NAME)
+watch:
+	@echo "Running Air..."
+	air -c .air.toml
 stop:
 	@echo "Stopping Docker container..."
 	docker stop $(CONTAINER_NAME)
 	@echo "Removing Docker container..."
 	docker rm $(CONTAINER_NAME)
+clean:
 	@echo "Removing Docker image..."
 	docker rmi $(IMAGE_NAME)
 
@@ -29,3 +33,7 @@ create:
 migrate:
 	@echo "Running migrations..."
 	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" up
+
+rollback:
+	@echo "Rolling back migrations..."
+	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" down
