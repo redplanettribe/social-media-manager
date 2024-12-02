@@ -22,7 +22,8 @@ func NewRouter(
 	router.Handle("GET /health/auth", authMiddleware(http.HandlerFunc(healthCheckHandler.HealthCheck)))
 
 	// User routes
-	router.HandleFunc("POST /users", userHandler.CreateUser)
+	router.HandleFunc("POST /users", userHandler.SignUp)
+	router.HandleFunc("POST /users/login", userHandler.Login)
 	router.Handle("GET /users/{id}", authMiddleware(http.HandlerFunc(userHandler.GetUser)))
 
 	return router

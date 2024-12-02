@@ -11,7 +11,7 @@ import (
 type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) error
 	GetUser(ctx context.Context, id string) (*UserResponse, error)
-	Signin(ctx context.Context, email, password string) error
+	Login(ctx context.Context, email, password string) (*session.Session, error)
 	// Additional methods as needed
 }
 
@@ -60,21 +60,16 @@ func (s *service) GetUser(ctx context.Context, id string) (*UserResponse, error)
 	return s.repo.FindByID(ctx, userID.String())
 }
 
-func (s *service) Signin(ctx context.Context, email, password string) error {
+func (s *service) Login(ctx context.Context, email, password string) (*session.Session, error) {
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
-		return err
+		return &session.Session{}, err
 	}
 	if user == nil {
-		return ErrUserNotFound
+		return &session.Session{}, ErrUserNotFound
 	}
 	if !s.password.Validate(password, user.HashedPasword, user.Salt) {
-		return ErrInvalidPassword
+		return &session.Session{}, ErrInvalidPassword
 	}
-	// creates a new session
-	_, err = s.session.CreateSession(user.ID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.session.CreateSession(ctx, user.ID)
 }

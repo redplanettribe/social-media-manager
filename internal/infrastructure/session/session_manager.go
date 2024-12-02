@@ -1,25 +1,21 @@
 package session
 
-//go:generate mockery --name=Manager --case=underscore --inpackage
-type Manager interface {
-	// CreateSession creates a new session for the user with the given ID.
-	CreateSession(userID string) (string, error)
-	// ValidateSession checks if the session is valid.
-	ValidateSession(sessionID string) (string, error)
-	// InvalidateSession invalidates the session.
-	InvalidateSession(sessionID string) error
-	// InvalidateAllSessions invalidates all sessions for the user with the given ID.
-	InvalidateAllSessions(userID string) error
-}
+import "context"
 
 //go:generate mockery --name=Repository --case=underscore --inpackage
 type Repository interface {
 	// CreateSession creates a new session for the user with the given ID.
-	CreateSession(userID string) (string, error)
-	// FindSession returns the session with the given ID.
-	FindSession(sessionID string) (string, error)
-	// DeleteSession deletes the session with the given ID.
-	DeleteSession(sessionID string) error
+	CreateSession(ctx context.Context, session *Session) (string, error)
+	// DeleteSessionsForUser deletes all sessions for the user with the given ID.
+	DeleteSessionsForUser(ctx context.Context, userID string) error
+}
+
+//go:generate mockery --name=Manager --case=underscore --inpackage
+type Manager interface {
+	// CreateSession creates a new session for the user with the given ID.
+	CreateSession(ctx context.Context, userID string) (*Session, error)
+	// ValidateSession checks if the session is valid.
+	ValidateSession(ctx context.Context, sessionID string) (string, error)
 }
 
 type manager struct {
@@ -32,22 +28,22 @@ func NewManager(repo Repository) Manager {
 	}
 }
 
-func (m *manager) InvalidateAllSessions(userID string) error {
-	// To be implemented
-	return nil
+func (m *manager) CreateSession(ctx context.Context, userID string) (*Session, error) {
+	// Invalidate all sessions for the user
+	err := m.repo.DeleteSessionsForUser(ctx, userID)
+	if err != nil {
+		return &Session{}, err
+	}
+	// Create a new session
+	session := NewSession(userID)
+	_, err = m.repo.CreateSession(ctx, session)
+	if err != nil {
+		return &Session{}, err
+	}
+	return session, nil
 }
 
-func (m *manager) CreateSession(userID string) (string, error) {
+func (m *manager) ValidateSession(ctx context.Context, sessionID string) (string, error) {
 	// To be implemented
 	return "", nil
-}
-
-func (m *manager) ValidateSession(sessionID string) (string, error) {
-	// To be implemented
-	return "", nil
-}
-
-func (m *manager) InvalidateSession(sessionID string) error {
-	// To be implemented
-	return nil
 }

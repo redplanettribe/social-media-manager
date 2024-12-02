@@ -5,6 +5,7 @@ package user
 import (
 	context "context"
 
+	session "github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -61,22 +62,34 @@ func (_m *MockService) GetUser(ctx context.Context, id string) (*UserResponse, e
 	return r0, r1
 }
 
-// Signin provides a mock function with given fields: ctx, email, password
-func (_m *MockService) Signin(ctx context.Context, email string, password string) error {
+// Login provides a mock function with given fields: ctx, email, password
+func (_m *MockService) Login(ctx context.Context, email string, password string) (*session.Session, error) {
 	ret := _m.Called(ctx, email, password)
 
 	if len(ret) == 0 {
-		panic("no return value specified for Signin")
+		panic("no return value specified for Login")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+	var r0 *session.Session
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*session.Session, error)); ok {
+		return rf(ctx, email, password)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *session.Session); ok {
 		r0 = rf(ctx, email, password)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*session.Session)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, email, password)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

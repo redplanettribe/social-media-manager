@@ -133,30 +133,32 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 }
-func TestSignin(t *testing.T) {
+func TestLogin(t *testing.T) {
 	tests := []struct {
 		name              string
-		mockFindByEmail   func(mockRepo *MockRepository, ctx context.Context, email string, userID uuid.UUID)
+		mockFindUser      func(mockRepo *MockRepository, ctx context.Context, email string)
 		mockValidatePass  func(passwordHasher *MockPasswordHasher, password, hashedPassword, salt string)
-		mockCreateSession func(sessionManager *session.MockManager, userID string)
+		mockCreateSession func(sessionManager *session.MockManager, ctx context.Context, userID string)
 		email             string
 		password          string
+		expectedSession   *session.Session
 		expectedErr       error
 	}{
 		{
 			name: "UserNotFound",
-			mockFindByEmail: func(mockRepo *MockRepository, ctx context.Context, email string, userID uuid.UUID) {
+			mockFindUser: func(mockRepo *MockRepository, ctx context.Context, email string) {
 				mockRepo.On("FindByEmail", ctx, email).Return(nil, nil)
 			},
 			mockValidatePass:  nil,
 			mockCreateSession: nil,
 			email:             "test@example.com",
 			password:          "password",
+			expectedSession:   &session.Session{},
 			expectedErr:       ErrUserNotFound,
 		},
 		{
 			name: "InvalidPassword",
-			mockFindByEmail: func(mockRepo *MockRepository, ctx context.Context, email string, userID uuid.UUID) {
+			mockFindUser: func(mockRepo *MockRepository, ctx context.Context, email string) {
 				mockRepo.On("FindByEmail", ctx, email).Return(&FullUserResponse{HashedPasword: "hashedPassword", Salt: "salt"}, nil)
 			},
 			mockValidatePass: func(passwordHasher *MockPasswordHasher, password, hashedPassword, salt string) {
@@ -165,37 +167,40 @@ func TestSignin(t *testing.T) {
 			mockCreateSession: nil,
 			email:             "test@example.com",
 			password:          "wrongpassword",
+			expectedSession:   &session.Session{},
 			expectedErr:       ErrInvalidPassword,
 		},
 		{
 			name: "CreateSessionError",
-			mockFindByEmail: func(mockRepo *MockRepository, ctx context.Context, email string, userID uuid.UUID) {
-				mockRepo.On("FindByEmail", ctx, email).Return(&FullUserResponse{ID: userID.String(), HashedPasword: "hashedPassword", Salt: "salt"}, nil)
+			mockFindUser: func(mockRepo *MockRepository, ctx context.Context, email string) {
+				mockRepo.On("FindByEmail", ctx, email).Return(&FullUserResponse{ID: "userID", HashedPasword: "hashedPassword", Salt: "salt"}, nil)
 			},
 			mockValidatePass: func(passwordHasher *MockPasswordHasher, password, hashedPassword, salt string) {
 				passwordHasher.On("Validate", password, hashedPassword, salt).Return(true)
 			},
-			mockCreateSession: func(sessionManager *session.MockManager, userID string) {
-				sessionManager.On("CreateSession", mock.Anything).Return("", assert.AnError)
+			mockCreateSession: func(sessionManager *session.MockManager, ctx context.Context, userID string) {
+				sessionManager.On("CreateSession", ctx, userID).Return(&session.Session{}, assert.AnError)
 			},
-			email:       "test@example.com",
-			password:    "password",
-			expectedErr: assert.AnError,
+			email:           "test@example.com",
+			password:        "password",
+			expectedSession: &session.Session{},
+			expectedErr:     assert.AnError,
 		},
 		{
-			name: "SuccessfulSignin",
-			mockFindByEmail: func(mockRepo *MockRepository, ctx context.Context, email string, userID uuid.UUID) {
-				mockRepo.On("FindByEmail", ctx, email).Return(&FullUserResponse{ID: userID.String(), HashedPasword: "hashedPassword", Salt: "salt"}, nil)
+			name: "SuccessfulLogin",
+			mockFindUser: func(mockRepo *MockRepository, ctx context.Context, email string) {
+				mockRepo.On("FindByEmail", ctx, email).Return(&FullUserResponse{ID: "userID", HashedPasword: "hashedPassword", Salt: "salt"}, nil)
 			},
 			mockValidatePass: func(passwordHasher *MockPasswordHasher, password, hashedPassword, salt string) {
 				passwordHasher.On("Validate", password, hashedPassword, salt).Return(true)
 			},
-			mockCreateSession: func(sessionManager *session.MockManager, userID string) {
-				sessionManager.On("CreateSession", userID).Return("sessionID", nil)
+			mockCreateSession: func(sessionManager *session.MockManager, ctx context.Context, userID string) {
+				sessionManager.On("CreateSession", ctx, userID).Return(&session.Session{ID: "sessionID"}, nil)
 			},
-			email:       "test@example.com",
-			password:    "password",
-			expectedErr: nil,
+			email:           "test@example.com",
+			password:        "password",
+			expectedSession: &session.Session{ID: "sessionID"},
+			expectedErr:     nil,
 		},
 	}
 
@@ -207,21 +212,20 @@ func TestSignin(t *testing.T) {
 			sessionManager := session.NewMockManager(t)
 			service := NewService(mockRepo, sessionManager, passwordHasher)
 			ctx := context.Background()
-			userID := uuid.New()
 
 			// Apply the mocks
-			if tt.mockFindByEmail != nil {
-				tt.mockFindByEmail(mockRepo, ctx, tt.email, userID)
+			if tt.mockFindUser != nil {
+				tt.mockFindUser(mockRepo, ctx, tt.email)
 			}
 			if tt.mockValidatePass != nil {
 				tt.mockValidatePass(passwordHasher, tt.password, "hashedPassword", "salt")
 			}
 			if tt.mockCreateSession != nil {
-				tt.mockCreateSession(sessionManager, userID.String())
+				tt.mockCreateSession(sessionManager, ctx, "userID")
 			}
 
 			// Call the function under test
-			err := service.Signin(ctx, tt.email, tt.password)
+			result, err := service.Login(ctx, tt.email, tt.password)
 
 			// Assertions
 			if tt.expectedErr != nil {
@@ -229,6 +233,7 @@ func TestSignin(t *testing.T) {
 				assert.Equal(t, tt.expectedErr, err)
 			} else {
 				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedSession, result)
 			}
 
 			// Verify expectations
