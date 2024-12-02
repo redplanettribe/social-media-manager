@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
@@ -40,7 +41,8 @@ func main() {
 	healthHandler := handlers.NewHealthHandler()
 
 	userRepo := postgres.NewUserRepository(dbConn)
-	userService := user.NewService(userRepo)
+	passworHasher := encrypting.NewHasher()
+	userService := user.NewService(userRepo, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
 	// Set up router

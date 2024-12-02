@@ -18,10 +18,10 @@ func NewUserRepository(db *pgx.Conn) *UserRepository {
 
 func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 	query := `
-		INSERT INTO users (id, username, password_hash, email, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
+		INSERT INTO users (id, username, password_hash, salt, email, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err := r.db.Exec(ctx, query, u.ID.String(), u.Username, u.PaswordHash, u.Email, u.CreatedAt, u.UpdatedAt)
+	_, err := r.db.Exec(ctx, query, u.ID.String(), u.Username, u.PaswordHash, u.Salt, u.Email, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -39,6 +39,23 @@ func (r *UserRepository) FindByID(ctx context.Context, id user.UserID) (*user.Us
 	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return nil, err
+	}
+	return u, nil
+}
+
+func (r *UserRepository) FindByUsernameOrEmail(ctx context.Context, username, email string) (*user.UserResponse, error) {
+	query := `
+		SELECT id, username, email, created_at, updated_at
+		FROM users
+		WHERE username = $1 OR email = $2
+	`
+	row := r.db.QueryRow(ctx, query, username, email)
+	u := &user.UserResponse{}
+	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil && err != pgx.ErrNoRows {
+		return nil, err
+	} else if err == pgx.ErrNoRows {
+		return nil, nil
 	}
 	return u, nil
 }

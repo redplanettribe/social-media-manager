@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Instead of having an interface type
+//go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) error
 	GetUser(ctx context.Context, id string) (*UserResponse, error)
@@ -15,17 +15,33 @@ type Service interface {
 
 // Create a concrete implementation
 type service struct {
-	repo Repository
+	repo     Repository
+	password PasswordHasher
 }
 
 // Update the constructor to return the interface
-func NewService(repo Repository) Service {
-	return &service{repo: repo}
+func NewService(repo Repository, passwordHasher PasswordHasher) Service {
+	return &service{
+		repo:     repo,
+		password: passwordHasher,
+	}
 }
 
 func (s *service) CreateUser(ctx context.Context, username, password, email string) error {
-	hashedPassword := password + "hashed"
-	user, err := NewUser(username, hashedPassword, email)
+	existingUser, err := s.repo.FindByUsernameOrEmail(ctx, username, email)
+	if err != nil {
+		return err
+	}
+	if existingUser != nil {
+		return ErrExistingUser
+	}
+
+	hashedPassword, salt, err := s.password.Hash(password)
+	if err != nil {
+		return err
+	}
+
+	user, err := NewUser(username, hashedPassword, salt, email)
 	if err != nil {
 		return err
 	}
