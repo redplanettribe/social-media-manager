@@ -21,20 +21,20 @@ func (r *UserRepository) Save(ctx context.Context, u *user.User) error {
 		INSERT INTO users (id, username, password_hash, salt, email, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7)
 	`
-	_, err := r.db.Exec(ctx, query, u.ID.String(), u.Username, u.PaswordHash, u.Salt, u.Email, u.CreatedAt, u.UpdatedAt)
+	_, err := r.db.Exec(ctx, query, u.ID, u.Username, u.PaswordHash, u.Salt, u.Email, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *UserRepository) FindByID(ctx context.Context, id user.UserID) (*user.UserResponse, error) {
+func (r *UserRepository) FindByID(ctx context.Context, id string) (*user.UserResponse, error) {
 	query := `
 		SELECT id, username, email, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
-	row := r.db.QueryRow(ctx, query, id.String())
+	row := r.db.QueryRow(ctx, query, id)
 	u := &user.UserResponse{}
 	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
@@ -52,6 +52,23 @@ func (r *UserRepository) FindByUsernameOrEmail(ctx context.Context, username, em
 	row := r.db.QueryRow(ctx, query, username, email)
 	u := &user.UserResponse{}
 	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil && err != pgx.ErrNoRows {
+		return nil, err
+	} else if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	return u, nil
+}
+
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*user.FullUserResponse, error) {
+	query := `
+		SELECT id, username, email, password_hash, salt, created_at, updated_at
+		FROM users
+		WHERE email = $1
+	`
+	row := r.db.QueryRow(ctx, query, email)
+	u := &user.FullUserResponse{}
+	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.HashedPasword, &u.Salt, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil && err != pgx.ErrNoRows {
 		return nil, err
 	} else if err == pgx.ErrNoRows {

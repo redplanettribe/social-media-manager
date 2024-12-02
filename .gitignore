@@ -4,6 +4,9 @@
 *.so
 *.dylib
 
+# Certificate files
+.certs
+
 # Build output directories
 /bin/
 /build/

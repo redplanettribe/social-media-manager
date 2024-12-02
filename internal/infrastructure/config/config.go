@@ -13,6 +13,7 @@ type Config struct {
 	DB     DBConfig
 	JWT    JWTConfig
 	Logger LoggerConfig
+	SSL    SSLConfig
 }
 
 type AppConfig struct {
@@ -35,6 +36,11 @@ type JWTConfig struct {
 
 type LoggerConfig struct {
 	Level string
+}
+
+type SSLConfig struct {
+	CertPath string
+	KeyPath  string
 }
 
 func LoadConfig() (*Config, error) {
@@ -70,6 +76,10 @@ func LoadConfig() (*Config, error) {
 		},
 		Logger: LoggerConfig{
 			Level: getEnv("LOG_LEVEL", "debug"),
+		},
+		SSL: SSLConfig{
+			CertPath: getEnv("SSL_CERT_PATH", ""),
+			KeyPath:  getEnv("SSL_KEY_PATH", ""),
 		},
 	}
 

@@ -13,8 +13,38 @@ type MockRepository struct {
 	mock.Mock
 }
 
+// FindByEmail provides a mock function with given fields: ctx, email
+func (_m *MockRepository) FindByEmail(ctx context.Context, email string) (*FullUserResponse, error) {
+	ret := _m.Called(ctx, email)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByEmail")
+	}
+
+	var r0 *FullUserResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*FullUserResponse, error)); ok {
+		return rf(ctx, email)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *FullUserResponse); ok {
+		r0 = rf(ctx, email)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*FullUserResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, email)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByID provides a mock function with given fields: ctx, id
-func (_m *MockRepository) FindByID(ctx context.Context, id UserID) (*UserResponse, error) {
+func (_m *MockRepository) FindByID(ctx context.Context, id string) (*UserResponse, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
@@ -23,10 +53,10 @@ func (_m *MockRepository) FindByID(ctx context.Context, id UserID) (*UserRespons
 
 	var r0 *UserResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, UserID) (*UserResponse, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*UserResponse, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, UserID) *UserResponse); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) *UserResponse); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -34,7 +64,7 @@ func (_m *MockRepository) FindByID(ctx context.Context, id UserID) (*UserRespons
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, UserID) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/auth"
@@ -42,15 +44,25 @@ func main() {
 
 	userRepo := postgres.NewUserRepository(dbConn)
 	passworHasher := encrypting.NewHasher()
-	userService := user.NewService(userRepo, passworHasher)
+	sessionRepo := postgres.NewSessionRepository(dbConn)
+	sessionManager := session.NewManager(sessionRepo)
+	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
-	// Set up router
 	httpRouter := api.NewRouter(healthHandler, userHandler, authenticator)
 
-	// Start the server
+	tlsConfig := &tls.Config{
+		MinVersion: tls.VersionTLS12, // temporary configuration test
+	}
+
+	server := &http.Server{
+		Addr:      ":" + cfg.App.Port,
+		Handler:   httpRouter,
+		TLSConfig: tlsConfig,
+	}
+
 	log.Printf("Server is running on port %s", cfg.App.Port)
-	if err := http.ListenAndServe(":"+cfg.App.Port, httpRouter); err != nil {
+	if err := server.ListenAndServeTLS(cfg.SSL.CertPath, cfg.SSL.KeyPath); err != nil {
 		log.Fatal(err)
 	}
 }

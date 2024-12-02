@@ -7,18 +7,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type UserID uuid.UUID
-
-func (id UserID) String() string {
-	return uuid.UUID(id).String()
-}
-
 var (
-	ErrExistingUser = errors.New("user already exists")
+	ErrExistingUser    = errors.New("user already exists")
+	ErrUserNotFound    = errors.New("user not found")
+	ErrInvalidPassword = errors.New("invalid password")
 )
 
 type User struct {
-	ID          UserID
+	ID          string
 	Username    string
 	PaswordHash string
 	Salt        string
@@ -33,6 +29,16 @@ type UserResponse struct {
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type FullUserResponse struct {
+	ID            string    `json:"id"`
+	Username      string    `json:"username"`
+	Email         string    `json:"email"`
+	HashedPasword string    `json:"password"`
+	Salt          string    `json:"salt"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 func NewUser(username, hashedPw, salt, email string) (*User, error) {
@@ -50,7 +56,7 @@ func NewUser(username, hashedPw, salt, email string) (*User, error) {
 	}
 
 	return &User{
-		ID:          UserID(uuid.New()),
+		ID:          uuid.New().String(),
 		Username:    username,
 		PaswordHash: hashedPw,
 		Salt:        salt,
