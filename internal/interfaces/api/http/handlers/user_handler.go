@@ -136,3 +136,24 @@ func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+func (h *UserHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var req assignRoleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+	userID, roleID := req.UserID, req.RoleID
+	if userID == "" || roleID == "" {
+		http.Error(w, "Missing user_id or role_id", http.StatusBadRequest)
+		return
+	}
+
+	err := h.Service.RemoveRoleFromUser(ctx, userID, roleID)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+}

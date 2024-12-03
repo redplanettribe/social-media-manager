@@ -14,6 +14,7 @@ type Service interface {
 	Login(ctx context.Context, email, password string) (*session.Session, error)
 	GetRoles(ctx context.Context) ([]*Role, error)
 	AssignRoleToUser(ctx context.Context, userID, roleID string) error
+	RemoveRoleFromUser(ctx context.Context, userID, roleID string) error
 	// Additional methods as needed
 }
 
@@ -96,11 +97,11 @@ func (s *service) GetRoles(ctx context.Context) ([]*Role, error) {
 }
 
 func (s *service) AssignRoleToUser(ctx context.Context, userID, roleID string) error {
-	err := s.repo.AssignRoleToUser(ctx, userID, roleID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.repo.AssignRoleToUser(ctx, userID, roleID)
+}
+
+func (s *service) RemoveRoleFromUser(ctx context.Context, userID, roleID string) error {
+	return s.repo.RemoveRoleFromUser(ctx, userID, roleID)
 }
 
 // func (s *service) RevokeRoleFromUser(ctx context.Context, userID, roleID string) error {

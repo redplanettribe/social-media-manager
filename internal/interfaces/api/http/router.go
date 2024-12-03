@@ -27,6 +27,7 @@ func NewRouter(
 	router.Handle("GET /users/{id}", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser), middlewares.LoggingMiddleware, authMiddleware))
 	router.Handle("GET /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.GetRoles), middlewares.LoggingMiddleware, authMiddleware))
 	router.Handle("POST /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.AssignRoleToUser), middlewares.LoggingMiddleware, authMiddleware))
+	router.Handle("DELETE /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.RemoveRoleFromUser), middlewares.LoggingMiddleware, authMiddleware))
 
 	return router
 }

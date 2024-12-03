@@ -112,3 +112,15 @@ func (r *UserRepository) AssignRoleToUser(ctx context.Context, userID, roleID st
 	}
 	return nil
 }
+
+func (r *UserRepository) RemoveRoleFromUser(ctx context.Context, userID, roleID string) error {
+	query := `
+		DELETE FROM user_roles
+		WHERE user_id = $1 AND role_id = $2
+	`
+	_, err := r.db.Exec(ctx, query, userID, roleID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
