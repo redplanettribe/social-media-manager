@@ -1,9 +1,14 @@
 package session
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+var (
+	ErrInvalidSession = errors.New("invalid session")
 )
 
 type Session struct {
@@ -21,4 +26,8 @@ func NewSession(userID string) *Session {
 		CreatedAt: time.Now(),
 		ExpiresAt: time.Now().Add(time.Hour * 24 * 7),
 	}
+}
+
+func (s *Session) IsValid() bool {
+	return time.Now().Before(s.ExpiresAt)
 }

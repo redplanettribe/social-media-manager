@@ -44,22 +44,24 @@ func (_m *MockManager) CreateSession(ctx context.Context, userID string) (*Sessi
 }
 
 // ValidateSession provides a mock function with given fields: ctx, sessionID
-func (_m *MockManager) ValidateSession(ctx context.Context, sessionID string) (string, error) {
+func (_m *MockManager) ValidateSession(ctx context.Context, sessionID string) (*Session, error) {
 	ret := _m.Called(ctx, sessionID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ValidateSession")
 	}
 
-	var r0 string
+	var r0 *Session
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*Session, error)); ok {
 		return rf(ctx, sessionID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) *Session); ok {
 		r0 = rf(ctx, sessionID)
 	} else {
-		r0 = ret.Get(0).(string)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*Session)
+		}
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {

@@ -59,6 +59,36 @@ func (_m *MockRepository) DeleteSessionsForUser(ctx context.Context, userID stri
 	return r0
 }
 
+// GetSessionByID provides a mock function with given fields: ctx, sessionID
+func (_m *MockRepository) GetSessionByID(ctx context.Context, sessionID string) (*Session, error) {
+	ret := _m.Called(ctx, sessionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSessionByID")
+	}
+
+	var r0 *Session
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*Session, error)); ok {
+		return rf(ctx, sessionID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *Session); ok {
+		r0 = rf(ctx, sessionID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*Session)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, sessionID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewMockRepository creates a new instance of MockRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockRepository(t interface {

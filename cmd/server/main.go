@@ -38,7 +38,7 @@ func main() {
 	}
 	defer dbConn.Close(ctx)
 
-	authenticator := auth.NewJWTAuthenticator(cfg.JWT.SecretKey)
+	authenticator := auth.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbConn)))
 
 	healthHandler := handlers.NewHealthHandler()
 
