@@ -56,11 +56,11 @@ func (s *service) CreateUser(ctx context.Context, username, password, email stri
 }
 
 func (s *service) GetUser(ctx context.Context, id string) (*UserResponse, error) {
-	userID, err := uuid.Parse(id)
+	_, err := uuid.Parse(id)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindByID(ctx, userID.String())
+	return s.repo.FindByIDWithRoles(ctx, id)
 }
 
 func (s *service) Login(ctx context.Context, email, password string) (*session.Session, error) {

@@ -43,6 +43,32 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*user.UserRes
 	return u, nil
 }
 
+func (r *UserRepository) FindByIDWithRoles(ctx context.Context, id string) (*user.UserResponse, error) {
+	query := `
+		SELECT u.id, u.username, u.email, u.created_at, u.updated_at, r.id, r.role
+		FROM users u
+		LEFT JOIN user_roles ur ON u.id = ur.user_id
+		LEFT JOIN roles r ON ur.role_id = r.id
+		WHERE u.id = $1
+	`
+	rows, err := r.db.Query(ctx, query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	u := &user.UserResponse{}
+	for rows.Next() {
+		var role user.Role
+		err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt, &role.ID, &role.Name)
+		if err != nil {
+			return nil, err
+		}
+		u.Roles = append(u.Roles, role)
+	}
+	return u, nil
+}
+
 func (r *UserRepository) FindByUsernameOrEmail(ctx context.Context, username, email string) (*user.UserResponse, error) {
 	query := `
 		SELECT id, username, email, created_at, updated_at

@@ -91,6 +91,36 @@ func (_m *MockRepository) FindByID(ctx context.Context, id string) (*UserRespons
 	return r0, r1
 }
 
+// FindByIDWithRoles provides a mock function with given fields: ctx, id
+func (_m *MockRepository) FindByIDWithRoles(ctx context.Context, id string) (*UserResponse, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for FindByIDWithRoles")
+	}
+
+	var r0 *UserResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*UserResponse, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *UserResponse); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*UserResponse)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindByUsernameOrEmail provides a mock function with given fields: ctx, username, email
 func (_m *MockRepository) FindByUsernameOrEmail(ctx context.Context, username string, email string) (*UserResponse, error) {
 	ret := _m.Called(ctx, username, email)
@@ -149,6 +179,24 @@ func (_m *MockRepository) GetRoles(ctx context.Context) ([]*Role, error) {
 	}
 
 	return r0, r1
+}
+
+// RemoveRoleFromUser provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockRepository) RemoveRoleFromUser(ctx context.Context, userID string, roleID string) error {
+	ret := _m.Called(ctx, userID, roleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveRoleFromUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, userID, roleID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // Save provides a mock function with given fields: ctx, usr

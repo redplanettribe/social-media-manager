@@ -14,6 +14,24 @@ type MockService struct {
 	mock.Mock
 }
 
+// AssignRoleToUser provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockService) AssignRoleToUser(ctx context.Context, userID string, roleID string) error {
+	ret := _m.Called(ctx, userID, roleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AssignRoleToUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, userID, roleID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // CreateUser provides a mock function with given fields: ctx, username, password, email
 func (_m *MockService) CreateUser(ctx context.Context, username string, password string, email string) error {
 	ret := _m.Called(ctx, username, password, email)
@@ -120,6 +138,24 @@ func (_m *MockService) Login(ctx context.Context, email string, password string)
 	}
 
 	return r0, r1
+}
+
+// RemoveRoleFromUser provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockService) RemoveRoleFromUser(ctx context.Context, userID string, roleID string) error {
+	ret := _m.Called(ctx, userID, roleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveRoleFromUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, userID, roleID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
