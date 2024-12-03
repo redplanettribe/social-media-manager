@@ -1,24 +1,23 @@
 package middlewares
 
 import (
+	"context"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/auth"
 )
 
+type Middleware func(http.HandlerFunc) http.HandlerFunc
+
 type contextKey string
 
-const UserIDKey contextKey = "userID"
-const TeamIDKey contextKey = "teamID"
-
-type Middleware func(http.HandlerFunc) http.HandlerFunc
+const userIDKey contextKey = "userID"
 
 func AuthMiddleware(authenticator auth.Authenticator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			start := time.Now()
+
 			sessionID, err := r.Cookie("session_id")
 			if err != nil {
 				log.Printf("Error getting sessionID from cookie: %s", err)
@@ -27,15 +26,14 @@ func AuthMiddleware(authenticator auth.Authenticator) func(http.Handler) http.Ha
 			}
 
 			ctx := r.Context()
-			err = authenticator.Authenticate(ctx, sessionID.Value)
+			session, err := authenticator.Authenticate(ctx, sessionID.Value)
 			if err != nil {
 				log.Printf("Error authenticating: %s", err)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				next.ServeHTTP(w, r.WithContext(ctx))
 				return
 			}
-
+			ctx = context.WithValue(ctx, userIDKey, session.UserID)
 			next.ServeHTTP(w, r.WithContext(ctx))
-			log.Println(r.Method, r.URL.Path, time.Since(start))
 		})
 	}
 }

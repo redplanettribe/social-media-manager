@@ -76,3 +76,26 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*user.F
 	}
 	return u, nil
 }
+
+func (r *UserRepository) GetRoles(ctx context.Context) ([]*user.Role, error) {
+	query := `
+		SELECT id, role
+		FROM roles
+	`
+	rows, err := r.db.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	roles := []*user.Role{}
+	for rows.Next() {
+		r := &user.Role{}
+		err := rows.Scan(&r.ID, &r.Name)
+		if err != nil {
+			return nil, err
+		}
+		roles = append(roles, r)
+	}
+	return roles, nil
+}

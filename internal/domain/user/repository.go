@@ -8,5 +8,6 @@ type Repository interface {
 	FindByID(ctx context.Context, id string) (*UserResponse, error)
 	FindByUsernameOrEmail(ctx context.Context, username, email string) (*UserResponse, error)
 	FindByEmail(ctx context.Context, email string) (*FullUserResponse, error)
+	GetRoles(ctx context.Context) ([]*Role, error)
 	// Additional methods as needed
 }

@@ -7,7 +7,7 @@ import (
 )
 
 type Authenticator interface {
-	Authenticate(ctx context.Context, sessionID string) error
+	Authenticate(ctx context.Context, sessionID string) (*session.Session, error)
 }
 
 type SessionAuthenticator struct {
@@ -20,10 +20,10 @@ func NewAuthenticator(sessionManager session.Manager) Authenticator {
 	}
 }
 
-func (a *SessionAuthenticator) Authenticate(ctx context.Context, sessionID string) error {
-	_, err := a.sessionManager.ValidateSession(ctx, sessionID)
+func (a *SessionAuthenticator) Authenticate(ctx context.Context, sessionID string) (*session.Session, error) {
+	session, err := a.sessionManager.ValidateSession(ctx, sessionID)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	return session, nil
 }

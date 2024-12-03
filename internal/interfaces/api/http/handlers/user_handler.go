@@ -97,3 +97,16 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	roles, err := h.Service.GetRoles(ctx)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(roles)
+}

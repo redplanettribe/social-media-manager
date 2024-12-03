@@ -15,16 +15,24 @@ func NewRouter(
 	authenticator auth.Authenticator,
 ) http.Handler {
 	router := http.NewServeMux()
-	authMiddleware := middlewares.AuthMiddleware(authenticator) // make different stacks of middlewares
+	authMiddleware := middlewares.AuthMiddleware(authenticator)
 
 	// Health check routes
-	router.HandleFunc("GET /health", healthCheckHandler.HealthCheck)
-	router.Handle("GET /health/auth", authMiddleware(http.HandlerFunc(healthCheckHandler.HealthCheck)))
+	router.Handle("GET /health", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck), middlewares.LoggingMiddleware))
+	router.Handle("GET /health/auth", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck), middlewares.LoggingMiddleware, authMiddleware))
 
 	// User routes
 	router.HandleFunc("POST /users", userHandler.SignUp)
 	router.HandleFunc("POST /users/login", userHandler.Login)
-	router.Handle("GET /users/{id}", authMiddleware(http.HandlerFunc(userHandler.GetUser)))
+	router.Handle("GET /users/{id}", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser), middlewares.LoggingMiddleware, authMiddleware))
+	router.Handle("GET /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.GetRoles), middlewares.LoggingMiddleware, authMiddleware))
 
 	return router
+}
+
+func ChainMiddlewares(handler http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+	return handler
 }

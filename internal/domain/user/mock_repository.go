@@ -103,6 +103,36 @@ func (_m *MockRepository) FindByUsernameOrEmail(ctx context.Context, username st
 	return r0, r1
 }
 
+// GetRoles provides a mock function with given fields: ctx
+func (_m *MockRepository) GetRoles(ctx context.Context) ([]*Role, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRoles")
+	}
+
+	var r0 []*Role
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]*Role, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []*Role); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*Role)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Save provides a mock function with given fields: ctx, usr
 func (_m *MockRepository) Save(ctx context.Context, usr *User) error {
 	ret := _m.Called(ctx, usr)

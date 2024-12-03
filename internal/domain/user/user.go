@@ -41,6 +41,11 @@ type FullUserResponse struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
+type Role struct {
+	ID   string
+	Name string
+}
+
 func NewUser(username, hashedPw, salt, email string) (*User, error) {
 	if username == "" {
 		return nil, errors.New("username cannot be empty")
