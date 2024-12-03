@@ -13,6 +13,24 @@ type MockRepository struct {
 	mock.Mock
 }
 
+// AssignRoleToUser provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockRepository) AssignRoleToUser(ctx context.Context, userID string, roleID string) error {
+	ret := _m.Called(ctx, userID, roleID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AssignRoleToUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, userID, roleID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // FindByEmail provides a mock function with given fields: ctx, email
 func (_m *MockRepository) FindByEmail(ctx context.Context, email string) (*FullUserResponse, error) {
 	ret := _m.Called(ctx, email)

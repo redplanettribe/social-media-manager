@@ -110,3 +110,29 @@ func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(roles)
 }
+
+type assignRoleRequest struct {
+	UserID string `json:"user_id"`
+	RoleID string `json:"role_id"`
+}
+
+func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var req assignRoleRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	if req.UserID == "" || req.RoleID == "" {
+		http.Error(w, "Missing user_id or role_id", http.StatusBadRequest)
+		return
+	}
+
+	err := h.Service.AssignRoleToUser(ctx, req.UserID, req.RoleID)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+}

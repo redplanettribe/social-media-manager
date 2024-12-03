@@ -32,6 +32,36 @@ func (_m *MockService) CreateUser(ctx context.Context, username string, password
 	return r0
 }
 
+// GetRoles provides a mock function with given fields: ctx
+func (_m *MockService) GetRoles(ctx context.Context) ([]*Role, error) {
+	ret := _m.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetRoles")
+	}
+
+	var r0 []*Role
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context) ([]*Role, error)); ok {
+		return rf(ctx)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context) []*Role); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*Role)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUser provides a mock function with given fields: ctx, id
 func (_m *MockService) GetUser(ctx context.Context, id string) (*UserResponse, error) {
 	ret := _m.Called(ctx, id)

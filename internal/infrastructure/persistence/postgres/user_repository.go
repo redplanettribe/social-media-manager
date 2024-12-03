@@ -99,3 +99,16 @@ func (r *UserRepository) GetRoles(ctx context.Context) ([]*user.Role, error) {
 	}
 	return roles, nil
 }
+
+func (r *UserRepository) AssignRoleToUser(ctx context.Context, userID, roleID string) error {
+	query := `
+        INSERT INTO user_roles (user_id, role_id)
+        VALUES ($1, $2)
+        ON CONFLICT (user_id, role_id) DO NOTHING
+    `
+	_, err := r.db.Exec(ctx, query, userID, roleID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
