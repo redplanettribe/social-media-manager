@@ -9,7 +9,8 @@ type Repository interface {
 	FindByIDWithRoles(ctx context.Context, id string) (*UserResponse, error)
 	FindByUsernameOrEmail(ctx context.Context, username, email string) (*UserResponse, error)
 	FindByEmail(ctx context.Context, email string) (*FullUserResponse, error)
-	GetRoles(ctx context.Context) ([]*Role, error)
+	GetRoles(ctx context.Context) (*[]Role, error)
+	GetUserRoles(ctx context.Context, userID string) ([]string, error)
 	AssignRoleToUser(ctx context.Context, userID, roleID string) error
 	RemoveRoleFromUser(ctx context.Context, userID, roleID string) error
 	// Additional methods as needed

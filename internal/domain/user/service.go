@@ -12,7 +12,8 @@ type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) error
 	GetUser(ctx context.Context, id string) (*UserResponse, error)
 	Login(ctx context.Context, email, password string) (*session.Session, error)
-	GetRoles(ctx context.Context) ([]*Role, error)
+	GetAllRoles(ctx context.Context) (*[]Role, error)
+	GetUserRoles(ctx context.Context, userID string) ([]string, error)
 	AssignRoleToUser(ctx context.Context, userID, roleID string) error
 	RemoveRoleFromUser(ctx context.Context, userID, roleID string) error
 	// Additional methods as needed
@@ -92,8 +93,12 @@ func (s *service) UpdateEmail(ctx context.Context, userID, email string) error {
 	return nil
 }
 
-func (s *service) GetRoles(ctx context.Context) ([]*Role, error) {
+func (s *service) GetAllRoles(ctx context.Context) (*[]Role, error) {
 	return s.repo.GetRoles(ctx)
+}
+
+func (s *service) GetUserRoles(ctx context.Context, userID string) ([]string, error) {
+	return s.repo.GetUserRoles(ctx, userID)
 }
 
 func (s *service) AssignRoleToUser(ctx context.Context, userID, roleID string) error {

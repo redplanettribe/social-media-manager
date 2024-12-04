@@ -88,7 +88,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    session.ID,
-		Path:     "/users/login",
+		Path:     "/",
 		Expires:  session.ExpiresAt,
 		HttpOnly: true,
 		Secure:   true,
@@ -100,7 +100,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	roles, err := h.Service.GetRoles(ctx)
+	roles, err := h.Service.GetAllRoles(ctx)
 	if err != nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)

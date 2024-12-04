@@ -5,16 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/auth"
+	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
 )
-
-type Middleware func(http.HandlerFunc) http.HandlerFunc
 
 type contextKey string
 
 const userIDKey contextKey = "userID"
 
-func AuthMiddleware(authenticator auth.Authenticator) func(http.Handler) http.Handler {
+func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 

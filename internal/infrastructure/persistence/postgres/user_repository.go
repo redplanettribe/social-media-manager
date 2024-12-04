@@ -103,7 +103,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*user.F
 	return u, nil
 }
 
-func (r *UserRepository) GetRoles(ctx context.Context) ([]*user.Role, error) {
+func (r *UserRepository) GetRoles(ctx context.Context) (*[]user.Role, error) {
 	query := `
 		SELECT id, role
 		FROM roles
@@ -114,14 +114,39 @@ func (r *UserRepository) GetRoles(ctx context.Context) ([]*user.Role, error) {
 	}
 	defer rows.Close()
 
-	roles := []*user.Role{}
+	roles := []user.Role{}
 	for rows.Next() {
-		r := &user.Role{}
-		err := rows.Scan(&r.ID, &r.Name)
+		var role user.Role
+		err := rows.Scan(&role.ID, &role.Name)
 		if err != nil {
 			return nil, err
 		}
-		roles = append(roles, r)
+		roles = append(roles, role)
+	}
+	return &roles, nil
+}
+
+func (r *UserRepository) GetUserRoles(ctx context.Context, userID string) ([]string, error) {
+	query := `
+		SELECT r.id, r.role
+		FROM roles r
+		LEFT JOIN user_roles ur ON r.id = ur.role_id
+		WHERE ur.user_id = $1
+	`
+	rows, err := r.db.Query(ctx, query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	roles := []string{}
+	for rows.Next() {
+		var role user.Role
+		err := rows.Scan(&role.ID, &role.Name)
+		if err != nil {
+			return nil, err
+		}
+		roles = append(roles, role.Name)
 	}
 	return roles, nil
 }

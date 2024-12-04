@@ -15,7 +15,8 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/auth"
+	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
+	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
 )
 
 func main() {
@@ -38,7 +39,7 @@ func main() {
 	}
 	defer dbConn.Close(ctx)
 
-	authenticator := auth.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbConn)))
+	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbConn)))
 
 	healthHandler := handlers.NewHealthHandler()
 
@@ -49,7 +50,8 @@ func main() {
 	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
-	httpRouter := api.NewRouter(healthHandler, userHandler, authenticator)
+	authorizer := authorization.NewAuthorizer(authorization.GetPermissions(), userService.GetUserRoles)
+	httpRouter := api.NewRouter(healthHandler, userHandler, authenticator, authorizer)
 
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12, // temporary configuration test
