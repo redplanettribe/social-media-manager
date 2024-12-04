@@ -5,9 +5,11 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 )
 
 func TestGetUser(t *testing.T) {
@@ -41,6 +43,7 @@ func TestGetUser_InvalidUUID(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }
+
 func TestCreateUser(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -133,6 +136,7 @@ func TestCreateUser(t *testing.T) {
 		})
 	}
 }
+
 func TestLogin(t *testing.T) {
 	tests := []struct {
 		name              string

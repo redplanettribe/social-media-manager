@@ -3,8 +3,9 @@ package logging
 import (
 	"os"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/sirupsen/logrus"
+
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 )
 
 func NewLogger(cfg *config.LoggerConfig) *logrus.Logger {

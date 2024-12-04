@@ -7,9 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	ErrInvalidSession = errors.New("invalid session")
-)
+var ErrInvalidSession = errors.New("invalid session")
 
 type Session struct {
 	ID        string

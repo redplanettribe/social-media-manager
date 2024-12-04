@@ -1,7 +1,6 @@
 package commands
 
-type HealthCheckCommand struct {
-}
+type HealthCheckCommand struct{}
 
 type HealthCheckHandler struct{}
 

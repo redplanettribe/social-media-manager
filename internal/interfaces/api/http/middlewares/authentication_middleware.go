@@ -15,7 +15,6 @@ const userIDKey contextKey = "userID"
 func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
 			sessionID, err := r.Cookie("session_id")
 			if err != nil {
 				log.Printf("Error getting sessionID from cookie: %s", err)

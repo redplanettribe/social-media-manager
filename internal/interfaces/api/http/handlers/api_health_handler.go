@@ -4,8 +4,7 @@ import (
 	"net/http"
 )
 
-type HealthHandler struct {
-}
+type HealthHandler struct{}
 
 func NewHealthHandler() *HealthHandler {
 	return &HealthHandler{}
@@ -13,5 +12,7 @@ func NewHealthHandler() *HealthHandler {
 
 func (h *HealthHandler) HealthCheck(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
+	if _, err := w.Write([]byte("OK")); err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
 }

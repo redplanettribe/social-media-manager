@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
+
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
@@ -37,7 +38,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer dbConn.Close(ctx)
+	defer func() {
+		if err := dbConn.Close(ctx); err != nil {
+			log.Printf("Error closing database connection: %v", err)
+		}
+	}()
 
 	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbConn)))
 

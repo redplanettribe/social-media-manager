@@ -72,6 +72,7 @@ func TestManager_ValidateSession(t *testing.T) {
 
 	mockRepo.AssertExpectations(t)
 }
+
 func TestManager_CreateSession(t *testing.T) {
 	mockRepo := NewMockRepository(t)
 	manager := NewManager(mockRepo)

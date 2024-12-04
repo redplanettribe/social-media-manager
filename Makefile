@@ -54,3 +54,13 @@ generate:
 		echo "Running go generate in $$dir"; \
 		( cd $$dir && go generate ); \
 	done
+
+
+.PHONY: lint
+lint:
+	@echo "goimports..."
+	goimports -w .
+	@echo "Running gofumpt..."
+	gofumpt -w -l .
+	@echo "Running linter..."
+	golangci-lint run

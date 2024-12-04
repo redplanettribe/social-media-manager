@@ -8,8 +8,7 @@ import (
 	"golang.org/x/crypto/pbkdf2"
 )
 
-type Hasher struct {
-}
+type Hasher struct{}
 
 func NewHasher() *Hasher {
 	return &Hasher{}

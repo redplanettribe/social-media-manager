@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 )
 

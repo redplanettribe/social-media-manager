@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
 	"github.com/pedrodcsjostrom/opencm/internal/application/commands"
 	"github.com/pedrodcsjostrom/opencm/internal/application/interfaces"
 )

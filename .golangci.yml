@@ -1,0 +1,47 @@
+linters:
+  enable:
+    # Default linters
+    - errcheck       # Checks for unchecked errors.
+    - gosimple       # Suggests simpler code.
+    - govet          # Reports suspicious constructs.
+    - ineffassign    # Detects ineffectual assignments.
+    - unused         # Finds unused variables.
+
+    - "gocyclo" # or "cyclop", # Detect cyclomatic complexity
+    - "goconst" # Detect repeated values that can be made constants
+    - "gofumpt" # Or "gofmt", # Enforce standard formattings
+    - "goimports" # Ensure standard import formatting/ordering
+    - "misspell" # Fix spelling errors
+    # - "revive" # General purpose linter    
+    - "unconvert" # Detect unnecessary type conversions
+    - "unparam" # Detect unused function parameters
+
+    # Optional
+    - "bodyclose" # Check whether HTTP response bodies are closed
+    # - "goerr113" # Enforce standard error handling practices
+    # - "depguard" # Forbid certain package imports
+    # - "dupl" # Detect duplicate code
+    # - "errchkjson" # some JSON-specific checks
+    # - "gomnd" # Magic number detection
+    - "nakedret" # Detect naked returns
+    # - "rowserrcheck" # Check whether Err of rows is checked
+    # - "sqlclosecheck" # Ensure sql.Rows and sql.Stmt are closed
+    - "tparallel" # Detects inappropriate use of t.Parallel()
+
+
+run:
+  timeout: 5m                # Set a maximum timeout for the linter run.
+  tests: true                # Include test files in the analysis.
+
+issues:
+  max-same-issues: 5         # Limit the number of identical issues reported.
+  max-issues-per-linter: 50  # Limit the number of issues per linter.
+  exclude-use-default: false # Use default exclusion rules.
+
+linters-settings:
+  gofmt:
+    simplify: true           # Perform code simplification.
+  goimports:
+    local-prefixes: github.com/pedrodcsjostrom/opencm
+  misspell:
+    locale: US               # Use US English dictionary.
