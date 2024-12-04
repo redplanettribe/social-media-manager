@@ -9,7 +9,7 @@ import (
 func AuthorizationMiddleware(authorizer authorization.Authorizer, requiredPermission string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			userID := r.Context().Value(userIDKey)
+			userID := r.Context().Value(UserIDKey)
 			if userID == nil {
 				http.Error(w, "no user id in context", http.StatusInternalServerError)
 				return

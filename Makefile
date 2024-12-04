@@ -58,7 +58,7 @@ generate:
 
 .PHONY: lint
 lint:
-	@echo "goimports..."
+	@echo "Running goimports..."
 	goimports -w .
 	@echo "Running gofumpt..."
 	gofumpt -w -l .

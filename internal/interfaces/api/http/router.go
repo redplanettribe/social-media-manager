@@ -13,6 +13,7 @@ import (
 func NewRouter(
 	healthCheckHandler *handlers.HealthHandler,
 	userHandler *handlers.UserHandler,
+	projectHandler *handlers.ProjectHandler,
 	authenticator authentication.Authenticator,
 	authorizer authorization.Authorizer,
 ) http.Handler {
@@ -43,6 +44,13 @@ func NewRouter(
 	))
 	router.Handle("DELETE /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.RemoveRoleFromUser),
 		middlewares.AuthorizationMiddleware(authorizer, "delete:roles"),
+		authenticationMiddleware,
+		middlewares.LoggingMiddleware,
+	))
+
+	// Project routes
+	router.Handle("POST /projects", ChainMiddlewares(http.HandlerFunc(projectHandler.CreateProject),
+		middlewares.AuthorizationMiddleware(authorizer, "write:projects"),
 		authenticationMiddleware,
 		middlewares.LoggingMiddleware,
 	))

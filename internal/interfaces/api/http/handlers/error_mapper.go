@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
@@ -9,6 +10,7 @@ import (
 
 // MapErrorToHTTP maps the given error to an appropriate HTTP status code and message.
 func MapErrorToHTTP(err error) (int, string) {
+
 	switch {
 	case errors.Is(err, user.ErrExistingUser):
 		return http.StatusConflict, "User already exists"
@@ -17,6 +19,7 @@ func MapErrorToHTTP(err error) (int, string) {
 	case errors.Is(err, user.ErrInvalidPassword):
 		return http.StatusUnauthorized, "Invalid password"
 	default:
+		fmt.Println("Error: ", err)
 		return http.StatusInternalServerError, "Internal server error"
 	}
 }

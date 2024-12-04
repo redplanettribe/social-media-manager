@@ -9,6 +9,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
@@ -55,8 +56,12 @@ func main() {
 	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
+	projctRepo := postgres.NewProjectRepository(dbConn)
+	projectService := project.NewService(projctRepo)
+	projectHandler := handlers.NewProjectHandler(projectService)
+
 	authorizer := authorization.NewAuthorizer(authorization.GetPermissions(), userService.GetUserAppRoles)
-	httpRouter := api.NewRouter(healthHandler, userHandler, authenticator, authorizer)
+	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, authorizer)
 
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12, // temporary configuration test
