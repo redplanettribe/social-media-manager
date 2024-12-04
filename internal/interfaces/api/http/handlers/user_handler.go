@@ -103,7 +103,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	roles, err := h.Service.GetAllRoles(ctx)
+	roles, err := h.Service.GetAllAppRoles(ctx)
 	if err != nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)
@@ -135,7 +135,7 @@ func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.Service.AssignRoleToUser(ctx, req.UserID, req.RoleID)
+	err := h.Service.AssignAppRoleToUser(ctx, req.UserID, req.RoleID)
 	if err != nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)
@@ -156,7 +156,7 @@ func (h *UserHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	err := h.Service.RemoveRoleFromUser(ctx, userID, roleID)
+	err := h.Service.RemoveAppRoleFromUser(ctx, userID, roleID)
 	if err != nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)

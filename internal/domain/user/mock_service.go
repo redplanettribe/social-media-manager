@@ -14,12 +14,12 @@ type MockService struct {
 	mock.Mock
 }
 
-// AssignRoleToUser provides a mock function with given fields: ctx, userID, roleID
-func (_m *MockService) AssignRoleToUser(ctx context.Context, userID string, roleID string) error {
+// AssignAppRoleToUser provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockService) AssignAppRoleToUser(ctx context.Context, userID string, roleID string) error {
 	ret := _m.Called(ctx, userID, roleID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AssignRoleToUser")
+		panic("no return value specified for AssignAppRoleToUser")
 	}
 
 	var r0 error
@@ -50,24 +50,24 @@ func (_m *MockService) CreateUser(ctx context.Context, username string, password
 	return r0
 }
 
-// GetAllRoles provides a mock function with given fields: ctx
-func (_m *MockService) GetAllRoles(ctx context.Context) (*[]Role, error) {
+// GetAllAppRoles provides a mock function with given fields: ctx
+func (_m *MockService) GetAllAppRoles(ctx context.Context) (*[]AppRole, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetAllRoles")
+		panic("no return value specified for GetAllAppRoles")
 	}
 
-	var r0 *[]Role
+	var r0 *[]AppRole
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*[]Role, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) (*[]AppRole, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *[]Role); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) *[]AppRole); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]Role)
+			r0 = ret.Get(0).(*[]AppRole)
 		}
 	}
 
@@ -110,12 +110,12 @@ func (_m *MockService) GetUser(ctx context.Context, id string) (*UserResponse, e
 	return r0, r1
 }
 
-// GetUserRoles provides a mock function with given fields: ctx, userID
-func (_m *MockService) GetUserRoles(ctx context.Context, userID string) ([]string, error) {
+// GetUserAppRoles provides a mock function with given fields: ctx, userID
+func (_m *MockService) GetUserAppRoles(ctx context.Context, userID string) ([]string, error) {
 	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetUserRoles")
+		panic("no return value specified for GetUserAppRoles")
 	}
 
 	var r0 []string
@@ -170,12 +170,12 @@ func (_m *MockService) Login(ctx context.Context, email string, password string)
 	return r0, r1
 }
 
-// RemoveRoleFromUser provides a mock function with given fields: ctx, userID, roleID
-func (_m *MockService) RemoveRoleFromUser(ctx context.Context, userID string, roleID string) error {
+// RemoveAppRoleFromUser provides a mock function with given fields: ctx, userID, roleID
+func (_m *MockService) RemoveAppRoleFromUser(ctx context.Context, userID string, roleID string) error {
 	ret := _m.Called(ctx, userID, roleID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for RemoveRoleFromUser")
+		panic("no return value specified for RemoveAppRoleFromUser")
 	}
 
 	var r0 error

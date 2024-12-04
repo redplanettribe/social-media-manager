@@ -59,7 +59,7 @@ func (r *UserRepository) FindByIDWithRoles(ctx context.Context, id string) (*use
 
 	u := &user.UserResponse{}
 	for rows.Next() {
-		var role user.Role
+		var role user.AppRole
 		err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt, &role.ID, &role.Name)
 		if err != nil {
 			return nil, err
@@ -103,7 +103,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*user.F
 	return u, nil
 }
 
-func (r *UserRepository) GetRoles(ctx context.Context) (*[]user.Role, error) {
+func (r *UserRepository) GetRoles(ctx context.Context) (*[]user.AppRole, error) {
 	query := `
 		SELECT id, role
 		FROM roles
@@ -114,9 +114,9 @@ func (r *UserRepository) GetRoles(ctx context.Context) (*[]user.Role, error) {
 	}
 	defer rows.Close()
 
-	roles := []user.Role{}
+	roles := []user.AppRole{}
 	for rows.Next() {
-		var role user.Role
+		var role user.AppRole
 		err := rows.Scan(&role.ID, &role.Name)
 		if err != nil {
 			return nil, err
@@ -141,7 +141,7 @@ func (r *UserRepository) GetUserRoles(ctx context.Context, userID string) ([]str
 
 	roles := []string{}
 	for rows.Next() {
-		var role user.Role
+		var role user.AppRole
 		err := rows.Scan(&role.ID, &role.Name)
 		if err != nil {
 			return nil, err
@@ -158,6 +158,19 @@ func (r *UserRepository) AssignRoleToUser(ctx context.Context, userID, roleID st
         ON CONFLICT (user_id, role_id) DO NOTHING
     `
 	_, err := r.db.Exec(ctx, query, userID, roleID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) AssignDefaultRoleToUser(ctx context.Context, userID string) error {
+	query := `
+		INSERT INTO user_roles (user_id, role_id)
+		VALUES ($1, $2)
+		ON CONFLICT (user_id, role_id) DO NOTHING
+	`
+	_, err := r.db.Exec(ctx, query, userID, 1)
 	if err != nil {
 		return err
 	}

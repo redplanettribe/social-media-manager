@@ -2,9 +2,11 @@ package authorization
 
 func GetPermissions() *Permissions {
 	return NewPermissions().
-		AddRole("base").
+		AddRole("user").
 		Read("users").
 		Write("users").
-		AddRole("manager").Inherit("base").
-		Read("roles")
+		AddRole("admin").Inherit("user").
+		Read("roles").
+		Write("roles").
+		Delete("roles")
 }

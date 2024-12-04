@@ -55,7 +55,7 @@ func main() {
 	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
-	authorizer := authorization.NewAuthorizer(authorization.GetPermissions(), userService.GetUserRoles)
+	authorizer := authorization.NewAuthorizer(authorization.GetPermissions(), userService.GetUserAppRoles)
 	httpRouter := api.NewRouter(healthHandler, userHandler, authenticator, authorizer)
 
 	tlsConfig := &tls.Config{

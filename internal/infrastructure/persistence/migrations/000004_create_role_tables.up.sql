@@ -14,4 +14,4 @@ CREATE TABLE IF NOT EXISTS user_roles (
 );
 
 -- Insert roles into roles table
-INSERT INTO roles (role) VALUES ('manager'), ('member'), ('developer');
+INSERT INTO roles (role) VALUES ('user'), ('admin');

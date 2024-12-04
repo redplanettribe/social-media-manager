@@ -13,6 +13,24 @@ type MockRepository struct {
 	mock.Mock
 }
 
+// AssignDefaultRoleToUser provides a mock function with given fields: ctx, userID
+func (_m *MockRepository) AssignDefaultRoleToUser(ctx context.Context, userID string) error {
+	ret := _m.Called(ctx, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AssignBasicRoleToUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AssignRoleToUser provides a mock function with given fields: ctx, userID, roleID
 func (_m *MockRepository) AssignRoleToUser(ctx context.Context, userID string, roleID string) error {
 	ret := _m.Called(ctx, userID, roleID)
@@ -152,23 +170,23 @@ func (_m *MockRepository) FindByUsernameOrEmail(ctx context.Context, username st
 }
 
 // GetRoles provides a mock function with given fields: ctx
-func (_m *MockRepository) GetRoles(ctx context.Context) (*[]Role, error) {
+func (_m *MockRepository) GetRoles(ctx context.Context) (*[]AppRole, error) {
 	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetRoles")
 	}
 
-	var r0 *[]Role
+	var r0 *[]AppRole
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (*[]Role, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) (*[]AppRole, error)); ok {
 		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) *[]Role); ok {
+	if rf, ok := ret.Get(0).(func(context.Context) *[]AppRole); ok {
 		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*[]Role)
+			r0 = ret.Get(0).(*[]AppRole)
 		}
 	}
 

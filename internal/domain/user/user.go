@@ -27,7 +27,7 @@ type UserResponse struct {
 	ID        string    `json:"id"`
 	Username  string    `json:"username"`
 	Email     string    `json:"email"`
-	Roles     []Role    `json:"roles"`
+	Roles     []AppRole `json:"roles"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -42,7 +42,7 @@ type FullUserResponse struct {
 	UpdatedAt     time.Time `json:"updated_at"`
 }
 
-type Role struct {
+type AppRole struct {
 	ID   string
 	Name string
 }

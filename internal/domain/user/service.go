@@ -3,8 +3,6 @@ package user
 import (
 	"context"
 
-	"github.com/google/uuid"
-
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 )
 
@@ -13,10 +11,10 @@ type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) error
 	GetUser(ctx context.Context, id string) (*UserResponse, error)
 	Login(ctx context.Context, email, password string) (*session.Session, error)
-	GetAllRoles(ctx context.Context) (*[]Role, error)
-	GetUserRoles(ctx context.Context, userID string) ([]string, error)
-	AssignRoleToUser(ctx context.Context, userID, roleID string) error
-	RemoveRoleFromUser(ctx context.Context, userID, roleID string) error
+	GetAllAppRoles(ctx context.Context) (*[]AppRole, error)
+	GetUserAppRoles(ctx context.Context, userID string) ([]string, error)
+	AssignAppRoleToUser(ctx context.Context, userID, roleID string) error
+	RemoveAppRoleFromUser(ctx context.Context, userID, roleID string) error
 	// Additional methods as needed
 }
 
@@ -54,15 +52,26 @@ func (s *service) CreateUser(ctx context.Context, username, password, email stri
 	if err != nil {
 		return err
 	}
-	return s.repo.Save(ctx, user)
+	err = s.repo.Save(ctx, user)
+	if err != nil {
+		return err
+	}
+	err = s.repo.AssignDefaultRoleToUser(ctx, user.ID)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *service) GetUser(ctx context.Context, id string) (*UserResponse, error) {
-	_, err := uuid.Parse(id)
+	userResponse, err := s.repo.FindByIDWithRoles(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.FindByIDWithRoles(ctx, id)
+	if userResponse.ID == "" {
+		return nil, ErrUserNotFound
+	}
+	return userResponse, nil
 }
 
 func (s *service) Login(ctx context.Context, email, password string) (*session.Session, error) {
@@ -94,26 +103,18 @@ func (s *service) UpdateEmail(ctx context.Context, userID, email string) error {
 	return nil
 }
 
-func (s *service) GetAllRoles(ctx context.Context) (*[]Role, error) {
+func (s *service) GetAllAppRoles(ctx context.Context) (*[]AppRole, error) {
 	return s.repo.GetRoles(ctx)
 }
 
-func (s *service) GetUserRoles(ctx context.Context, userID string) ([]string, error) {
+func (s *service) GetUserAppRoles(ctx context.Context, userID string) ([]string, error) {
 	return s.repo.GetUserRoles(ctx, userID)
 }
 
-func (s *service) AssignRoleToUser(ctx context.Context, userID, roleID string) error {
+func (s *service) AssignAppRoleToUser(ctx context.Context, userID, roleID string) error {
 	return s.repo.AssignRoleToUser(ctx, userID, roleID)
 }
 
-func (s *service) RemoveRoleFromUser(ctx context.Context, userID, roleID string) error {
+func (s *service) RemoveAppRoleFromUser(ctx context.Context, userID, roleID string) error {
 	return s.repo.RemoveRoleFromUser(ctx, userID, roleID)
 }
-
-// func (s *service) RevokeRoleFromUser(ctx context.Context, userID, roleID string) error {
-// 	err := s.repo.RevokeRoleFromUser(ctx, userID, roleID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
