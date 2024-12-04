@@ -1,7 +1,7 @@
 package authorization
 
-// We could also implement Read, Write, Delete, ReadOWN, WriteOWN, DeleteOWN, etc. permissions.
-// For now we will keep it simple and only implement AddPermissions(action string, resources ...string).
+// We could also implement ReadOwn, WriteOwn, DeleteOwn permissions.
+// For now we will keep it simple. And let the user implement it if needed.
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func (p *Permissions) AddRole(role string) *Permissions {
 	return p
 }
 
-func (p *Permissions) AddPermissions(action string, resources ...string) *Permissions {
+func (p *Permissions) addPermissions(action string, resources ...string) *Permissions {
 	if p.currentRole == "" {
 		fmt.Printf("Role %s does not exist, ignoring %s action \n", p.currentRole, action)
 		return p
@@ -57,6 +57,18 @@ func (p *Permissions) AddPermissions(action string, resources ...string) *Permis
 		}
 	}
 	return p
+}
+
+func (p *Permissions) Write(resources ...string) *Permissions {
+	return p.addPermissions("write", resources...)
+}
+
+func (p *Permissions) Read(resources ...string) *Permissions {
+	return p.addPermissions("read", resources...)
+}
+
+func (p *Permissions) Delete(resources ...string) *Permissions {
+	return p.addPermissions("delete", resources...)
 }
 
 // InheritRole adds the permissions of an existing role to the current role.
