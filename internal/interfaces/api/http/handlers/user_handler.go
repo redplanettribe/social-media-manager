@@ -100,7 +100,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Expires:  session.ExpiresAt,
 		HttpOnly: true,
 		Secure:   true,
-		SameSite: http.SameSiteStrictMode,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	w.WriteHeader(http.StatusOK)

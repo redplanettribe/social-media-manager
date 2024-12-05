@@ -120,7 +120,7 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			// Call the function under test
-			err := service.CreateUser(ctx, tt.username, tt.password, tt.email)
+			_, err := service.CreateUser(ctx, tt.username, tt.password, tt.email)
 
 			// Assertions
 			if tt.expectedErr != nil {

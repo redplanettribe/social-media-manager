@@ -18,7 +18,7 @@ func (_m *MockRepository) AssignDefaultRoleToUser(ctx context.Context, userID st
 	ret := _m.Called(ctx, userID)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AssignBasicRoleToUser")
+		panic("no return value specified for AssignDefaultRoleToUser")
 	}
 
 	var r0 error
@@ -248,21 +248,33 @@ func (_m *MockRepository) RemoveRoleFromUser(ctx context.Context, userID string,
 }
 
 // Save provides a mock function with given fields: ctx, usr
-func (_m *MockRepository) Save(ctx context.Context, usr *User) error {
+func (_m *MockRepository) Save(ctx context.Context, usr *User) (*UserResponse, error) {
 	ret := _m.Called(ctx, usr)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Save")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *User) error); ok {
+	var r0 *UserResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *User) (*UserResponse, error)); ok {
+		return rf(ctx, usr)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *User) *UserResponse); ok {
 		r0 = rf(ctx, usr)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*UserResponse)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, *User) error); ok {
+		r1 = rf(ctx, usr)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewMockRepository creates a new instance of MockRepository. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

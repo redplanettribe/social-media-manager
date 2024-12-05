@@ -17,8 +17,9 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Env  string
-	Port string
+	Env    string
+	Port   string
+	Origen string
 }
 
 type DBConfig struct {
@@ -52,6 +53,7 @@ func LoadConfig() (*Config, error) {
 	}
 
 	appPort := getEnv("APP_PORT", "8080")
+	urlOrigen := getEnv("ORIGEN", "http://localhost:"+appPort)
 
 	dbPort, err := strconv.Atoi(getEnv("DB_PORT", "5432"))
 	if err != nil {
@@ -60,8 +62,9 @@ func LoadConfig() (*Config, error) {
 
 	config := &Config{
 		App: AppConfig{
-			Env:  getEnv("APP_ENV", "development"),
-			Port: appPort,
+			Env:    getEnv("APP_ENV", "development"),
+			Port:   appPort,
+			Origen: urlOrigen,
 		},
 		DB: DBConfig{
 			Host:     getEnv("DB_HOST", "localhost"),

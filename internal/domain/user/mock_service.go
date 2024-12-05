@@ -33,21 +33,33 @@ func (_m *MockService) AssignAppRoleToUser(ctx context.Context, userID string, r
 }
 
 // CreateUser provides a mock function with given fields: ctx, username, password, email
-func (_m *MockService) CreateUser(ctx context.Context, username string, password string, email string) error {
+func (_m *MockService) CreateUser(ctx context.Context, username string, password string, email string) (*UserResponse, error) {
 	ret := _m.Called(ctx, username, password, email)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateUser")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+	var r0 *UserResponse
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) (*UserResponse, error)); ok {
+		return rf(ctx, username, password, email)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) *UserResponse); ok {
 		r0 = rf(ctx, username, password, email)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*UserResponse)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = rf(ctx, username, password, email)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // GetAllAppRoles provides a mock function with given fields: ctx

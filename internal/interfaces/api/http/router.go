@@ -20,29 +20,51 @@ func NewRouter(
 	router := http.NewServeMux()
 	authenticationMiddleware := middlewares.AuthMiddleware(authenticator)
 
+	// Apply CORS middleware to all routes
+	router.Handle("/", middlewares.CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})))
+
 	// Health check routes
-	router.Handle("GET /health", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck), middlewares.LoggingMiddleware))
-	router.Handle("GET /health/auth", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck), middlewares.LoggingMiddleware, authenticationMiddleware))
+	router.Handle("GET /health", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck),
+		middlewares.CORSMiddleware,
+		middlewares.LoggingMiddleware,
+	))
+	router.Handle("GET /health/auth", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck),
+		authenticationMiddleware,
+		middlewares.CORSMiddleware,
+		middlewares.LoggingMiddleware,
+	))
 
 	// User routes
-	router.HandleFunc("POST /users", userHandler.SignUp)
-	router.HandleFunc("POST /users/login", userHandler.Login)
+	router.Handle("POST /users", ChainMiddlewares(http.HandlerFunc(userHandler.SignUp),
+		middlewares.CORSMiddleware,
+		middlewares.LoggingMiddleware,
+	))
+	router.Handle("POST /users/login", ChainMiddlewares(http.HandlerFunc(userHandler.Login),
+		middlewares.CORSMiddleware,
+		middlewares.LoggingMiddleware,
+	))
 	router.Handle("GET /users/{id}", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser),
+		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "read:users"),
 		authenticationMiddleware,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("GET /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.GetRoles),
+		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "read:roles"),
 		authenticationMiddleware,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("POST /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.AssignRoleToUser),
+		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "write:roles"),
 		authenticationMiddleware,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("DELETE /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.RemoveRoleFromUser),
+		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "delete:roles"),
 		authenticationMiddleware,
 		middlewares.LoggingMiddleware,
@@ -50,6 +72,7 @@ func NewRouter(
 
 	// Project routes
 	router.Handle("POST /projects", ChainMiddlewares(http.HandlerFunc(projectHandler.CreateProject),
+		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "write:projects"),
 		authenticationMiddleware,
 		middlewares.LoggingMiddleware,
