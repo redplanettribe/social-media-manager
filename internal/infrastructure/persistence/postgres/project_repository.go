@@ -65,14 +65,14 @@ func (r *ProjectRepository) AssignProjectOwner(ctx context.Context, projectID, u
 
 	// Prepare the INSERT statement for team_members_roles
 	insertRoleStmt := fmt.Sprintf(`
-        INSERT INTO %s (team_role_id, user_id)
-        VALUES ($1, $2)
+        INSERT INTO %s (project_id,team_role_id, user_id)
+        VALUES ($1, $2, $3)
     `, TeamMembersRoles)
 
 	// Batch insert roleIDs
 	roleIDs := []project.TeamRoleIDs{project.OwnerRoleID, project.ManagerRoleID, project.MemberRoleID}
 	for _, roleID := range roleIDs {
-		_, err = tx.Exec(ctx, insertRoleStmt, roleID, userID)
+		_, err = tx.Exec(ctx, insertRoleStmt, projectID, roleID, userID)
 		if err != nil {
 			return err
 		}

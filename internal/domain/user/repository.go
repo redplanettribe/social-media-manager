@@ -4,7 +4,7 @@ import "context"
 
 //go:generate mockery --name=Repository --case=underscore --inpackage
 type Repository interface {
-	Save(ctx context.Context, usr *User) error
+	Save(ctx context.Context, usr *User) (*UserResponse, error)
 	FindByID(ctx context.Context, id string) (*UserResponse, error)
 	FindByIDWithRoles(ctx context.Context, id string) (*UserResponse, error)
 	FindByUsernameOrEmail(ctx context.Context, username, email string) (*UserResponse, error)

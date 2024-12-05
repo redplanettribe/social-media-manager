@@ -8,7 +8,7 @@ import (
 
 //go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
-	CreateUser(ctx context.Context, username, password, email string) error
+	CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error)
 	GetUser(ctx context.Context, id string) (*UserResponse, error)
 	Login(ctx context.Context, email, password string) (*session.Session, error)
 	GetAllAppRoles(ctx context.Context) (*[]AppRole, error)
@@ -34,33 +34,33 @@ func NewService(repo Repository, session session.Manager, passwordHasher Passwor
 	}
 }
 
-func (s *service) CreateUser(ctx context.Context, username, password, email string) error {
+func (s *service) CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error) {
 	existingUser, err := s.repo.FindByUsernameOrEmail(ctx, username, email)
 	if err != nil {
-		return err
+		return &UserResponse{}, err
 	}
 	if existingUser != nil {
-		return ErrExistingUser
+		return &UserResponse{}, ErrExistingUser
 	}
 
 	hashedPassword, salt, err := s.password.Hash(password)
 	if err != nil {
-		return err
+		return &UserResponse{}, err
 	}
 
 	user, err := NewUser(username, hashedPassword, salt, email)
 	if err != nil {
-		return err
+		return &UserResponse{}, err
 	}
-	err = s.repo.Save(ctx, user)
+	uResponse, err := s.repo.Save(ctx, user)
 	if err != nil {
-		return err
+		return &UserResponse{}, err
 	}
 	err = s.repo.AssignDefaultRoleToUser(ctx, user.ID)
 	if err != nil {
-		return err
+		return &UserResponse{}, err
 	}
-	return nil
+	return uResponse, nil
 }
 
 func (s *service) GetUser(ctx context.Context, id string) (*UserResponse, error) {

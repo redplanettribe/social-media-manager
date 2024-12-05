@@ -35,15 +35,20 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.Service.CreateUser(ctx, req.Username, req.Password, req.Email)
+	u, err := h.Service.CreateUser(ctx, req.Username, req.Password, req.Email)
 	if err != nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)
 		return
 	}
 
-	// Respond with success
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(w).Encode(u)
+	if err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
+
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
