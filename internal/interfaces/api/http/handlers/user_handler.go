@@ -53,13 +53,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	id := r.PathValue("id")
-	if id == "" {
-		http.Error(w, "Missing id parameter", http.StatusBadRequest)
-		return
-	}
-
-	u, err := h.Service.GetUser(ctx, id)
+	u, err := h.Service.GetUser(ctx)
 	if err != nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)

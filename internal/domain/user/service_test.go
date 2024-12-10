@@ -24,7 +24,7 @@ func TestGetUser(t *testing.T) {
 
 	mockRepo.On("FindByID", ctx, id).Return(userResponse, nil)
 
-	result, err := service.GetUser(ctx, id)
+	result, err := service.GetUser(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, userResponse, result)
 	mockRepo.AssertExpectations(t)
@@ -37,9 +37,8 @@ func TestGetUser_InvalidUUID(t *testing.T) {
 	service := NewService(mockRepo, sessionManager, passwordHasher)
 
 	ctx := context.Background()
-	invalidID := "invalid-uuid"
 
-	result, err := service.GetUser(ctx, invalidID)
+	result, err := service.GetUser(ctx)
 	assert.Error(t, err)
 	assert.Nil(t, result)
 }

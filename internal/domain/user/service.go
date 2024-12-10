@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
+	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 )
 
 //go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error)
-	GetUser(ctx context.Context, id string) (*UserResponse, error)
+	GetUser(ctx context.Context) (*UserResponse, error)
 	Login(ctx context.Context, email, password string) (LoginResponse, error)
 	GetAllAppRoles(ctx context.Context) (*[]AppRole, error)
 	GetUserAppRoles(ctx context.Context, userID string) ([]string, error)
@@ -63,8 +64,12 @@ func (s *service) CreateUser(ctx context.Context, username, password, email stri
 	return uResponse, nil
 }
 
-func (s *service) GetUser(ctx context.Context, id string) (*UserResponse, error) {
-	userResponse, err := s.repo.FindByIDWithRoles(ctx, id)
+func (s *service) GetUser(ctx context.Context) (*UserResponse, error) {
+	userID, ok := ctx.Value(middlewares.UserIDKey).(string)
+	if !ok {
+		return nil, ErrNoUserInContext
+	}
+	userResponse, err := s.repo.FindByIDWithRoles(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

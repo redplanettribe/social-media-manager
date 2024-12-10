@@ -45,7 +45,7 @@ func NewRouter(
 		middlewares.CORSMiddleware,
 		middlewares.LoggingMiddleware,
 	))
-	router.Handle("GET /users/{id}", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser),
+	router.Handle("GET /users/me", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser),
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "read:users"),
 		authenticationMiddleware,
