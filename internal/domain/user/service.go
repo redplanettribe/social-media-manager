@@ -10,7 +10,7 @@ import (
 type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error)
 	GetUser(ctx context.Context, id string) (*UserResponse, error)
-	Login(ctx context.Context, email, password string) (*session.Session, error)
+	Login(ctx context.Context, email, password string) (LoginResponse, error)
 	GetAllAppRoles(ctx context.Context) (*[]AppRole, error)
 	GetUserAppRoles(ctx context.Context, userID string) ([]string, error)
 	AssignAppRoleToUser(ctx context.Context, userID, roleID string) error
@@ -74,18 +74,25 @@ func (s *service) GetUser(ctx context.Context, id string) (*UserResponse, error)
 	return userResponse, nil
 }
 
-func (s *service) Login(ctx context.Context, email, password string) (*session.Session, error) {
+func (s *service) Login(ctx context.Context, email, password string) (LoginResponse, error) {
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
-		return &session.Session{}, err
+		return LoginResponse{}, err
 	}
 	if user == nil {
-		return &session.Session{}, ErrUserNotFound
+		return LoginResponse{}, ErrUserNotFound
 	}
 	if !s.password.Validate(password, user.HashedPasword, user.Salt) {
-		return &session.Session{}, ErrInvalidPassword
+		return LoginResponse{}, ErrInvalidPassword
 	}
-	return s.session.CreateSession(ctx, user.ID)
+	session, err := s.session.CreateSession(ctx, user.ID)
+	if err != nil {
+		return LoginResponse{}, err
+	}
+	return LoginResponse{
+		User:    sanitize(user),
+		Session: session,
+	}, err
 }
 
 func (s *service) Logout(ctx context.Context, sessionID string) error {

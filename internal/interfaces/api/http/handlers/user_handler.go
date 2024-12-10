@@ -86,7 +86,8 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session, err := h.Service.Login(ctx, req.Email, req.Password)
+	response, err := h.Service.Login(ctx, req.Email, req.Password)
+	session := response.Session
 	if err != nil || session == nil {
 		statusCode, message := MapErrorToHTTP(err)
 		http.Error(w, message, statusCode)
@@ -103,7 +104,11 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteNoneMode,
 	})
 
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(response)
+	if err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+	}
 }
 
 func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {

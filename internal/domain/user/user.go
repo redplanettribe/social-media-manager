@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 )
 
 var (
@@ -30,6 +31,11 @@ type UserResponse struct {
 	Roles     []AppRole `json:"roles"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type LoginResponse struct {
+	User    *UserResponse
+	Session *session.Session
 }
 
 type FullUserResponse struct {
@@ -70,4 +76,14 @@ func NewUser(username, hashedPw, salt, email string) (*User, error) {
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
 	}, nil
+}
+
+func sanitize(fu *FullUserResponse) *UserResponse {
+	return &UserResponse{
+		ID:        fu.ID,
+		Username:  fu.Username,
+		Email:     fu.Email,
+		CreatedAt: fu.CreatedAt,
+		UpdatedAt: fu.UpdatedAt,
+	}
 }
