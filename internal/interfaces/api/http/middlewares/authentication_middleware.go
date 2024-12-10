@@ -18,7 +18,7 @@ func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handle
 			sessionID, err := r.Cookie("session_id")
 			if err != nil {
 				log.Printf("Error getting sessionID from cookie: %s", err)
-				http.Error(w, "Forbidden", http.StatusForbidden)
+				http.Error(w, "Session required", http.StatusUnauthorized)
 				return
 			}
 
@@ -26,7 +26,7 @@ func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handle
 			session, err := authenticator.Authenticate(ctx, sessionID.Value)
 			if err != nil {
 				log.Printf("Error authenticating: %s", err)
-				next.ServeHTTP(w, r.WithContext(ctx))
+				http.Error(w, "Authentication required", http.StatusUnauthorized)
 				return
 			}
 			ctx = context.WithValue(ctx, UserIDKey, session.UserID)
