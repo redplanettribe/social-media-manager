@@ -13,9 +13,9 @@ type MockManager struct {
 	mock.Mock
 }
 
-// CreateSession provides a mock function with given fields: ctx, userID
-func (_m *MockManager) CreateSession(ctx context.Context, userID string) (*Session, error) {
-	ret := _m.Called(ctx, userID)
+// CreateSession provides a mock function with given fields: ctx, userID, fingerprint
+func (_m *MockManager) CreateSession(ctx context.Context, userID string, fingerprint string) (*Session, error) {
+	ret := _m.Called(ctx, userID, fingerprint)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreateSession")
@@ -23,19 +23,19 @@ func (_m *MockManager) CreateSession(ctx context.Context, userID string) (*Sessi
 
 	var r0 *Session
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*Session, error)); ok {
-		return rf(ctx, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*Session, error)); ok {
+		return rf(ctx, userID, fingerprint)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *Session); ok {
-		r0 = rf(ctx, userID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *Session); ok {
+		r0 = rf(ctx, userID, fingerprint)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*Session)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, userID)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, userID, fingerprint)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -43,9 +43,9 @@ func (_m *MockManager) CreateSession(ctx context.Context, userID string) (*Sessi
 	return r0, r1
 }
 
-// ValidateSession provides a mock function with given fields: ctx, sessionID
-func (_m *MockManager) ValidateSession(ctx context.Context, sessionID string) (*Session, error) {
-	ret := _m.Called(ctx, sessionID)
+// ValidateSession provides a mock function with given fields: ctx, sessionID, fingerprint
+func (_m *MockManager) ValidateSession(ctx context.Context, sessionID string, fingerprint string) (*Session, error) {
+	ret := _m.Called(ctx, sessionID, fingerprint)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ValidateSession")
@@ -53,19 +53,19 @@ func (_m *MockManager) ValidateSession(ctx context.Context, sessionID string) (*
 
 	var r0 *Session
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*Session, error)); ok {
-		return rf(ctx, sessionID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*Session, error)); ok {
+		return rf(ctx, sessionID, fingerprint)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *Session); ok {
-		r0 = rf(ctx, sessionID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *Session); ok {
+		r0 = rf(ctx, sessionID, fingerprint)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*Session)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, sessionID)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, sessionID, fingerprint)
 	} else {
 		r1 = ret.Error(1)
 	}

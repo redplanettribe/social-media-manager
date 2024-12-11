@@ -39,34 +39,40 @@ func NewRouter(
 	// User routes
 	router.Handle("POST /users", ChainMiddlewares(http.HandlerFunc(userHandler.SignUp),
 		middlewares.CORSMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("POST /users/login", ChainMiddlewares(http.HandlerFunc(userHandler.Login),
 		middlewares.CORSMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("GET /users/me", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser),
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "read:users"),
 		authenticationMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("GET /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.GetRoles),
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "read:roles"),
 		authenticationMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("POST /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.AssignRoleToUser),
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "write:roles"),
 		authenticationMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 	router.Handle("DELETE /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.RemoveRoleFromUser),
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "delete:roles"),
 		authenticationMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 
@@ -75,6 +81,7 @@ func NewRouter(
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "write:projects"),
 		authenticationMiddleware,
+		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
 

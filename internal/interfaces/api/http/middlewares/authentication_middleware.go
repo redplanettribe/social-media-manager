@@ -8,10 +8,6 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
 )
 
-type contextKey string
-
-const UserIDKey contextKey = "userID"
-
 func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +19,15 @@ func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handle
 			}
 
 			ctx := r.Context()
-			session, err := authenticator.Authenticate(ctx, sessionID.Value)
+			// print the whole context
+			log.Printf("Context: %v", ctx)
+			fingerprint, ok := ctx.Value(DeviceFingerprintKey).(string)
+			if !ok {
+				log.Printf("Error getting fingerprint from context")
+				http.Error(w, "Fingerprint required", http.StatusUnauthorized)
+				return
+			}
+			session, err := authenticator.Authenticate(ctx, sessionID.Value, fingerprint)
 			if err != nil {
 				log.Printf("Error authenticating: %s", err)
 				http.Error(w, "Authentication required", http.StatusUnauthorized)

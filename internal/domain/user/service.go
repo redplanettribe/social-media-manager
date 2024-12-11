@@ -80,6 +80,10 @@ func (s *service) GetUser(ctx context.Context) (*UserResponse, error) {
 }
 
 func (s *service) Login(ctx context.Context, email, password string) (LoginResponse, error) {
+	deviceFingerprint, ok := ctx.Value(middlewares.DeviceFingerprintKey).(string)
+	if !ok {
+		return LoginResponse{}, ErrNoDeviceFingerprintInContext
+	}
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return LoginResponse{}, err
@@ -90,7 +94,7 @@ func (s *service) Login(ctx context.Context, email, password string) (LoginRespo
 	if !s.password.Validate(password, user.HashedPasword, user.Salt) {
 		return LoginResponse{}, ErrInvalidPassword
 	}
-	session, err := s.session.CreateSession(ctx, user.ID)
+	session, err := s.session.CreateSession(ctx, user.ID, deviceFingerprint)
 	if err != nil {
 		return LoginResponse{}, err
 	}

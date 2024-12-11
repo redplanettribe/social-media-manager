@@ -7,22 +7,36 @@ import (
 	"github.com/google/uuid"
 )
 
-var ErrInvalidSession = errors.New("invalid session")
+var (
+	ErrInvalidSession     = errors.New("invalid session")
+	ErrInvalidFingerprint = errors.New("invalid fingerprint")
+	ErrNoFingerprint      = errors.New("no fingerprint")
+)
+
+type contextKey string
+
+const (
+	ClientIPKey  contextKey = "clientIP"
+	UserAgentKey contextKey = "userAgent"
+	UserIDKey    contextKey = "userID"
+)
 
 type Session struct {
-	ID        string
-	UserID    string
-	CreatedAt time.Time
-	ExpiresAt time.Time
-	UpdatedAt time.Time
+	ID                string
+	UserID            string
+	DeviceFingerprint string
+	CreatedAt         time.Time
+	ExpiresAt         time.Time
+	UpdatedAt         time.Time
 }
 
-func NewSession(userID string) *Session {
+func NewSession(userID, deviceFingerprint string) *Session {
 	return &Session{
-		ID:        uuid.New().String(),
-		UserID:    userID,
-		CreatedAt: time.Now(),
-		ExpiresAt: time.Now().Add(time.Hour * 24 * 7),
+		ID:                uuid.New().String(),
+		UserID:            userID,
+		DeviceFingerprint: deviceFingerprint,
+		CreatedAt:         time.Now(),
+		ExpiresAt:         time.Now().Add(time.Hour * 24 * 7),
 	}
 }
 

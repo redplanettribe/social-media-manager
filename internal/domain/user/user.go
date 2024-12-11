@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	ErrExistingUser    = errors.New("user already exists")
-	ErrUserNotFound    = errors.New("user not found")
-	ErrNoUserInContext = errors.New("no user in context")
-	ErrInvalidPassword = errors.New("invalid password")
+	ErrExistingUser                 = errors.New("user already exists")
+	ErrUserNotFound                 = errors.New("user not found")
+	ErrNoUserInContext              = errors.New("no user in context")
+	ErrInvalidPassword              = errors.New("invalid password")
+	ErrNoDeviceFingerprintInContext = errors.New("no device fingerprint in context")
 )
 
 type User struct {

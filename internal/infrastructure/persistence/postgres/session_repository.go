@@ -18,10 +18,10 @@ func NewSessionRepository(db *pgx.Conn) *SessionRepository {
 
 func (r *SessionRepository) CreateSession(ctx context.Context, session *session.Session) (string, error) {
 	query := `
-		INSERT INTO sessions (id, user_id, created_at, expires_at)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO sessions (id, fingerprint, user_id, created_at, expires_at)
+		VALUES ($1, $2, $3, $4, $5)
 	`
-	_, err := r.db.Exec(ctx, query, session.ID, session.UserID, session.CreatedAt, session.ExpiresAt)
+	_, err := r.db.Exec(ctx, query, session.ID, session.DeviceFingerprint, session.UserID, session.CreatedAt, session.ExpiresAt)
 	if err != nil {
 		return "", err
 	}
@@ -39,13 +39,13 @@ func (r *SessionRepository) DeleteSessionsForUser(ctx context.Context, userID st
 
 func (r *SessionRepository) GetSessionByID(ctx context.Context, sessionID string) (*session.Session, error) {
 	query := `
-		SELECT id, user_id, created_at, expires_at
+		SELECT id, fingerprint , user_id, created_at, expires_at
 		FROM sessions
 		WHERE id = $1
 	`
 	row := r.db.QueryRow(ctx, query, sessionID)
 	var s session.Session
-	err := row.Scan(&s.ID, &s.UserID, &s.CreatedAt, &s.ExpiresAt)
+	err := row.Scan(&s.ID, &s.DeviceFingerprint, &s.UserID, &s.CreatedAt, &s.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}

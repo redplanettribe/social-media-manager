@@ -5,7 +5,6 @@ package user
 import (
 	context "context"
 
-	session "github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -92,9 +91,9 @@ func (_m *MockService) GetAllAppRoles(ctx context.Context) (*[]AppRole, error) {
 	return r0, r1
 }
 
-// GetUser provides a mock function with given fields: ctx, id
-func (_m *MockService) GetUser(ctx context.Context, id string) (*UserResponse, error) {
-	ret := _m.Called(ctx, id)
+// GetUser provides a mock function with given fields: ctx
+func (_m *MockService) GetUser(ctx context.Context) (*UserResponse, error) {
+	ret := _m.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetUser")
@@ -102,19 +101,19 @@ func (_m *MockService) GetUser(ctx context.Context, id string) (*UserResponse, e
 
 	var r0 *UserResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*UserResponse, error)); ok {
-		return rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context) (*UserResponse, error)); ok {
+		return rf(ctx)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *UserResponse); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context) *UserResponse); ok {
+		r0 = rf(ctx)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*UserResponse)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, id)
+	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
+		r1 = rf(ctx)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -153,24 +152,22 @@ func (_m *MockService) GetUserAppRoles(ctx context.Context, userID string) ([]st
 }
 
 // Login provides a mock function with given fields: ctx, email, password
-func (_m *MockService) Login(ctx context.Context, email string, password string) (*session.Session, error) {
+func (_m *MockService) Login(ctx context.Context, email string, password string) (LoginResponse, error) {
 	ret := _m.Called(ctx, email, password)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Login")
 	}
 
-	var r0 *session.Session
+	var r0 LoginResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*session.Session, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (LoginResponse, error)); ok {
 		return rf(ctx, email, password)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) *session.Session); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) LoginResponse); ok {
 		r0 = rf(ctx, email, password)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*session.Session)
-		}
+		r0 = ret.Get(0).(LoginResponse)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {

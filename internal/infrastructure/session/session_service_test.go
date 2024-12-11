@@ -59,7 +59,7 @@ func TestManager_ValidateSession(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setUpMock(ctx, mockRepo)
-			session, err := manager.ValidateSession(ctx, tt.sessionID)
+			session, err := manager.ValidateSession(ctx, tt.sessionID, "fingerprints")
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError, err)
@@ -120,7 +120,7 @@ func TestManager_CreateSession(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tt.setUpMock(ctx, mockRepo)
-			session, err := manager.CreateSession(ctx, tt.userID)
+			session, err := manager.CreateSession(ctx, tt.userID, "fingerprints")
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError, err)
