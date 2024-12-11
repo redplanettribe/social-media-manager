@@ -12,6 +12,8 @@ type Repository interface {
 	CreateSession(ctx context.Context, session *Session) (string, error)
 	// DeleteSessionsForUser deletes all sessions for the user with the given ID.
 	DeleteSessionsForUser(ctx context.Context, userID string) error
+	// DeleteSession deletes the session with the given ID.
+	DeleteSession(ctx context.Context, sessionID string) error
 	// GetSessionByID retrieves the session with the given ID.
 	GetSessionByID(ctx context.Context, sessionID string) (*Session, error)
 }
@@ -22,6 +24,8 @@ type Manager interface {
 	CreateSession(ctx context.Context, userID, fingerprint string) (*Session, error)
 	// ValidateSession checks if the session is valid.
 	ValidateSession(ctx context.Context, sessionID, fingerprint string) (*Session, error)
+	// InvalidateSession invalidates the session with the given ID.
+	InvalidateSession(ctx context.Context, sessionID string) error
 }
 
 /*
@@ -64,6 +68,10 @@ func (m *manager) ValidateSession(ctx context.Context, sessionID, fingerprint st
 		return &Session{}, ErrInvalidSession
 	}
 	return session, nil
+}
+
+func (m *manager) InvalidateSession(ctx context.Context, sessionID string) error {
+	return m.repo.DeleteSession(ctx, sessionID)
 }
 
 func hashFingerprint(fingerprint string) string {

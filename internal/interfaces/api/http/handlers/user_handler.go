@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 )
@@ -114,6 +115,32 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 	}
+}
+
+func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	sessionID, err := r.Cookie(sessionCookieName)
+	if err != nil {
+		http.Error(w, "No session found", http.StatusUnauthorized)
+		return
+	}
+
+	err = h.Service.Logout(ctx, sessionID.Value)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionCookieName,
+		Value:    "",
+        Path:     "/",
+     	Expires:  time.Unix(0, 0), 
+		MaxAge: -1,
+	})
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {

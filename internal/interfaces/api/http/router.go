@@ -57,6 +57,11 @@ func NewRouter(
 		middlewares.AddDeviceFingerprint,
 		middlewares.LoggingMiddleware,
 	))
+	router.Handle("POST /users/logout", ChainMiddlewares(http.HandlerFunc(userHandler.Logout),
+	middlewares.CORSMiddleware,
+	middlewares.AddDeviceFingerprint,
+	middlewares.LoggingMiddleware,
+))
 	router.Handle("GET /users/me", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser),
 		middlewares.CORSMiddleware,
 		middlewares.AuthorizationMiddleware(authorizer, "read:users"),

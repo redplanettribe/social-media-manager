@@ -12,15 +12,13 @@ func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handle
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			sessionID, err := r.Cookie("session_id")
-			if err != nil {
+			if err != nil || sessionID.Value == "" {
 				log.Printf("Error getting sessionID from cookie: %s", err)
 				http.Error(w, "Session required", http.StatusUnauthorized)
 				return
 			}
 
 			ctx := r.Context()
-			// print the whole context
-			log.Printf("Context: %v", ctx)
 			fingerprint, ok := ctx.Value(DeviceFingerprintKey).(string)
 			if !ok {
 				log.Printf("Error getting fingerprint from context")

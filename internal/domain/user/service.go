@@ -12,6 +12,7 @@ type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error)
 	GetUser(ctx context.Context) (*UserResponse, error)
 	Login(ctx context.Context, email, password string) (LoginResponse, error)
+	Logout(ctx context.Context, sessionID string) error
 	GetAllAppRoles(ctx context.Context) (*[]AppRole, error)
 	GetUserAppRoles(ctx context.Context, userID string) ([]string, error)
 	AssignAppRoleToUser(ctx context.Context, userID, roleID string) error
@@ -105,8 +106,7 @@ func (s *service) Login(ctx context.Context, email, password string) (LoginRespo
 }
 
 func (s *service) Logout(ctx context.Context, sessionID string) error {
-	// TODO: Implement the logout logic
-	return nil
+	return s.session.InvalidateSession(ctx, sessionID)
 }
 
 func (s *service) UpdatePassword(ctx context.Context, userID, password string) error {

@@ -43,6 +43,24 @@ func (_m *MockManager) CreateSession(ctx context.Context, userID string, fingerp
 	return r0, r1
 }
 
+// InvalidateSession provides a mock function with given fields: ctx, sessionID
+func (_m *MockManager) InvalidateSession(ctx context.Context, sessionID string) error {
+	ret := _m.Called(ctx, sessionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for InvalidateSession")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, sessionID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ValidateSession provides a mock function with given fields: ctx, sessionID, fingerprint
 func (_m *MockManager) ValidateSession(ctx context.Context, sessionID string, fingerprint string) (*Session, error) {
 	ret := _m.Called(ctx, sessionID, fingerprint)

@@ -41,6 +41,24 @@ func (_m *MockRepository) CreateSession(ctx context.Context, session *Session) (
 	return r0, r1
 }
 
+// DeleteSession provides a mock function with given fields: ctx, sessionID
+func (_m *MockRepository) DeleteSession(ctx context.Context, sessionID string) error {
+	ret := _m.Called(ctx, sessionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteSession")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, sessionID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // DeleteSessionsForUser provides a mock function with given fields: ctx, userID
 func (_m *MockRepository) DeleteSessionsForUser(ctx context.Context, userID string) error {
 	ret := _m.Called(ctx, userID)

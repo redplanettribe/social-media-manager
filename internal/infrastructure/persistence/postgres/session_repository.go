@@ -37,6 +37,15 @@ func (r *SessionRepository) DeleteSessionsForUser(ctx context.Context, userID st
 	return nil
 }
 
+func (r *SessionRepository) DeleteSession(ctx context.Context, sessionID string) error {
+	query := `DELETE FROM sessions WHERE id = $1`
+	_, err := r.db.Exec(ctx, query, sessionID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *SessionRepository) GetSessionByID(ctx context.Context, sessionID string) (*session.Session, error) {
 	query := `
 		SELECT id, fingerprint , user_id, created_at, expires_at
