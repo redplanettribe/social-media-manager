@@ -48,12 +48,17 @@ rollback:
 # Find directories with Go files containing //go:generate directives
 GENERATE_DIRS := $(sort $(dir $(shell find . -name '*.go' -exec grep -l '^//go:generate' {} +)))
 
-.PHONY: generate
-generate:
+.PHONY: generate-mocks
+generate-mocks:
 	@for dir in $(GENERATE_DIRS); do \
 		echo "Running go generate in $$dir"; \
 		( cd $$dir && go generate ); \
 	done
+
+.PHONY: generate-api-docs
+generate-api-docs:
+	@echo "Generating API documentation..."
+	swag init -g cmd/server/main.go
 
 
 .PHONY: lint

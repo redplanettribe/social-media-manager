@@ -26,7 +26,18 @@ type loginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
-
+// SignUp godoc
+// @Summary Register a new user
+// @Description Register a new user with username, password and email
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param user body createUserRequest true "User creation request"
+// @Success 201 {object} user.UserResponse
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 409 {string} string "User already exists"
+// @Failure 500 {string} string "Internal server error"
+// @Router /users [post]
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req createUserRequest

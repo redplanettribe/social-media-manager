@@ -20,6 +20,19 @@ type createProjectRequest struct {
 	Description string `json:"description"`
 }
 
+// CreateProject godoc
+// @Summary Create a new project
+// @Description Create a new project with the given name and description
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project body createProjectRequest true "Project creation request"
+// @Success 201 {object} project.Project
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects [post]
 func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req createProjectRequest

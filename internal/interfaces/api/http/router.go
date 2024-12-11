@@ -3,6 +3,9 @@ package api
 import (
 	"net/http"
 
+	_ "github.com/pedrodcsjostrom/opencm/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
@@ -19,6 +22,13 @@ func NewRouter(
 ) http.Handler {
 	router := http.NewServeMux()
 	authenticationMiddleware := middlewares.AuthMiddleware(authenticator)
+
+	router.Handle("/swagger/", httpSwagger.Handler(
+        httpSwagger.URL("/swagger/doc.json"),
+        httpSwagger.DeepLinking(true),
+        httpSwagger.DocExpansion("none"),
+        httpSwagger.DomID("swagger-ui"),
+    ))
 
 	// Apply CORS middleware to all routes
 	router.Handle("/", middlewares.CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
