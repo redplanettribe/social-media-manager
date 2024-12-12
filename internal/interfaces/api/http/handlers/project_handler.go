@@ -55,3 +55,30 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
+
+// ListProjects godoc
+// @Summary List all projects
+// @Description List all projects that the user is a member of
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Success 200 {array} project.Project
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 500 {string} string "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects [get]
+func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projects, err := h.Service.ListProjects(ctx)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(projects)
+	if err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}

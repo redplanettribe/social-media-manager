@@ -27,6 +27,7 @@ type loginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
 // SignUp godoc
 // @Summary Register a new user
 // @Description Register a new user with username, password and email
@@ -60,7 +61,6 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Failed to write response", http.StatusInternalServerError)
 	}
-
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -133,11 +133,11 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     sessionCookieName,
-		Value:    "",
-        Path:     "/",
-     	Expires:  time.Unix(0, 0), 
-		MaxAge: -1,
+		Name:    sessionCookieName,
+		Value:   "",
+		Path:    "/",
+		Expires: time.Unix(0, 0),
+		MaxAge:  -1,
 	})
 
 	w.WriteHeader(http.StatusOK)

@@ -70,6 +70,32 @@ info:
   version: "1.0"
 paths:
   /projects:
+    get:
+      consumes:
+      - application/json
+      description: List all projects that the user is a member of
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/project.Project'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            type: string
+        "500":
+          description: Internal server error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: List all projects
+      tags:
+      - projects
     post:
       consumes:
       - application/json

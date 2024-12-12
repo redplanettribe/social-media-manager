@@ -10,7 +10,6 @@ import (
 
 // MapErrorToHTTP maps the given error to an appropriate HTTP status code and message.
 func MapErrorToHTTP(err error) (int, string) {
-
 	switch {
 	case errors.Is(err, user.ErrExistingUser):
 		return http.StatusConflict, "User already exists"

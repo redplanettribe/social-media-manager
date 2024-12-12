@@ -3,7 +3,6 @@ package api
 import (
 	"net/http"
 
-	_ "github.com/pedrodcsjostrom/opencm/docs"
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
@@ -12,7 +11,20 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
 )
 
-// NewRouter creates and returns an http.Handler with all routes defined.
+type middlewareStack []func(http.Handler) http.Handler
+
+func (s middlewareStack) Chain(h http.Handler) http.Handler {
+	return ChainMiddlewares(h, s...)
+}
+
+type Router struct {
+	*http.ServeMux
+	baseStack     middlewareStack
+	authStack     middlewareStack
+	authenticator authentication.Authenticator
+	authorizer    authorization.Authorizer
+}
+
 func NewRouter(
 	healthCheckHandler *handlers.HealthHandler,
 	userHandler *handlers.UserHandler,
@@ -20,92 +32,94 @@ func NewRouter(
 	authenticator authentication.Authenticator,
 	authorizer authorization.Authorizer,
 ) http.Handler {
-	router := http.NewServeMux()
-	authenticationMiddleware := middlewares.AuthMiddleware(authenticator)
+	r := &Router{
+		ServeMux:      http.NewServeMux(),
+		authenticator: authenticator,
+		authorizer:    authorizer,
+	}
 
-	router.Handle("/swagger/", httpSwagger.Handler(
-        httpSwagger.URL("/swagger/doc.json"),
-        httpSwagger.DeepLinking(true),
-        httpSwagger.DocExpansion("none"),
-        httpSwagger.DomID("swagger-ui"),
-    ))
+	// Middleware stacks
+	r.baseStack = middlewareStack{
+		middlewares.LoggingMiddleware,
+		middlewares.CORSMiddleware,
+		middlewares.AddDeviceFingerprint,
+	}
 
-	// Apply CORS middleware to all routes
-	router.Handle("/", middlewares.CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})))
+	authMiddleware := middlewares.AuthMiddleware(authenticator)
+	r.authStack = append(r.baseStack, authMiddleware)
 
-	// Health check routes
-	router.Handle("GET /health", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck),
-		middlewares.CORSMiddleware,
-		middlewares.LoggingMiddleware,
-	))
-	router.Handle("GET /health/auth", ChainMiddlewares(http.HandlerFunc(healthCheckHandler.HealthCheck),
-		authenticationMiddleware,
-		middlewares.CORSMiddleware,
-		middlewares.LoggingMiddleware,
-	))
+	// Setup routes
+	r.setupSwagger()
+	r.setupHealthRoutes(healthCheckHandler)
+	r.setupUserRoutes(userHandler)
+	r.setupProjectRoutes(projectHandler)
 
-	// User routes
-	router.Handle("POST /users", ChainMiddlewares(http.HandlerFunc(userHandler.SignUp),
-		middlewares.CORSMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+	return r
+}
+
+func (r *Router) setupSwagger() {
+	r.Handle("/swagger/", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+		httpSwagger.DeepLinking(true),
+		httpSwagger.DocExpansion("none"),
+		httpSwagger.DomID("swagger-ui"),
 	))
-	router.Handle("POST /users/login", ChainMiddlewares(http.HandlerFunc(userHandler.Login),
-		middlewares.CORSMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+}
+
+func (r *Router) setupHealthRoutes(h *handlers.HealthHandler) {
+	r.Handle("GET /health", r.baseStack.Chain(
+		http.HandlerFunc(h.HealthCheck),
 	))
-	router.Handle("POST /users/logout", ChainMiddlewares(http.HandlerFunc(userHandler.Logout),
-	middlewares.CORSMiddleware,
-	middlewares.AddDeviceFingerprint,
-	middlewares.LoggingMiddleware,
-))
-	router.Handle("GET /users/me", ChainMiddlewares(http.HandlerFunc(userHandler.GetUser),
-		middlewares.CORSMiddleware,
-		middlewares.AuthorizationMiddleware(authorizer, "read:users"),
-		authenticationMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+	r.Handle("GET /health/auth", r.authStack.Chain(
+		http.HandlerFunc(h.HealthCheck),
 	))
-	router.Handle("GET /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.GetRoles),
-		middlewares.CORSMiddleware,
-		middlewares.AuthorizationMiddleware(authorizer, "read:roles"),
-		authenticationMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+}
+
+func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
+	r.Handle("POST /users", r.baseStack.Chain(
+		http.HandlerFunc(h.SignUp),
 	))
-	router.Handle("POST /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.AssignRoleToUser),
-		middlewares.CORSMiddleware,
-		middlewares.AuthorizationMiddleware(authorizer, "write:roles"),
-		authenticationMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+	r.Handle("POST /users/login", r.baseStack.Chain(
+		http.HandlerFunc(h.Login),
 	))
-	router.Handle("DELETE /users/roles", ChainMiddlewares(http.HandlerFunc(userHandler.RemoveRoleFromUser),
-		middlewares.CORSMiddleware,
-		middlewares.AuthorizationMiddleware(authorizer, "delete:roles"),
-		authenticationMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+	r.Handle("POST /users/logout", r.baseStack.Chain(
+		http.HandlerFunc(h.Logout),
 	))
 
-	// Project routes
-	router.Handle("POST /projects", ChainMiddlewares(http.HandlerFunc(projectHandler.CreateProject),
-		middlewares.CORSMiddleware,
-		middlewares.AuthorizationMiddleware(authorizer, "write:projects"),
-		authenticationMiddleware,
-		middlewares.AddDeviceFingerprint,
-		middlewares.LoggingMiddleware,
+	// Protected routes
+	r.Handle("GET /users/me", r.permissions("read:users").Chain(
+		http.HandlerFunc(h.GetUser),
 	))
+	r.Handle("GET /users/roles", r.permissions("read:roles").Chain(
+		http.HandlerFunc(h.GetRoles),
+	))
+	r.Handle("POST /users/roles", r.permissions("write:roles").Chain(
+		http.HandlerFunc(h.AssignRoleToUser),
+	))
+	r.Handle("DELETE /users/roles", r.permissions("delete:roles").Chain(
+		http.HandlerFunc(h.RemoveRoleFromUser),
+	))
+}
 
-	return router
+func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
+	r.Handle("POST /projects", r.permissions("write:projects").Chain(
+		http.HandlerFunc(h.CreateProject),
+	))
+	r.Handle("GET /projects", r.permissions("read:projects").Chain(
+		http.HandlerFunc(h.ListProjects),
+	))
+}
+
+// permissions returns a middleware stack that checks if the user has the required permission for the desired action
+func (r *Router) permissions(permission string) middlewareStack {
+	return append(r.authStack,
+		middlewares.AuthorizationMiddleware(r.authorizer, permission),
+	)
 }
 
 func ChainMiddlewares(handler http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
-	for _, middleware := range middlewares {
-		handler = middleware(handler)
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		handler = middlewares[i](handler)
 	}
 	return handler
 }

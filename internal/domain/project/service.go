@@ -3,13 +3,13 @@ package project
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 )
 
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
+	ListProjects(ctx context.Context) ([]*Project, error)
 }
 
 type service struct {
@@ -23,16 +23,11 @@ func NewService(repo Repository) Service {
 }
 
 func (s *service) CreateProject(ctx context.Context, name, description string) (*Project, error) {
-	userIDInterface := ctx.Value(middlewares.UserIDKey)
-	if userIDInterface == nil {
-		fmt.Println("userID not found in context, Context: ", ctx)
-		return &Project{}, errors.New("userID not found in context")
+	userID, ok := ctx.Value(middlewares.UserIDKey).(string)
+	if !ok || userID == "" {
+		return nil, errors.New("userID not found in context")
 	}
 
-	userID, ok := userIDInterface.(string)
-	if !ok {
-		return &Project{}, errors.New("userID in context is not a string")
-	}
 	project, err := NewProject(name, description, userID)
 	if err != nil {
 		return nil, err
@@ -49,4 +44,18 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 	}
 
 	return project, nil
+}
+
+func (s *service) ListProjects(ctx context.Context) ([]*Project, error) {
+	userID, ok := ctx.Value(middlewares.UserIDKey).(string)
+	if !ok || userID == "" {
+		return nil, errors.New("userID not found in context")
+	}
+
+	projects, err := s.repo.ListByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return projects, nil
 }

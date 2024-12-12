@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5"
+
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 )
 
@@ -36,6 +37,31 @@ func (r *ProjectRepository) Save(ctx context.Context, p *project.Project) (*proj
 	}
 
 	return p, nil
+}
+
+func (r *ProjectRepository) ListByUserID(ctx context.Context, userID string) ([]*project.Project, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT p.id, p.name, p.description, p.created_by, p.created_at, p.updated_at
+		FROM %s p
+		INNER JOIN %s tm ON p.id = tm.project_id
+		WHERE tm.user_id = $1
+	`, Projects, TeamMembers), userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var projects []*project.Project
+	for rows.Next() {
+		p := &project.Project{}
+		err = rows.Scan(&p.ID, &p.Name, &p.Description, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+
+	return projects, nil
 }
 
 func (r *ProjectRepository) AssignProjectOwner(ctx context.Context, projectID, userID string) error {

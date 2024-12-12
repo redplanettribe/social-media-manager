@@ -179,6 +179,24 @@ func (_m *MockService) Login(ctx context.Context, email string, password string)
 	return r0, r1
 }
 
+// Logout provides a mock function with given fields: ctx, sessionID
+func (_m *MockService) Logout(ctx context.Context, sessionID string) error {
+	ret := _m.Called(ctx, sessionID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Logout")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, sessionID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // RemoveAppRoleFromUser provides a mock function with given fields: ctx, userID, roleID
 func (_m *MockService) RemoveAppRoleFromUser(ctx context.Context, userID string, roleID string) error {
 	ret := _m.Called(ctx, userID, roleID)

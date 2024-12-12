@@ -9,8 +9,8 @@ import (
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/swagger/") {
-            w.Header().Set("Access-Control-Allow-Origin", "*")
-        }
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+		}
 		origin := r.Header.Get("Origin")
 		allowedOrigin := os.Getenv("ORIGIN")
 		if origin == allowedOrigin {
