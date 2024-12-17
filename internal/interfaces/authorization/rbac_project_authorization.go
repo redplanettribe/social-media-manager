@@ -30,6 +30,9 @@ func (a *TeamAuthorizer) Authorize(ctx context.Context, userID, projectID, permi
 	if err != nil {
 		return errors.Join(ErrFailedToGetRoles, err)
 	}
+	if userRoles == nil {
+		return ErrPermissionDenied
+	}
 	roleMap := NewRoles(userRoles)
 	hasPermission := a.permissions.HasPermission(roleMap, action, resource)
 	if !hasPermission {

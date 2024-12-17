@@ -23,7 +23,7 @@ func ProjectAuthorizationMiddleware(authorizer authorization.ProjectAuthorizer, 
 
 			err := authorizer.Authorize(r.Context(), userID.(string), projectID, requiredPermission)
 			if err != nil {
-				http.Error(w, "Forbidden: "+err.Error(), http.StatusForbidden)
+				http.Error(w, "Project authorization failed: "+err.Error(), http.StatusForbidden)
 				return
 			}
 			next.ServeHTTP(w, r)
