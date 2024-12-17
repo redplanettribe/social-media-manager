@@ -8,4 +8,5 @@ type Repository interface {
 	ListByUserID(ctx context.Context, userID string) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*Project, error)
+	GetProjectUsers(ctx context.Context, projectID string) ([]*TeamMember, error)
 }

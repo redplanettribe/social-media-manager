@@ -5,13 +5,12 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
-
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 )
 
 type ProjectRepository struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
 type TableNames string
@@ -23,7 +22,7 @@ const (
 	TeamRoles        TableNames = "team_roles"
 )
 
-func NewProjectRepository(db *pgx.Conn) *ProjectRepository {
+func NewProjectRepository(db *pgxpool.Pool) *ProjectRepository {
 	return &ProjectRepository{db: db}
 }
 
@@ -146,4 +145,28 @@ func (r *ProjectRepository) GetProject(ctx context.Context, projectID string) (*
 	}
 
 	return p, nil
+}
+
+func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID string) ([]*project.TeamMember, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT tm.user_id, tm.added_at
+		FROM %s tm
+		WHERE tm.project_id = $1
+	`, TeamMembers), projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []*project.TeamMember
+	for rows.Next() {
+		tm := &project.TeamMember{}
+		err = rows.Scan(&tm.ID, &tm.AddedAt)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, tm)
+	}
+
+	return users, nil
 }

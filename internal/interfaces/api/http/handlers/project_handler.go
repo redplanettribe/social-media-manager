@@ -82,7 +82,20 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
-
+// GetProject godoc
+// @Summary Get a project
+// @Description Get a project by its ID
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 200 {object} project.Project
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 404 {string} string "Project not found"
+// @Failure 500 {string} string "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id} [get]
 func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")

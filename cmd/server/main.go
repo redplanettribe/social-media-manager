@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
@@ -50,29 +51,34 @@ func main() {
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.DB.Host, cfg.DB.Port, cfg.DB.User, cfg.DB.Password, cfg.DB.Name, cfg.DB.SSLMode,
 	)
-
-	dbConn, err := pgx.Connect(ctx, dbConnStr)
+	dbConf, err := pgxpool.ParseConfig(dbConnStr)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func() {
-		if err := dbConn.Close(ctx); err != nil {
-			log.Printf("Error closing database connection: %v", err)
-		}
-	}()
+	dbConf.MaxConns = 25                     // Maximum number of connections in the pool
+	dbConf.MinConns = 5                      // Minimum number of connections to keep open
+	dbConf.MaxConnLifetime = 5 * time.Minute // Maximum lifetime of a connection
+	dbConf.MaxConnIdleTime = 1 * time.Minute // Maximum idle time of a connection
 
-	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbConn)))
+	dbPool, err := pgxpool.NewWithConfig(ctx, dbConf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer dbPool.Close()
+
+	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbPool)))
 
 	healthHandler := handlers.NewHealthHandler()
 
-	userRepo := postgres.NewUserRepository(dbConn)
+	userRepo := postgres.NewUserRepository(dbPool)
 	passworHasher := encrypting.NewHasher()
-	sessionRepo := postgres.NewSessionRepository(dbConn)
+	sessionRepo := postgres.NewSessionRepository(dbPool)
 	sessionManager := session.NewManager(sessionRepo)
 	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
-	projctRepo := postgres.NewProjectRepository(dbConn)
+	projctRepo := postgres.NewProjectRepository(dbPool)
 	projectService := project.NewService(projctRepo)
 	projectHandler := handlers.NewProjectHandler(projectService)
 
@@ -80,7 +86,6 @@ func main() {
 	teamAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
 	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, appAuthorizer, teamAuthorizer)
 
-	
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12, // temporary configuration test
 	}

@@ -2,16 +2,16 @@ package postgres
 
 import (
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 )
 
 type PostRepository struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewPostRepository(db *pgx.Conn) *PostRepository {
+func NewPostRepository(db *pgxpool.Pool) *PostRepository {
 	return &PostRepository{db: db}
 }
 

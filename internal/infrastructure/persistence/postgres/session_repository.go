@@ -3,16 +3,15 @@ package postgres
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5"
-
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 )
 
 type SessionRepository struct {
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewSessionRepository(db *pgx.Conn) *SessionRepository {
+func NewSessionRepository(db *pgxpool.Pool) *SessionRepository {
 	return &SessionRepository{db: db}
 }
 

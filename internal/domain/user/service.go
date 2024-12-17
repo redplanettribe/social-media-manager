@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
@@ -85,6 +86,7 @@ func (s *service) Login(ctx context.Context, email, password string) (LoginRespo
 	if !ok {
 		return LoginResponse{}, ErrNoDeviceFingerprintInContext
 	}
+	fmt.Println("***deviceFingerprint", deviceFingerprint)
 	user, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return LoginResponse{}, err

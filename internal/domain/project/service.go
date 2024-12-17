@@ -5,13 +5,14 @@ import (
 	"errors"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
+	"golang.org/x/sync/errgroup"
 )
 
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
-	GetProject(ctx context.Context, projectID string) (*Project, error)
+	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
 }
 
 type service struct {
@@ -66,6 +67,31 @@ func (s *service) GetUserRoles(ctx context.Context, userID, projectID string) ([
 	return s.repo.GetUserRoles(ctx, userID, projectID)
 }
 
-func (s *service) GetProject(ctx context.Context, projectID string) (*Project, error) {
-	return s.repo.GetProject(ctx, projectID)
+func (s *service) GetProject(ctx context.Context, projectID string) (*ProjectResponse, error) {
+	var (
+		project *Project
+		users   []*TeamMember
+		g 	 errgroup.Group
+	)
+
+	g.Go(func() error {
+		var err error
+		project, err = s.repo.GetProject(ctx, projectID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		users, err = s.repo.GetProjectUsers(ctx, projectID)
+		return err
+	})
+
+    if err := g.Wait(); err != nil {
+        return nil, err
+    }
+
+	return &ProjectResponse{
+		Project: project,
+		Users:   users,
+	}, nil
 }

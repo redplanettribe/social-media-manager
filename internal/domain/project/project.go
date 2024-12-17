@@ -24,12 +24,17 @@ const (
 )
 
 type Project struct {
-	ID          string
-	Name        string
-	Description string
-	CreatedBy   string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	CreatedBy   string    `json:"created_by"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type ProjectResponse struct {
+	Project *Project
+	Users   []*TeamMember
 }
 
 type TeamRole struct {
@@ -38,8 +43,8 @@ type TeamRole struct {
 }
 
 type TeamMember struct {
-	ID      string
-	AddedAt string
+	ID      string `json:"id"`
+	AddedAt time.Time `json:"added_at"`
 }
 
 func NewProject(name, description, createdBy string) (*Project, error) {
