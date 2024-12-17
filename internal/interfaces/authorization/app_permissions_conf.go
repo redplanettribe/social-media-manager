@@ -1,6 +1,6 @@
 package authorization
 
-func GetPermissions() *Permissions {
+func GetAppPermissions() *Permissions {
 	return NewPermissions().
 		AddRole("user").
 		/* */ Read("users").

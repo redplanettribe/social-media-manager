@@ -19,10 +19,11 @@ func (s middlewareStack) Chain(h http.Handler) http.Handler {
 
 type Router struct {
 	*http.ServeMux
-	baseStack     middlewareStack
-	authStack     middlewareStack
-	authenticator authentication.Authenticator
-	authorizer    authorization.Authorizer
+	baseStack         middlewareStack
+	authStack         middlewareStack
+	authenticator     authentication.Authenticator
+	appAuthorizer     authorization.AppAuthorizer
+	projectAuthorizer authorization.ProjectAuthorizer
 }
 
 func NewRouter(
@@ -30,12 +31,14 @@ func NewRouter(
 	userHandler *handlers.UserHandler,
 	projectHandler *handlers.ProjectHandler,
 	authenticator authentication.Authenticator,
-	authorizer authorization.Authorizer,
+	appAuthorizer authorization.AppAuthorizer,
+	projectAuthorizer authorization.ProjectAuthorizer,
 ) http.Handler {
 	r := &Router{
-		ServeMux:      http.NewServeMux(),
-		authenticator: authenticator,
-		authorizer:    authorizer,
+		ServeMux:          http.NewServeMux(),
+		authenticator:     authenticator,
+		appAuthorizer:     appAuthorizer,
+		projectAuthorizer: projectAuthorizer,
 	}
 
 	// Middleware stacks
@@ -87,33 +90,42 @@ func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
 	))
 
 	// Protected routes
-	r.Handle("GET /users/me", r.permissions("read:users").Chain(
+	r.Handle("GET /users/me", r.appPermissions("read:users").Chain(
 		http.HandlerFunc(h.GetUser),
 	))
-	r.Handle("GET /users/roles", r.permissions("read:roles").Chain(
+	r.Handle("GET /users/roles", r.appPermissions("read:roles").Chain(
 		http.HandlerFunc(h.GetRoles),
 	))
-	r.Handle("POST /users/roles", r.permissions("write:roles").Chain(
+	r.Handle("POST /users/roles", r.appPermissions("write:roles").Chain(
 		http.HandlerFunc(h.AssignRoleToUser),
 	))
-	r.Handle("DELETE /users/roles", r.permissions("delete:roles").Chain(
+	r.Handle("DELETE /users/roles", r.appPermissions("delete:roles").Chain(
 		http.HandlerFunc(h.RemoveRoleFromUser),
 	))
 }
 
 func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
-	r.Handle("POST /projects", r.permissions("write:projects").Chain(
+	r.Handle("POST /projects", r.appPermissions("write:projects").Chain(
 		http.HandlerFunc(h.CreateProject),
 	))
-	r.Handle("GET /projects", r.permissions("read:projects").Chain(
+	r.Handle("GET /projects", r.appPermissions("read:projects").Chain(
 		http.HandlerFunc(h.ListProjects),
+	))
+	r.Handle("GET /projects/{project_id}", r.projectPermissions("read:projects").Chain(
+		http.HandlerFunc(h.GetProject),
 	))
 }
 
-// permissions returns a middleware stack that checks if the user has the required permission for the desired action
-func (r *Router) permissions(permission string) middlewareStack {
+// appPermissions returns a middleware stack that checks if the user has the required permission for the desired action
+func (r *Router) appPermissions(permission string) middlewareStack {
 	return append(r.authStack,
-		middlewares.AuthorizationMiddleware(r.authorizer, permission),
+		middlewares.AppAuthorizationMiddleware(r.appAuthorizer, permission),
+	)
+}
+
+func (r *Router) projectPermissions(permission string) middlewareStack {
+	return append(r.authStack,
+		middlewares.ProjectAuthorizationMiddleware(r.projectAuthorizer, permission),
 	)
 }
 

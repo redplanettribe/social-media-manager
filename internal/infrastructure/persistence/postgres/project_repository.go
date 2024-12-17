@@ -106,3 +106,44 @@ func (r *ProjectRepository) AssignProjectOwner(ctx context.Context, projectID, u
 
 	return nil
 }
+
+func (r *ProjectRepository) GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT tr.role
+		FROM %s tmr
+		INNER JOIN %s tr ON tmr.team_role_id = tr.id
+		WHERE tmr.user_id = $1 AND tmr.project_id = $2
+	`, TeamMembersRoles, TeamRoles), userID, projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var roles []string
+	for rows.Next() {
+		var role string
+		err = rows.Scan(&role)
+		if err != nil {
+			return nil, err
+		}
+		roles = append(roles, role)
+	}
+
+	return roles, nil
+}
+
+func (r *ProjectRepository) GetProject(ctx context.Context, projectID string) (*project.Project, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT id, name, description, created_by, created_at, updated_at
+		FROM %s
+		WHERE id = $1
+	`, Projects), projectID)
+
+	p := &project.Project{}
+	err := row.Scan(&p.ID, &p.Name, &p.Description, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+
+	return p, nil
+}

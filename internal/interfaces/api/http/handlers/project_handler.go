@@ -82,3 +82,25 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
+
+func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		http.Error(w, "project id not found in query params", http.StatusBadRequest)
+		return
+	}
+
+	p, err := h.Service.GetProject(ctx, projectID)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(p)
+	if err != nil {
+		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+	}
+}

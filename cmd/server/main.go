@@ -76,9 +76,11 @@ func main() {
 	projectService := project.NewService(projctRepo)
 	projectHandler := handlers.NewProjectHandler(projectService)
 
-	authorizer := authorization.NewAuthorizer(authorization.GetPermissions(), userService.GetUserAppRoles)
-	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, authorizer)
+	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
+	teamAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
+	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, appAuthorizer, teamAuthorizer)
 
+	
 	tlsConfig := &tls.Config{
 		MinVersion: tls.VersionTLS12, // temporary configuration test
 	}

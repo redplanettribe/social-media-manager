@@ -6,7 +6,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
 )
 
-func AuthorizationMiddleware(authorizer authorization.Authorizer, requiredPermission string) func(http.Handler) http.Handler {
+func AppAuthorizationMiddleware(authorizer authorization.AppAuthorizer, requiredPermission string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userID := r.Context().Value(UserIDKey)

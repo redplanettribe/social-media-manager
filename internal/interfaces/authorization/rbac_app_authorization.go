@@ -12,20 +12,21 @@ var (
 	ErrPermissionDenied = errors.New("permission denied")
 )
 
-// Authorizer is the interface that wraps the Authorize method.
-type Authorizer interface {
+// AppAuthorizer is the interface that wraps the Authorize method.
+type AppAuthorizer interface {
 	Authorize(ctx context.Context, userID string, permission string) error
 }
 
-// RBACAuthorizer is an implementation of the Authorizer interface that uses Role-Based Access Control (RBAC) to determine if a user has a specific permission.
-type RBACAuthorizer struct {
+
+// RBACAppAuthorizer uses Role-Based Access Control (RBAC) to determine if a user has a specific permission.
+type RBACAppAuthorizer struct {
 	permissions *Permissions
 	getRoles    func(ctx context.Context, userID string) ([]string, error)
 }
 
-// NewAuthorizer creates a new RBACAuthorizer with the given role-permission and user-role mappings.
-func NewAuthorizer(permissions *Permissions, getRoles func(ctx context.Context, userID string) ([]string, error)) Authorizer {
-	return &RBACAuthorizer{
+// NewAppAuthorizer creates a new RBACAuthorizer with the given role-permission and user-role mappings.
+func NewAppAuthorizer(permissions *Permissions, getRoles func(ctx context.Context, userID string) ([]string, error)) AppAuthorizer {
+	return &RBACAppAuthorizer{
 		permissions: permissions,
 		getRoles:    getRoles,
 	}
@@ -34,7 +35,7 @@ func NewAuthorizer(permissions *Permissions, getRoles func(ctx context.Context, 
 // Authorize checks if the user with the given ID has the specified permission.
 // It returns true if the user has the permission, false otherwise.
 // The permission string should be in the format "action:resource".
-func (a *RBACAuthorizer) Authorize(ctx context.Context, userID string, permission string) error {
+func (a *RBACAppAuthorizer) Authorize(ctx context.Context, userID string, permission string) error {
 	action, resource := parsePermission(permission)
 	if action == "" || resource == "" {
 		return ErrEmptyPermission
