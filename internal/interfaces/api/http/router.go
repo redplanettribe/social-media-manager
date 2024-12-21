@@ -44,20 +44,28 @@ func NewRouter(
 	// Middleware stacks
 	r.baseStack = middlewareStack{
 		middlewares.LoggingMiddleware,
-		middlewares.CORSMiddleware,
 		middlewares.AddDeviceFingerprint,
+		middlewares.CORSMiddleware,
 	}
 
 	authMiddleware := middlewares.AuthMiddleware(authenticator)
 	r.authStack = append(r.baseStack, authMiddleware)
 
 	// Setup routes
+	r.setUpCors()
 	r.setupSwagger()
 	r.setupHealthRoutes(healthCheckHandler)
 	r.setupUserRoutes(userHandler)
 	r.setupProjectRoutes(projectHandler)
 
 	return r
+}
+
+func (r *Router) setUpCors() {
+	r.Handle("/", middlewares.CORSMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})))
+
 }
 
 func (r *Router) setupSwagger() {
@@ -83,8 +91,8 @@ func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
 		http.HandlerFunc(h.SignUp),
 	))
 	r.Handle("POST /users/login", r.baseStack.Chain(
-		http.HandlerFunc(h.Login),
-	))
+        http.HandlerFunc(h.Login),
+    ))
 	r.Handle("POST /users/logout", r.baseStack.Chain(
 		http.HandlerFunc(h.Logout),
 	))

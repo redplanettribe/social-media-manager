@@ -2,10 +2,8 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,6 +13,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/server"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
@@ -37,7 +36,6 @@ import (
 // @host localhost:8080
 // @BasePath /
 // @schemes http https
-
 func main() {
 	ctx := context.Background()
 	// Load configuration
@@ -83,21 +81,9 @@ func main() {
 	projectHandler := handlers.NewProjectHandler(projectService)
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
-	teamAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
-	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, appAuthorizer, teamAuthorizer)
+	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
+	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, appAuthorizer, projectAuthorizer)
 
-	tlsConfig := &tls.Config{
-		MinVersion: tls.VersionTLS12, // temporary configuration test
-	}
-
-	server := &http.Server{
-		Addr:      ":" + cfg.App.Port,
-		Handler:   httpRouter,
-		TLSConfig: tlsConfig,
-	}
-
-	log.Printf("Server is running on port %s", cfg.App.Port)
-	if err := server.ListenAndServeTLS(cfg.SSL.CertPath, cfg.SSL.KeyPath); err != nil {
-		log.Fatal(err)
-	}
+	server:= server.NewHttpServer(cfg, httpRouter)
+	server.Serve()
 }
