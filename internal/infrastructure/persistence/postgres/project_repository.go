@@ -17,6 +17,7 @@ type TableNames string
 
 const (
 	Projects         TableNames = "projects"
+	Users            TableNames = "users"
 	TeamMembers      TableNames = "team_members"
 	TeamMembersRoles TableNames = "team_members_roles"
 	TeamRoles        TableNames = "team_roles"
@@ -149,10 +150,11 @@ func (r *ProjectRepository) GetProject(ctx context.Context, projectID string) (*
 
 func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID string) ([]*project.TeamMember, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT tm.user_id, tm.added_at
-		FROM %s tm
+		SELECT u.id, u.username, u.email, tm.added_at
+		FROM %s u
+		JOIN %s tm ON u.id = tm.user_id
 		WHERE tm.project_id = $1
-	`, TeamMembers), projectID)
+	`, Users, TeamMembers), projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +163,7 @@ func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID strin
 	var users []*project.TeamMember
 	for rows.Next() {
 		tm := &project.TeamMember{}
-		err = rows.Scan(&tm.ID, &tm.AddedAt)
+		err = rows.Scan(&tm.ID, &tm.Name, &tm.Email, &tm.AddedAt)
 		if err != nil {
 			return nil, err
 		}

@@ -44,6 +44,8 @@ type TeamRole struct {
 
 type TeamMember struct {
 	ID      string `json:"id"`
+	Name	string `json:"name"`
+	Email   string `json:"email"`
 	AddedAt time.Time `json:"added_at"`
 }
 
