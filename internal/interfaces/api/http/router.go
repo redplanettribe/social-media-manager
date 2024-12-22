@@ -77,6 +77,7 @@ func (r *Router) setupSwagger() {
 	))
 }
 
+/*HEALTH ROUTES*/ 
 func (r *Router) setupHealthRoutes(h *handlers.HealthHandler) {
 	r.Handle("GET /health", r.baseStack.Chain(
 		http.HandlerFunc(h.HealthCheck),
@@ -86,6 +87,7 @@ func (r *Router) setupHealthRoutes(h *handlers.HealthHandler) {
 	))
 }
 
+/*USER ROUTES*/ 
 func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
 	r.Handle("POST /users", r.baseStack.Chain(
 		http.HandlerFunc(h.SignUp),
@@ -112,9 +114,13 @@ func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
 	))
 }
 
+/*PROJECT ROUTES*/ 
 func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("POST /projects", r.appPermissions("write:projects").Chain(
 		http.HandlerFunc(h.CreateProject),
+	))
+	r.Handle("POST /projects/{project_id}/add", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.AddUserToProject),
 	))
 	r.Handle("GET /projects", r.appPermissions("read:projects").Chain(
 		http.HandlerFunc(h.ListProjects),

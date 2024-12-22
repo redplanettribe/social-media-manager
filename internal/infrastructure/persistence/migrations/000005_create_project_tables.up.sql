@@ -27,10 +27,10 @@ CREATE TABLE IF NOT EXISTS team_roles (
 );
 
 
-ALTER TABLE "projects" ADD FOREIGN KEY ("created_by") REFERENCES "users" ("id");
-ALTER TABLE "team_members" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
-ALTER TABLE "team_members" ADD FOREIGN KEY ("project_id") REFERENCES "projects" ("id");
-ALTER TABLE team_members_roles ADD FOREIGN KEY (project_id, user_id) REFERENCES team_members (project_id, user_id);
-ALTER TABLE "team_members_roles" ADD FOREIGN KEY ("team_role_id") REFERENCES "team_roles" ("id");
+ALTER TABLE "projects" ADD FOREIGN KEY ("created_by") REFERENCES "users" ("id") ON DELETE CASCADE;
+ALTER TABLE "team_members" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id")  ON DELETE CASCADE;
+ALTER TABLE "team_members" ADD FOREIGN KEY ("project_id") REFERENCES "projects" ("id")  ON DELETE CASCADE;
+ALTER TABLE team_members_roles ADD FOREIGN KEY (project_id, user_id) REFERENCES team_members (project_id, user_id)  ON DELETE CASCADE;
+ALTER TABLE "team_members_roles" ADD FOREIGN KEY ("team_role_id") REFERENCES "team_roles" ("id")  ON DELETE CASCADE;
 
 INSERT INTO team_roles (role) VALUES ('manager'), ('member'), ('owner') ON CONFLICT DO NOTHING;

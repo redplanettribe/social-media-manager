@@ -77,7 +77,7 @@ func main() {
 	userHandler := handlers.NewUserHandler(userService)
 
 	projctRepo := postgres.NewProjectRepository(dbPool)
-	projectService := project.NewService(projctRepo)
+	projectService := project.NewService(projctRepo, userRepo)
 	projectHandler := handlers.NewProjectHandler(projectService)
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)

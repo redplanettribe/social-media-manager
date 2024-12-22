@@ -117,3 +117,46 @@ func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error encoding response", http.StatusInternalServerError)
 	}
 }
+
+type addUserRequest struct {
+	Email string `json:"email"`
+}
+
+// AddUserToProject godoc
+// @Summary Add a user to a project
+// @Description Add a user to a project by their email
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {string} string "Invalid request payload"
+// @Failure 401 {string} string "Unauthorized"
+// @Failure 404 {string} string "Project not found"
+// @Failure 500 {string} string "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/add [post]
+func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		http.Error(w, "project id not found in query params", http.StatusBadRequest)
+		return
+	}
+
+	var req addUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	err := h.Service.AddUserToProject(ctx, projectID, req.Email)
+	if err != nil {
+		statusCode, message := MapErrorToHTTP(err)
+		http.Error(w, message, statusCode)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

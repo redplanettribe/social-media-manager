@@ -2,33 +2,44 @@ package project
 
 import (
 	"context"
-	"errors"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 	"golang.org/x/sync/errgroup"
 )
+
+
 
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
+	AddUserToProject(ctx context.Context, projectID, email string) error
 }
 
 type service struct {
 	repo Repository
+	userRepo user.Repository
 }
 
-func NewService(repo Repository) Service {
+func NewService(repo Repository, uRepo user.Repository) Service {
 	return &service{
 		repo: repo,
+		userRepo: uRepo,
 	}
 }
 
 func (s *service) CreateProject(ctx context.Context, name, description string) (*Project, error) {
 	userID, ok := ctx.Value(middlewares.UserIDKey).(string)
 	if !ok || userID == "" {
-		return nil, errors.New("userID not found in context")
+		return nil, ErrNoUserIDInContext
+	}
+
+	if ok, err := s.repo.DoesProjectNameExist(ctx, name, userID); err != nil {
+		return nil, err
+	} else if ok {
+		return nil, ErrorProjectAlreadyExists
 	}
 
 	project, err := NewProject(name, description, userID)
@@ -52,7 +63,7 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 func (s *service) ListProjects(ctx context.Context) ([]*Project, error) {
 	userID, ok := ctx.Value(middlewares.UserIDKey).(string)
 	if !ok || userID == "" {
-		return nil, errors.New("userID not found in context")
+		return nil, ErrNoUserIDInContext
 	}
 
 	projects, err := s.repo.ListByUserID(ctx, userID)
@@ -94,4 +105,23 @@ func (s *service) GetProject(ctx context.Context, projectID string) (*ProjectRes
 		Project: project,
 		Users:   users,
 	}, nil
+}
+
+func (s *service) AddUserToProject(ctx context.Context, projectID, email string) error {
+	u,err:= s.userRepo.FindByEmail(ctx, email);
+	if err != nil {
+		return err
+	}
+	if u == nil {
+		return ErrorUserNotFound
+	}
+
+	userID := u.ID
+	if ok, err :=s.repo.IsUserInProject(ctx, projectID, userID); err != nil {
+		return err
+	} else if ok {
+		return ErrorUserAlreadyInProject
+	}
+
+	return s.repo.AddUserToProject(ctx, projectID, userID)
 }

@@ -150,11 +150,17 @@ func (r *ProjectRepository) GetProject(ctx context.Context, projectID string) (*
 
 func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID string) ([]*project.TeamMember, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT u.id, u.username, u.email, tm.added_at
-		FROM %s u
-		JOIN %s tm ON u.id = tm.user_id
+		SELECT u.id, u.username, u.email, tm.added_at, tmr.team_role_id
+		FROM %s tm
+		INNER JOIN %s u ON tm.user_id = u.id
+		INNER JOIN %s tmr ON tm.user_id = tmr.user_id
 		WHERE tm.project_id = $1
-	`, Users, TeamMembers), projectID)
+		AND tmr.team_role_id = (
+      	SELECT MAX(team_role_id)
+		FROM team_members_roles tmr_sub
+		WHERE tmr_sub.user_id = tmr.user_id
+  ); 
+	`, TeamMembers, Users, TeamMembersRoles), projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +169,7 @@ func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID strin
 	var users []*project.TeamMember
 	for rows.Next() {
 		tm := &project.TeamMember{}
-		err = rows.Scan(&tm.ID, &tm.Name, &tm.Email, &tm.AddedAt)
+		err = rows.Scan(&tm.ID, &tm.Name, &tm.Email, &tm.AddedAt, &tm.MaxRole)
 		if err != nil {
 			return nil, err
 		}
@@ -171,4 +177,68 @@ func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID strin
 	}
 
 	return users, nil
+}
+
+func (r *ProjectRepository) IsUserInProject(ctx context.Context, projectID, userID string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT EXISTS(
+			SELECT 1
+			FROM %s
+			WHERE project_id = $1 AND user_id = $2
+		)
+	`, TeamMembers), projectID, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
+}
+
+func (r *ProjectRepository) AddUserToProject(ctx context.Context, projectID, userID string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		} else {
+			err = tx.Commit(ctx)
+		}
+	}()
+	// Insert into team_members
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (project_id, user_id, added_at)
+		VALUES ($1, $2, $3)
+	`, TeamMembers), projectID, userID, time.Now())
+	if err != nil {
+		return err
+	}
+	// Insert into team_members_roles
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (project_id, team_role_id, user_id)
+		VALUES ($1, $2, $3)
+	`, TeamMembersRoles), projectID, project.MemberRoleID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) DoesProjectNameExist(ctx context.Context, name, userID string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT EXISTS(
+			SELECT 1
+			FROM %s
+			WHERE name = $1 AND created_by = $2
+		)
+	`, Projects), name, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+
+	return exists, nil
 }
