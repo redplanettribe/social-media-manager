@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
+	"github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
 func AppAuthorizationMiddleware(authorizer authorization.AppAuthorizer, requiredPermission string) func(http.Handler) http.Handler {
@@ -11,13 +12,13 @@ func AppAuthorizationMiddleware(authorizer authorization.AppAuthorizer, required
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			userID := r.Context().Value(UserIDKey)
 			if userID == nil {
-				http.Error(w, "no user id in context", http.StatusInternalServerError)
+				errors.WriteHttpError(w, errors.NewInternalError("no user id in context"))
 				return
 			}
 
 			err := authorizer.Authorize(r.Context(), userID.(string), requiredPermission)
 			if err != nil {
-				http.Error(w, "Forbidden: "+err.Error(), http.StatusForbidden)
+				errors.WriteHttpError(w, errors.NewUnauthorizedError("Not authorized to perform this action"))
 				return
 			}
 			next.ServeHTTP(w, r)

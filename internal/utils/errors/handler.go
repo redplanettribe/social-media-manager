@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-
-	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 )
 
-// WriteError writes a standardized error response
-func WriteError(w http.ResponseWriter, err error) {
+// WriteBusinessError writes a standardized error response
+func WriteBusinessError(w http.ResponseWriter, err error, mapErrorToAPIError func(err error) *APIError) {
 	var apiError *APIError
-	if !errors.As(err, &apiError) {
+	if !errors.As(err, &apiError) && mapErrorToAPIError != nil {
 		apiError = mapErrorToAPIError(err)
 	}
 
@@ -21,50 +18,14 @@ func WriteError(w http.ResponseWriter, err error) {
 	json.NewEncoder(w).Encode(apiError)
 }
 
-// mapErrorToAPIError maps domain errors to APIErrors
-func mapErrorToAPIError(err error) *APIError {
-	switch {
-	case matchError(
-		err,
-		user.ErrExistingUser,
-		project.ErrProjectExists,
-	):
-		return &APIError{
-			Status:  http.StatusConflict,
-			Code:    ErrCodeConflict,
-			Message: err.Error(),
-		}
-	case matchError(
-		err,
-		user.ErrUserNotFound,
-		project.ErrProjectNotFound,
-	):
-		return &APIError{
-			Status:  http.StatusGone,
-			Code:    ErrCodeNotFound,
-			Message: err.Error(),
-		}
-	case matchError(
-		err,
-		user.ErrInvalidPassword,
-	):
-		return &APIError{
-			Status:  http.StatusForbidden,
-			Code:    ErrCodeForbidden,
-			Message: "Invalid password",
-		}
-
-	default:
-		return &APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    ErrCodeInternal,
-			Message: "Internal server error",
-		}
-	}
+func WriteHttpError(w http.ResponseWriter, err *APIError) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(err.Status)
+	json.NewEncoder(w).Encode(err)
 }
 
-// matchError checks if err matches any of the provided errors
-func matchError(err error, errs ...error) bool {
+// MatchError checks if err matches any of the provided errors
+func MatchError(err error, errs ...error) bool {
 	for _, e := range errs {
 		if errors.Is(err, e) {
 			return true

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	"github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
 type ProjectHandler struct {
@@ -38,20 +38,20 @@ type createProjectRequest struct {
 func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	var req createProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		errors.WriteError(w, errors.NewValidationError("Invalid request payload", nil))
+		e.WriteBusinessError(w, e.NewValidationError("Invalid request payload", nil), nil)
 		return
 	}
 
 	if req.Name == "" {
-        errors.WriteError(w, errors.NewValidationError("Name is required", map[string]string{
-            "name": "required",
-        }))
-        return
-    }
+		e.WriteBusinessError(w, e.NewValidationError("Name is required", map[string]string{
+			"name": "required",
+		}), nil)
+		return
+	}
 
 	p, err := h.Service.CreateProject(r.Context(), req.Name, req.Description)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
 		return
 	}
 
@@ -59,7 +59,7 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(p)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -78,14 +78,14 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projects, err := h.Service.ListProjects(ctx)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(projects)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -107,22 +107,22 @@ func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
-		errors.WriteError(w, errors.NewValidationError("Project id is required", map[string]string{
-            "project_id": "required",
-        }))
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
 		return
 	}
 
 	p, err := h.Service.GetProject(ctx, projectID)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(p)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -150,29 +150,67 @@ func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
-		errors.WriteError(w, errors.NewValidationError("Project id is required", map[string]string{
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
 			"project_id": "required",
-		}))
+		}), nil)
 		return
 	}
 
 	var req addUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		errors.WriteError(w, errors.NewValidationError("Invalid request payload", nil))
+		e.WriteBusinessError(w, e.NewValidationError("Invalid request payload", nil), nil)
 		return
 	}
 	if req.Email == "" {
-		errors.WriteError(w, errors.NewValidationError("Email is required", map[string]string{
+		e.WriteBusinessError(w, e.NewValidationError("Email is required", map[string]string{
 			"email": "required",
-		}))
+		}), nil)
 		return
 	}
 
 	err := h.Service.AddUserToProject(ctx, projectID, req.Email)
 	if err != nil {
-		errors.WriteError(w, err)
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
 		return
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func mapProjectErrorToAPIError(err error) *e.APIError {
+	switch {
+	case e.MatchError(
+		err,
+		project.ErrProjectExists,
+	):
+		return &e.APIError{
+			Status:  http.StatusConflict,
+			Code:    e.ErrCodeConflict,
+			Message: err.Error(),
+		}
+	case e.MatchError(
+		err,
+		project.ErrProjectNotFound,
+	):
+		return &e.APIError{
+			Status:  http.StatusGone,
+			Code:    e.ErrCodeNotFound,
+			Message: err.Error(),
+		}
+	case e.MatchError(
+		err,
+		project.ErrUserAlreadyInProject,
+	):
+		return &e.APIError{
+			Status:  http.StatusConflict,
+			Code:    e.ErrCodeConflict,
+			Message: err.Error(),
+		}
+	default:
+		return &e.APIError{
+			Status:  http.StatusInternalServerError,
+			Code:    e.ErrCodeInternal,
+			Message: "Internal server error",
+		}
+	}
 }

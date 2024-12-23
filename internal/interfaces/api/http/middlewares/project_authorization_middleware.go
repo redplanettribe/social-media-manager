@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
+	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
 func ProjectAuthorizationMiddleware(authorizer authorization.ProjectAuthorizer, requiredPermission string) func(http.Handler) http.Handler {
@@ -12,18 +13,18 @@ func ProjectAuthorizationMiddleware(authorizer authorization.ProjectAuthorizer, 
 			ctx := r.Context()
 			userID := ctx.Value(UserIDKey)
 			if userID == nil {
-				http.Error(w, "no user id in context", http.StatusInternalServerError)
+				e.WriteHttpError(w, e.NewInternalError("no user id in context"))
 				return
 			}
 			projectID := r.PathValue("project_id")
 			if projectID == "" {
-				http.Error(w, "project id not found in path value", http.StatusBadRequest)
+				e.WriteHttpError(w, e.NewInternalError("no project id in path"))
 				return
 			}
 
 			err := authorizer.Authorize(r.Context(), userID.(string), projectID, requiredPermission)
 			if err != nil {
-				http.Error(w, "Project authorization failed: "+err.Error(), http.StatusForbidden)
+				e.WriteHttpError(w, e.NewUnauthorizedError("Not authorized to perform this action"))
 				return
 			}
 			next.ServeHTTP(w, r)

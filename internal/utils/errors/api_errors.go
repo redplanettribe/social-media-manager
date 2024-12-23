@@ -69,3 +69,11 @@ func NewConflictError(message string) *APIError {
 	}
 }
 
+func NewInternalError(message string) *APIError {
+	return &APIError{
+		Status:  http.StatusInternalServerError,
+		Code:    ErrCodeInternal,
+		Message: message,
+	}
+}
+

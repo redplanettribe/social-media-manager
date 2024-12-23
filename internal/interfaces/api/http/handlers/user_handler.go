@@ -45,18 +45,18 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req createUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteError(w, e.NewValidationError("Invalid request payload", nil))
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
 	}
 
 	if req.Username == "" || req.Password == "" || req.Email == "" {
-		e.WriteError(w, e.NewValidationError("Missing username, password or email", nil))
+		e.WriteHttpError(w, e.NewValidationError("Missing username, password or email", nil))
 		return
 	}
 
 	u, err := h.Service.CreateUser(ctx, req.Username, req.Password, req.Email)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
 		return
 	}
 
@@ -64,7 +64,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(u)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -83,14 +83,14 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u, err := h.Service.GetUser(ctx)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(u)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -110,19 +110,19 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req loginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteError(w, e.NewValidationError("Invalid request payload", nil))
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
 	}
 
 	if req.Email == "" || req.Password == "" {
-		e.WriteError(w, e.NewValidationError("Missing email or password", nil))
+		e.WriteHttpError(w, e.NewValidationError("Missing email or password", nil))
 		return
 	}
 
 	response, err := h.Service.Login(ctx, req.Email, req.Password)
 	session := response.Session
 	if err != nil || session == nil {
-		e.WriteError(w, e.NewUnauthorizedError("Invalid email or password"))
+		e.WriteHttpError(w, e.NewUnauthorizedError("Invalid email or password"))
 		return
 	}
 
@@ -139,7 +139,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -155,13 +155,13 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	sessionID, err := r.Cookie(sessionCookieName)
 	if err != nil {
-		e.WriteError(w, e.NewValidationError("Missing session cookie", nil))
+		e.WriteHttpError(w, e.NewValidationError("Missing session cookie", nil))
 		return
 	}
 
 	err = h.Service.Logout(ctx, sessionID.Value)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
 		return
 	}
 
@@ -190,14 +190,14 @@ func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	roles, err := h.Service.GetAllAppRoles(ctx)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(roles)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
 
@@ -222,18 +222,18 @@ func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	var req assignRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteError(w, e.NewValidationError("Invalid request payload", nil))
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
 	}
 
 	if req.UserID == "" || req.RoleID == "" {
-		e.WriteError(w, e.NewValidationError("Missing user ID or role ID", nil))
+		e.WriteHttpError(w, e.NewValidationError("Missing user ID or role ID", nil))
 		return
 	}
 
 	err := h.Service.AssignAppRoleToUser(ctx, req.UserID, req.RoleID)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
 		return
 	}
 
@@ -256,20 +256,59 @@ func (h *UserHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request)
 	ctx := r.Context()
 	var req assignRoleRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteError(w, e.NewValidationError("Invalid request payload", nil))
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
 	}
 	userID, roleID := req.UserID, req.RoleID
 	if userID == "" || roleID == "" {
-		e.WriteError(w, e.NewValidationError("Missing user ID or role ID", nil))
+		e.WriteHttpError(w, e.NewValidationError("Missing user ID or role ID", nil))
 		return
 	}
 
 	err := h.Service.RemoveAppRoleFromUser(ctx, userID, roleID)
 	if err != nil {
-		e.WriteError(w, err)
+		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+
+func mapUserErrorToAPIError(err error) *e.APIError {
+	switch {
+	case e.MatchError(
+		err,
+		user.ErrExistingUser,
+	):
+		return &e.APIError{
+			Status:  http.StatusConflict,
+			Code:    e.ErrCodeConflict,
+			Message: err.Error(),
+		}
+	case e.MatchError(
+		err,
+		user.ErrUserNotFound,
+	):
+		return &e.APIError{
+			Status:  http.StatusGone,
+			Code:    e.ErrCodeNotFound,
+			Message: err.Error(),
+		}
+	case e.MatchError(
+		err,
+		user.ErrInvalidPassword,
+	):
+		return &e.APIError{
+			Status:  http.StatusForbidden,
+			Code:    e.ErrCodeForbidden,
+			Message: "Invalid password",
+		}
+	default:
+		return &e.APIError{
+			Status:  http.StatusInternalServerError,
+			Code:    e.ErrCodeInternal,
+			Message: "Internal server error",
+		}
+	}
 }
