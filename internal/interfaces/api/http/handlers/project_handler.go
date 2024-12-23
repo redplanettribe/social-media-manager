@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
+	"github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
 type ProjectHandler struct {
@@ -28,23 +29,29 @@ type createProjectRequest struct {
 // @Produce json
 // @Param project body createProjectRequest true "Project creation request"
 // @Success 201 {object} project.Project
-// @Failure 400 {string} string "Invalid request payload"
-// @Failure 401 {string} string "Unauthorized"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 409 {object} errors.APIError "Project already exists"
+// @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /projects [post]
 func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
 	var req createProjectRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		errors.WriteError(w, errors.NewValidationError("Invalid request payload", nil))
 		return
 	}
 
-	p, err := h.Service.CreateProject(ctx, req.Name, req.Description)
+	if req.Name == "" {
+        errors.WriteError(w, errors.NewValidationError("Name is required", map[string]string{
+            "name": "required",
+        }))
+        return
+    }
+
+	p, err := h.Service.CreateProject(r.Context(), req.Name, req.Description)
 	if err != nil {
-		statusCode, message := MapErrorToHTTP(err)
-		http.Error(w, message, statusCode)
+		errors.WriteError(w, err)
 		return
 	}
 
@@ -52,7 +59,7 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(p)
 	if err != nil {
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		errors.WriteError(w, err)
 	}
 }
 
@@ -63,25 +70,25 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Success 200 {array} project.Project
-// @Failure 401 {string} string "Unauthorized"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /projects [get]
 func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projects, err := h.Service.ListProjects(ctx)
 	if err != nil {
-		statusCode, message := MapErrorToHTTP(err)
-		http.Error(w, message, statusCode)
+		errors.WriteError(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(projects)
 	if err != nil {
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		errors.WriteError(w, err)
 	}
 }
+
 // GetProject godoc
 // @Summary Get a project
 // @Description Get a project by its ID
@@ -90,31 +97,32 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param project_id path string true "Project ID"
 // @Success 200 {object} project.Project
-// @Failure 400 {string} string "Invalid request payload"
-// @Failure 401 {string} string "Unauthorized"
-// @Failure 404 {string} string "Project not found"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /projects/{project_id} [get]
 func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
-		http.Error(w, "project id not found in query params", http.StatusBadRequest)
+		errors.WriteError(w, errors.NewValidationError("Project id is required", map[string]string{
+            "project_id": "required",
+        }))
 		return
 	}
 
 	p, err := h.Service.GetProject(ctx, projectID)
 	if err != nil {
-		statusCode, message := MapErrorToHTTP(err)
-		http.Error(w, message, statusCode)
+		errors.WriteError(w, err)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(p)
 	if err != nil {
-		http.Error(w, "Error encoding response", http.StatusInternalServerError)
+		errors.WriteError(w, err)
 	}
 }
 
@@ -131,30 +139,38 @@ type addUserRequest struct {
 // @Param project_id path string true "Project ID"
 // @Param user_id path string true "User ID"
 // @Success 204 {string} string "No content"
-// @Failure 400 {string} string "Invalid request payload"
-// @Failure 401 {string} string "Unauthorized"
-// @Failure 404 {string} string "Project not found"
-// @Failure 500 {string} string "Internal server error"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 409 {object} errors.APIError "User already exists"
+// @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/add [post]
 func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
-		http.Error(w, "project id not found in query params", http.StatusBadRequest)
+		errors.WriteError(w, errors.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
 		return
 	}
 
 	var req addUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		errors.WriteError(w, errors.NewValidationError("Invalid request payload", nil))
+		return
+	}
+	if req.Email == "" {
+		errors.WriteError(w, errors.NewValidationError("Email is required", map[string]string{
+			"email": "required",
+		}))
 		return
 	}
 
 	err := h.Service.AddUserToProject(ctx, projectID, req.Email)
 	if err != nil {
-		statusCode, message := MapErrorToHTTP(err)
-		http.Error(w, message, statusCode)
+		errors.WriteError(w, err)
 		return
 	}
 

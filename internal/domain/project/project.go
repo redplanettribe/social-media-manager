@@ -8,11 +8,11 @@ import (
 )
 
 var (
-	ErrProjectNotFound = errors.New("project not found")
-	ErrNoUserIDInContext = errors.New("no user id in context")
-	ErrorUserAlreadyInProject = errors.New("user is already in project")
-	ErrorUserNotFound = errors.New("user not found")
-	ErrorProjectAlreadyExists = errors.New("project already exists")
+	ErrProjectNotFound      = errors.New("project not found")
+	ErrNoUserIDInContext    = errors.New("no user id in context")
+	ErrUserAlreadyInProject = errors.New("user is already in project")
+	ErrUserNotFound         = errors.New("user not found")
+	ErrProjectExists = errors.New("project already exists")
 )
 
 type TeamRoleOptions string
@@ -51,11 +51,11 @@ type TeamRole struct {
 }
 
 type TeamMember struct {
-	ID      string `json:"id"`
-	Name	string `json:"name"`
-	Email   string `json:"email"`
+	ID      string    `json:"id"`
+	Name    string    `json:"name"`
+	Email   string    `json:"email"`
 	AddedAt time.Time `json:"added_at"`
-	MaxRole  int `json:"max_role"`
+	MaxRole int       `json:"max_role"`
 }
 
 func NewProject(name, description, createdBy string) (*Project, error) {

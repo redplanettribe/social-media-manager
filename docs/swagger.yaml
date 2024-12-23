@@ -1,5 +1,22 @@
 basePath: /
 definitions:
+  errors.APIError:
+    properties:
+      code:
+        type: string
+      details: {}
+      message:
+        type: string
+      status:
+        type: integer
+    type: object
+  handlers.assignRoleRequest:
+    properties:
+      role_id:
+        type: string
+      user_id:
+        type: string
+    type: object
   handlers.createProjectRequest:
     properties:
       description:
@@ -14,6 +31,13 @@ definitions:
       password:
         type: string
       username:
+        type: string
+    type: object
+  handlers.loginRequest:
+    properties:
+      email:
+        type: string
+      password:
         type: string
     type: object
   project.Project:
@@ -31,12 +55,34 @@ definitions:
       updated_at:
         type: string
     type: object
+  session.Session:
+    properties:
+      createdAt:
+        type: string
+      deviceFingerprint:
+        type: string
+      expiresAt:
+        type: string
+      id:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: string
+    type: object
   user.AppRole:
     properties:
       id:
         type: string
       name:
         type: string
+    type: object
+  user.LoginResponse:
+    properties:
+      session:
+        $ref: '#/definitions/session.Session'
+      user:
+        $ref: '#/definitions/user.UserResponse'
     type: object
   user.UserResponse:
     properties:
@@ -86,11 +132,11 @@ paths:
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
       security:
       - ApiKeyAuth: []
       summary: List all projects
@@ -115,17 +161,21 @@ paths:
           schema:
             $ref: '#/definitions/project.Project'
         "400":
-          description: Invalid request payload
+          description: Validation error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
         "401":
           description: Unauthorized
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
+        "409":
+          description: Project already exists
+          schema:
+            $ref: '#/definitions/errors.APIError'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
       security:
       - ApiKeyAuth: []
       summary: Create a new project
@@ -150,24 +200,72 @@ paths:
           schema:
             $ref: '#/definitions/project.Project'
         "400":
-          description: Invalid request payload
+          description: Validation error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
         "401":
           description: Unauthorized
           schema:
-            type: string
-        "404":
+            $ref: '#/definitions/errors.APIError'
+        "410":
           description: Project not found
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
       security:
       - ApiKeyAuth: []
       summary: Get a project
+      tags:
+      - projects
+  /projects/{project_id}/add:
+    post:
+      consumes:
+      - application/json
+      description: Add a user to a project by their email
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a user to a project
       tags:
       - projects
   /users:
@@ -190,18 +288,173 @@ paths:
           schema:
             $ref: '#/definitions/user.UserResponse'
         "400":
-          description: Invalid request payload
+          description: Validation error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
         "409":
           description: User already exists
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
         "500":
           description: Internal server error
           schema:
-            type: string
+            $ref: '#/definitions/errors.APIError'
       summary: Register a new user
+      tags:
+      - users
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      description: Login with email and password
+      parameters:
+      - description: Login request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.LoginResponse'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Login
+      tags:
+      - users
+  /users/logout:
+    post:
+      description: Logout the currently authenticated user
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Logout
+      tags:
+      - users
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      description: Get information about the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user information
+      tags:
+      - users
+  /users/roles:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an application role from a user
+      parameters:
+      - description: Remove role request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.assignRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove role from user
+      tags:
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get all application roles
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/user.AppRole'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all roles
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Assign an application role to a user
+      parameters:
+      - description: Assign role request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.assignRoleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign role to user
       tags:
       - users
 schemes:

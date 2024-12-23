@@ -39,7 +39,7 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 	if ok, err := s.repo.DoesProjectNameExist(ctx, name, userID); err != nil {
 		return nil, err
 	} else if ok {
-		return nil, ErrorProjectAlreadyExists
+		return nil, ErrProjectExists
 	}
 
 	project, err := NewProject(name, description, userID)
@@ -113,14 +113,14 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 		return err
 	}
 	if u == nil {
-		return ErrorUserNotFound
+		return ErrUserNotFound
 	}
 
 	userID := u.ID
 	if ok, err :=s.repo.IsUserInProject(ctx, projectID, userID); err != nil {
 		return err
 	} else if ok {
-		return ErrorUserAlreadyInProject
+		return ErrUserAlreadyInProject
 	}
 
 	return s.repo.AddUserToProject(ctx, projectID, userID)
