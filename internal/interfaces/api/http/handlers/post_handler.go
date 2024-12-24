@@ -5,61 +5,97 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
-
-	"github.com/pedrodcsjostrom/opencm/internal/application/commands"
-	"github.com/pedrodcsjostrom/opencm/internal/application/interfaces"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
+	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
 type PostHandler struct {
-	commandBus interfaces.CommandBus
+	Service post.Service
 }
 
-func NewPostHandler(commandBus interfaces.CommandBus) *PostHandler {
-	return &PostHandler{commandBus: commandBus}
+func NewPostHandler(service post.Service) *PostHandler {
+	return &PostHandler{Service: service}
 }
 
 type createPostRequest struct {
-	TeamID      string  `json:"team_id"`
-	Title       string  `json:"title"`
-	Content     string  `json:"content"`
-	ScheduledAt *string `json:"scheduled_at,omitempty"`
+	Title       string    `json:"title"`
+	TextContent string    `json:"text_content"`
+	ImageLinks  []string  `json:"image_links"`
+	VideoLinks  []string  `json:"video_links"`
+	IsIdea      bool      `json:"is_idea"`
+	ScheduledAt time.Time `json:"scheduled_at"`
 }
 
+// CreatePost godoc
+// @Summary Create a new post
+// @Description Create a new post with the given title, text content, image links, video links, is idea and scheduled at
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post body createPostRequest true "Post creation request"
+// @Success 201 {object} post.Post
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 409 {object} errors.APIError "Post already exists"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/add [post]
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	var req createPostRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
 	}
 
-	teamID, err := uuid.Parse(req.TeamID)
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	if req.Title == "" {
+		e.WriteHttpError(w, e.NewValidationError("Title is required", map[string]string{
+			"title": "required",
+		}))
+		return
+	}
+
+
+	post, err := h.Service.CreatePost(
+		r.Context(),
+		projectID,
+		req.Title,
+		req.TextContent,
+		req.ImageLinks,
+		req.VideoLinks,
+		req.IsIdea,
+		req.ScheduledAt,
+	)
 	if err != nil {
-		http.Error(w, "Invalid team ID", http.StatusBadRequest)
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
 		return
 	}
 
-	var scheduledAt *time.Time
-	if req.ScheduledAt != nil {
-		t, err := time.Parse(time.RFC3339, *req.ScheduledAt)
-		if err != nil {
-			http.Error(w, "Invalid scheduled_at format", http.StatusBadRequest)
-			return
-		}
-		scheduledAt = &t
-	}
-
-	cmd := &commands.CreatePostCommand{
-		TeamID:      teamID,
-		Title:       req.Title,
-		Content:     req.Content,
-		ScheduledAt: scheduledAt,
-	}
-
-	if err := h.commandBus.Dispatch(r.Context(), cmd); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	err= json.NewEncoder(w).Encode(post)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
+
+func mapPostErrorToAPIError(err error) *e.APIError {
+	switch {
+	
+	default:
+		return &e.APIError{
+			Status:  http.StatusInternalServerError,
+			Code:    e.ErrCodeInternal,
+			Message: err.Error(),
+		}
+	}
 }

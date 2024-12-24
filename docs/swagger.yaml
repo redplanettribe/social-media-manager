@@ -50,8 +50,16 @@ definitions:
         type: string
       id:
         type: string
+      idea_queue:
+        items:
+          type: string
+        type: array
       name:
         type: string
+      post_queue:
+        items:
+          type: string
+        type: array
       updated_at:
         type: string
     type: object

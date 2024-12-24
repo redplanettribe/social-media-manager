@@ -7,7 +7,7 @@ type Repository interface {
 	AssignProjectOwner(ctx context.Context, projectID, userID string) error
 	ListByUserID(ctx context.Context, userID string) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
-	GetProject(ctx context.Context, projectID string) (*Project, error)
+	FindProjectByID(ctx context.Context, projectID string) (*Project, error)
 	GetProjectUsers(ctx context.Context, projectID string) ([]*TeamMember, error)
 	AddUserToProject(ctx context.Context, projectID, userID string) error
 	IsUserInProject(ctx context.Context, projectID, userID string) (bool, error)

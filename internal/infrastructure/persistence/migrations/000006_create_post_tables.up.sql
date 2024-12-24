@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS posts (
 	video_links TEXT[],
     is_idea BOOLEAN NOT NULL,
     status VARCHAR(20) NOT NULL,
-    scheduled_publish_date TIMESTAMP,
+    scheduled_at TIMESTAMP,
     created_by uuid NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

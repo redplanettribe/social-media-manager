@@ -30,6 +30,7 @@ func NewRouter(
 	healthCheckHandler *handlers.HealthHandler,
 	userHandler *handlers.UserHandler,
 	projectHandler *handlers.ProjectHandler,
+	postHandler *handlers.PostHandler,
 	authenticator authentication.Authenticator,
 	appAuthorizer authorization.AppAuthorizer,
 	projectAuthorizer authorization.ProjectAuthorizer,
@@ -57,6 +58,7 @@ func NewRouter(
 	r.setupHealthRoutes(healthCheckHandler)
 	r.setupUserRoutes(userHandler)
 	r.setupProjectRoutes(projectHandler)
+	r.setupPostRoutes(postHandler)
 
 	return r
 }
@@ -127,6 +129,13 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	))
 	r.Handle("GET /projects/{project_id}", r.projectPermissions("read:projects").Chain(
 		http.HandlerFunc(h.GetProject),
+	))
+}
+
+/*POST ROUTES*/
+func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
+	r.Handle("POST /posts/{project_id}/add", r.projectPermissions("write:posts").Chain(
+		http.HandlerFunc(h.CreatePost),
 	))
 }
 

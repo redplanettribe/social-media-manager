@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	_ "github.com/pedrodcsjostrom/opencm/docs"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
@@ -77,14 +78,26 @@ func main() {
 	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
-	projctRepo := postgres.NewProjectRepository(dbPool)
-	projectService := project.NewService(projctRepo, userRepo)
+	projectRepo := postgres.NewProjectRepository(dbPool)
+	projectService := project.NewService(projectRepo, userRepo)
 	projectHandler := handlers.NewProjectHandler(projectService)
+
+	postRepo := postgres.NewPostRepository(dbPool)
+	postService := post.NewService(postRepo)
+	postHandler := handlers.NewPostHandler(postService)
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
-	httpRouter := api.NewRouter(healthHandler, userHandler, projectHandler, authenticator, appAuthorizer, projectAuthorizer)
+	httpRouter := api.NewRouter(
+		healthHandler,
+		userHandler,
+		projectHandler,
+		postHandler,
+		authenticator,
+		appAuthorizer,
+		projectAuthorizer,
+	)
 
-	server:= server.NewHttpServer(cfg, httpRouter)
+	server := server.NewHttpServer(cfg, httpRouter)
 	server.Serve()
 }

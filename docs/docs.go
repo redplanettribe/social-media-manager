@@ -640,8 +640,20 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "idea_queue": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "name": {
                     "type": "string"
+                },
+                "post_queue": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "updated_at": {
                     "type": "string"

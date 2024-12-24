@@ -87,7 +87,7 @@ func (s *service) GetProject(ctx context.Context, projectID string) (*ProjectRes
 
 	g.Go(func() error {
 		var err error
-		project, err = s.repo.GetProject(ctx, projectID)
+		project, err = s.repo.FindProjectByID(ctx, projectID)
 		return err
 	})
 

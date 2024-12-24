@@ -13,15 +13,6 @@ type ProjectRepository struct {
 	db *pgxpool.Pool
 }
 
-type TableNames string
-
-const (
-	Projects         TableNames = "projects"
-	Users            TableNames = "users"
-	TeamMembers      TableNames = "team_members"
-	TeamMembersRoles TableNames = "team_members_roles"
-	TeamRoles        TableNames = "team_roles"
-)
 
 func NewProjectRepository(db *pgxpool.Pool) *ProjectRepository {
 	return &ProjectRepository{db: db}
@@ -132,7 +123,7 @@ func (r *ProjectRepository) GetUserRoles(ctx context.Context, userID, projectID 
 	return roles, nil
 }
 
-func (r *ProjectRepository) GetProject(ctx context.Context, projectID string) (*project.Project, error) {
+func (r *ProjectRepository) FindProjectByID(ctx context.Context, projectID string) (*project.Project, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT id, name, description, post_queue, idea_queue, created_by, created_at, updated_at
 		FROM %s
