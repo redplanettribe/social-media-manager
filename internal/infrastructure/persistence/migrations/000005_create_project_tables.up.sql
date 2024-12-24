@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS "projects" (
   "id" uuid PRIMARY KEY,
   "name" varchar(100) NOT NULL,
   "description" text NOT NULL,
+  "post_queue" uuid[] NOT NULL,
+  "idea_queue" uuid[] NOT NULL,
   "created_by" uuid NOT NULL,
   "created_at" timestamp DEFAULT (NOW()),
   "updated_at" timestamp DEFAULT (NOW())

@@ -29,9 +29,9 @@ func NewProjectRepository(db *pgxpool.Pool) *ProjectRepository {
 
 func (r *ProjectRepository) Save(ctx context.Context, p *project.Project) (*project.Project, error) {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (id, name, description, created_by, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`, Projects), p.ID, p.Name, p.Description, p.CreatedBy, time.Now(), time.Now())
+		INSERT INTO %s (id, name, description, post_queue, idea_queue, created_by, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+	`, Projects), p.ID, p.Name, p.Description, p.PostQueue, p.IdeaQueue, p.CreatedBy, time.Now(), time.Now())
 	if err != nil {
 		return &project.Project{}, err
 	}
@@ -41,7 +41,7 @@ func (r *ProjectRepository) Save(ctx context.Context, p *project.Project) (*proj
 
 func (r *ProjectRepository) ListByUserID(ctx context.Context, userID string) ([]*project.Project, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT p.id, p.name, p.description, p.created_by, p.created_at, p.updated_at
+		SELECT p.id, p.name, p.description, p.post_queue, p.idea_queue, p.created_by, p.created_at, p.updated_at
 		FROM %s p
 		INNER JOIN %s tm ON p.id = tm.project_id
 		WHERE tm.user_id = $1
@@ -54,7 +54,7 @@ func (r *ProjectRepository) ListByUserID(ctx context.Context, userID string) ([]
 	var projects []*project.Project
 	for rows.Next() {
 		p := &project.Project{}
-		err = rows.Scan(&p.ID, &p.Name, &p.Description, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+		err = rows.Scan(&p.ID, &p.Name, &p.Description, &p.PostQueue, &p.IdeaQueue, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -134,13 +134,13 @@ func (r *ProjectRepository) GetUserRoles(ctx context.Context, userID, projectID 
 
 func (r *ProjectRepository) GetProject(ctx context.Context, projectID string) (*project.Project, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
-		SELECT id, name, description, created_by, created_at, updated_at
+		SELECT id, name, description, post_queue, idea_queue, created_by, created_at, updated_at
 		FROM %s
 		WHERE id = $1
 	`, Projects), projectID)
 
 	p := &project.Project{}
-	err := row.Scan(&p.ID, &p.Name, &p.Description, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.ID, &p.Name, &p.Description, &p.PostQueue, &p.IdeaQueue, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}

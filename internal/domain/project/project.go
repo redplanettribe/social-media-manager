@@ -35,6 +35,8 @@ type Project struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	IdeaQueue   []string  `json:"idea_queue"`
+	PostQueue   []string  `json:"post_queue"`
 	CreatedBy   string    `json:"created_by"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
@@ -73,6 +75,8 @@ func NewProject(name, description, createdBy string) (*Project, error) {
 		ID:          uuid.New().String(),
 		Name:        name,
 		Description: description,
+		PostQueue:  []string{},
+		IdeaQueue:  []string{},
 		CreatedBy:   createdBy,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
