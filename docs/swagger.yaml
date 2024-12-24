@@ -17,6 +17,25 @@ definitions:
       user_id:
         type: string
     type: object
+  handlers.createPostRequest:
+    properties:
+      image_links:
+        items:
+          type: string
+        type: array
+      is_idea:
+        type: boolean
+      scheduled_at:
+        type: string
+      text_content:
+        type: string
+      title:
+        type: string
+      video_links:
+        items:
+          type: string
+        type: array
+    type: object
   handlers.createProjectRequest:
     properties:
       description:
@@ -39,6 +58,37 @@ definitions:
         type: string
       password:
         type: string
+    type: object
+  post.Post:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      image_links:
+        items:
+          type: string
+        type: array
+      is_idea:
+        type: boolean
+      project_id:
+        type: string
+      scheduled_at:
+        type: string
+      status:
+        type: string
+      text_content:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+      video_links:
+        items:
+          type: string
+        type: array
     type: object
   project.Project:
     properties:
@@ -123,6 +173,132 @@ info:
   title: OpenCM API
   version: "1.0"
 paths:
+  /posts/{project_id}:
+    get:
+      consumes:
+      - application/json
+      description: List all posts of a project by its id
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/post.Post'
+            type: array
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: List all posts of a project
+      tags:
+      - posts
+  /posts/{project_id}/{post_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a post by its id
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/post.Post'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a post by id
+      tags:
+      - posts
+  /posts/{project_id}/add:
+    post:
+      consumes:
+      - application/json
+      description: Create a new post with the given title, text content, image links,
+        video links, is idea and scheduled at
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post creation request
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.createPostRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/post.Post'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "409":
+          description: Post already exists
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new post
+      tags:
+      - posts
   /projects:
     get:
       consumes:
