@@ -14,6 +14,8 @@ type Service interface {
 		imageURLs, videoURLs []string,
 		isIdea bool,
 		scheduledAt time.Time) (*Post, error)
+	GetPost(ctx context.Context, id string) (*Post, error)
+	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
 }
 
 type service struct {
@@ -46,9 +48,24 @@ func (s *service) CreatePost(
 		return &Post{}, err
 	}
 
-	err= s.repo.Save(ctx, p)
+	err = s.repo.Save(ctx, p)
 	if err != nil {
 		return &Post{}, err
 	}
 	return p, nil
+}
+
+func (s *service) GetPost(ctx context.Context, id string) (*Post, error) {
+	p, err:= s.repo.FindByID(ctx, id)
+	if err != nil {
+		return &Post{}, err
+	}
+	if p == nil {
+		return &Post{}, ErrPostNotFound
+	}
+	return p, nil
+}
+
+func (s *service) ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error) {
+	return s.repo.FindByProjectID(ctx, projectID)
 }

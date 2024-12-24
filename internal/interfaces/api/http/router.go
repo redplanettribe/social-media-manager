@@ -137,6 +137,12 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("POST /posts/{project_id}/add", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.CreatePost),
 	))
+	r.Handle("GET /posts/{project_id}/{post_id}", r.projectPermissions("read:posts").Chain(
+		http.HandlerFunc(h.GetPost),
+	))
+	r.Handle("GET /posts/{project_id}", r.projectPermissions("read:posts").Chain(
+		http.HandlerFunc(h.ListProjectPosts),
+	))
 }
 
 // appPermissions returns a middleware stack that checks if the user has the required permission for the desired action

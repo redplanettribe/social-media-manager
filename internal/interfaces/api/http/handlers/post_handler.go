@@ -87,6 +87,78 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// GetPost godoc
+// @Summary Get a post by id
+// @Description Get a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Success 200 {object} post.Post
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router  /posts/{project_id}/{post_id} [get]
+func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	post, err := h.Service.GetPost(r.Context(), postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(post)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
+// ListProjectPosts godoc
+// @Summary List all posts of a project
+// @Description List all posts of a project by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 200 {array} post.Post
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id} [get]
+func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	posts, err := h.Service.ListProjectPosts(r.Context(), projectID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(posts)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
 
 func mapPostErrorToAPIError(err error) *e.APIError {
 	switch {
