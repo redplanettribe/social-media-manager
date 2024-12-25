@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 CREATE TABLE IF NOT EXISTS social_networks (
-    id uuid PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     api_key VARCHAR(20),
     logo_link VARCHAR(50)
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS social_networks (
 
 CREATE TABLE IF NOT EXISTS post_social_networks (
     post_id uuid NOT NULL,
-    social_network_id uuid NOT NULL,
+    social_network_id INTEGER NOT NULL,
     status VARCHAR(20) NOT NULL,
     PRIMARY KEY (post_id, social_network_id),
     FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,

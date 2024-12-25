@@ -15,6 +15,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/server"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
@@ -85,6 +86,10 @@ func main() {
 	postRepo := postgres.NewPostRepository(dbPool)
 	postService := post.NewService(postRepo)
 	postHandler := handlers.NewPostHandler(postService)
+
+	// Start the post scheduler
+	scheduler := scheduler.NewPostScheduler(postService, projectService, &cfg.Scheduler)
+	scheduler.Start(ctx)
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)

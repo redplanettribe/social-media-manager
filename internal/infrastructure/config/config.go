@@ -4,16 +4,22 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	App    AppConfig
-	DB     DBConfig
-	JWT    JWTConfig
-	Logger LoggerConfig
-	SSL    SSLConfig
+	App       AppConfig
+	DB        DBConfig
+	JWT       JWTConfig
+	Logger    LoggerConfig
+	SSL       SSLConfig
+	Scheduler SchedulerConfig
+}
+
+type SchedulerConfig struct {
+	Interval time.Duration
 }
 
 type AppConfig struct {
@@ -83,6 +89,9 @@ func LoadConfig() (*Config, error) {
 		SSL: SSLConfig{
 			CertPath: getEnv("SSL_CERT_PATH", ""),
 			KeyPath:  getEnv("SSL_KEY_PATH", ""),
+		},
+		Scheduler: SchedulerConfig{
+			Interval: 1 * time.Minute,
 		},
 	}
 
