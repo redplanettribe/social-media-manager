@@ -73,3 +73,26 @@ func (r *PostRepository) FindByProjectID(ctx context.Context, projectID string) 
 
 	return posts, nil
 }
+
+func (r *PostRepository) ArchivePost(ctx context.Context, id string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET status = $2, updated_at = $3
+		WHERE id = $1
+	`, Posts), id, post.PostStatusArchived, time.Now())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *PostRepository) DeletePost(ctx context.Context, id string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE id = $1
+	`, Posts), id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

@@ -16,6 +16,8 @@ type Service interface {
 		scheduledAt time.Time) (*Post, error)
 	GetPost(ctx context.Context, id string) (*Post, error)
 	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
+	ArchivePost(ctx context.Context, id string) error
+	DeletePost(ctx context.Context, id string) error
 }
 
 type service struct {
@@ -56,7 +58,7 @@ func (s *service) CreatePost(
 }
 
 func (s *service) GetPost(ctx context.Context, id string) (*Post, error) {
-	p, err:= s.repo.FindByID(ctx, id)
+	p, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return &Post{}, err
 	}
@@ -68,4 +70,26 @@ func (s *service) GetPost(ctx context.Context, id string) (*Post, error) {
 
 func (s *service) ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error) {
 	return s.repo.FindByProjectID(ctx, projectID)
+}
+
+func (s *service) ArchivePost(ctx context.Context, id string) error {
+	p, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+	return s.repo.ArchivePost(ctx, id)
+}
+
+func (s *service) DeletePost(ctx context.Context, id string) error {
+	p, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+	return s.repo.DeletePost(ctx, id)
 }

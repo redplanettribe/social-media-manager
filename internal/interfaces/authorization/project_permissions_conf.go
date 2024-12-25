@@ -6,8 +6,8 @@ func GetTeamPermissions() *Permissions {
 		/* */ Read("projects").
 		/* */ Read("posts").
 		/* */ Write("posts").
-		/* */ Delete("posts").
 		AddRole("manager").Inherit("member").
 		/* */ Write("projects").
+		/* */ Delete("posts").
 		AddRole("owner").Inherit("manager")
 }

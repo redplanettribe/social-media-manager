@@ -159,6 +159,72 @@ func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ArchivePost godoc
+// @Summary Archive a post
+// @Description Archive a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/archive [post]
+func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.ArchivePost(r.Context(), postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeletePost godoc
+// @Summary Delete a post
+// @Description Delete a post by its id. We might or might not want to implement pagination and filtering. For the time being, we will keep it simple.
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id} [delete]
+func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.DeletePost(r.Context(), postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}
+
 
 func mapPostErrorToAPIError(err error) *e.APIError {
 	switch {
