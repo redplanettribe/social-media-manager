@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	_ "github.com/pedrodcsjostrom/opencm/docs"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
@@ -65,7 +66,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	defer dbPool.Close()
 
 	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbPool)))
@@ -87,9 +87,9 @@ func main() {
 	postService := post.NewService(postRepo)
 	postHandler := handlers.NewPostHandler(postService)
 
-	// Start the post scheduler
-	scheduler := scheduler.NewPostScheduler(postService, projectService, &cfg.Scheduler)
-	scheduler.Start(ctx)
+	platformRepo := postgres.NewPlatformRepository(dbPool)
+	platformService := platform.NewService(platformRepo)
+	platformHandler := handlers.NewPlatformHandler(platformService)
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
@@ -98,11 +98,17 @@ func main() {
 		userHandler,
 		projectHandler,
 		postHandler,
+		platformHandler,
 		authenticator,
 		appAuthorizer,
 		projectAuthorizer,
 	)
 
+	// Start the post scheduler
+	scheduler := scheduler.NewPostScheduler(postService, projectService, &cfg.Scheduler)
+	scheduler.Start(ctx)
+
+	// Start the Server
 	server := server.NewHttpServer(cfg, httpRouter)
 	server.Serve()
 }

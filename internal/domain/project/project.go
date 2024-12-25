@@ -8,14 +8,20 @@ import (
 )
 
 var (
-	ErrProjectNotFound      = errors.New("project not found")
-	ErrNoUserIDInContext    = errors.New("no user id in context")
-	ErrUserAlreadyInProject = errors.New("user is already in project")
-	ErrUserNotFound         = errors.New("user not found")
-	ErrProjectExists = errors.New("project already exists")
+	ErrProjectNotFound        = errors.New("project not found")
+	ErrNoUserIDInContext      = errors.New("no user id in context")
+	ErrUserAlreadyInProject   = errors.New("user is already in project")
+	ErrUserNotFound           = errors.New("user not found")
+	ErrProjectExists          = errors.New("project already exists")
+	ErrSocialPlatformNotFound = errors.New("social network not found")
 )
 
 type TeamRoleOptions string
+
+type SocialPlatform struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
 
 const (
 	ManagerRole TeamRoleOptions = "manager"
@@ -75,8 +81,8 @@ func NewProject(name, description, createdBy string) (*Project, error) {
 		ID:          uuid.New().String(),
 		Name:        name,
 		Description: description,
-		PostQueue:  []string{},
-		IdeaQueue:  []string{},
+		PostQueue:   []string{},
+		IdeaQueue:   []string{},
 		CreatedBy:   createdBy,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),

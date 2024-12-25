@@ -31,6 +31,7 @@ func NewRouter(
 	userHandler *handlers.UserHandler,
 	projectHandler *handlers.ProjectHandler,
 	postHandler *handlers.PostHandler,
+	platformHandler *handlers.PlatformHandler,
 	authenticator authentication.Authenticator,
 	appAuthorizer authorization.AppAuthorizer,
 	projectAuthorizer authorization.ProjectAuthorizer,
@@ -59,6 +60,7 @@ func NewRouter(
 	r.setupUserRoutes(userHandler)
 	r.setupProjectRoutes(projectHandler)
 	r.setupPostRoutes(postHandler)
+	r.setupPlatformRoutes(platformHandler)
 
 	return r
 }
@@ -79,7 +81,7 @@ func (r *Router) setupSwagger() {
 	))
 }
 
-/*HEALTH ROUTES*/ 
+/*HEALTH ROUTES*/
 func (r *Router) setupHealthRoutes(h *handlers.HealthHandler) {
 	r.Handle("GET /health", r.baseStack.Chain(
 		http.HandlerFunc(h.HealthCheck),
@@ -89,14 +91,14 @@ func (r *Router) setupHealthRoutes(h *handlers.HealthHandler) {
 	))
 }
 
-/*USER ROUTES*/ 
+/*USER ROUTES*/
 func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
 	r.Handle("POST /users", r.baseStack.Chain(
 		http.HandlerFunc(h.SignUp),
 	))
 	r.Handle("POST /users/login", r.baseStack.Chain(
-        http.HandlerFunc(h.Login),
-    ))
+		http.HandlerFunc(h.Login),
+	))
 	r.Handle("POST /users/logout", r.baseStack.Chain(
 		http.HandlerFunc(h.Logout),
 	))
@@ -116,7 +118,7 @@ func (r *Router) setupUserRoutes(h *handlers.UserHandler) {
 	))
 }
 
-/*PROJECT ROUTES*/ 
+/*PROJECT ROUTES*/
 func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("POST /projects", r.appPermissions("write:projects").Chain(
 		http.HandlerFunc(h.CreateProject),
@@ -124,8 +126,14 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("POST /projects/{project_id}/add", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.AddUserToProject),
 	))
+	r.Handle("POST /projects/{project_id}/enable-social-platform/{platform_id}", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.EnableSocialPlatform),
+	))
 	r.Handle("GET /projects", r.appPermissions("read:projects").Chain(
 		http.HandlerFunc(h.ListProjects),
+	))
+	r.Handle("GET /projects/{project_id}/social-platforms", r.projectPermissions("read:projects").Chain(
+		http.HandlerFunc(h.GetEnabledSocialPlatforms),
 	))
 	r.Handle("GET /projects/{project_id}", r.projectPermissions("read:projects").Chain(
 		http.HandlerFunc(h.GetProject),
@@ -137,7 +145,7 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("POST /posts/{project_id}/add", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.CreatePost),
 	))
-	r.Handle("POST /posts/{project_id}/{post_id}/archive", r.projectPermissions("write:posts").Chain(
+	r.Handle("PATCH /posts/{project_id}/{post_id}/archive", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.ArchivePost),
 	))
 	r.Handle("GET /posts/{project_id}/{post_id}", r.projectPermissions("read:posts").Chain(
@@ -148,6 +156,16 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	))
 	r.Handle("DELETE /posts/{project_id}/{post_id}", r.projectPermissions("delete:posts").Chain(
 		http.HandlerFunc(h.DeletePost),
+	))
+}
+
+/*PLATFORM ROUTES*/
+func (r *Router) setupPlatformRoutes(h *handlers.PlatformHandler) {
+	r.Handle("GET /platforms", r.appPermissions("read:platforms").Chain(
+		http.HandlerFunc(h.GetAvailableSocialNetworks),
+	))
+	r.Handle("PATCH /platforms/{project_id}/api-key", r.projectPermissions("write:platforms").Chain(
+		http.HandlerFunc(h.AddAPIKey),
 	))
 }
 

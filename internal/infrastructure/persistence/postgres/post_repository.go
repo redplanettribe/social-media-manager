@@ -96,3 +96,14 @@ func (r *PostRepository) DeletePost(ctx context.Context, id string) error {
 	}
 	return nil
 }
+
+func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (post_id, publisher_id)
+		VALUES ($1, $2)
+	`, PostPlatform), postID, publisherID)
+	if err != nil {
+		return err
+	}
+	return nil
+}

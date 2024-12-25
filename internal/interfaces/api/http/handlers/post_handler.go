@@ -63,7 +63,6 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-
 	post, err := h.Service.CreatePost(
 		r.Context(),
 		projectID,
@@ -81,7 +80,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err= json.NewEncoder(w).Encode(post)
+	err = json.NewEncoder(w).Encode(post)
 	if err != nil {
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
@@ -172,7 +171,7 @@ func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
 // @Failure 410 {object} errors.APIError "Post not found"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /posts/{project_id}/{post_id}/archive [post]
+// @Router /posts/{project_id}/{post_id}/archive [patch]
 func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
 	if postID == "" {
@@ -225,10 +224,16 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-
 func mapPostErrorToAPIError(err error) *e.APIError {
 	switch {
-	
+
+	case err == post.ErrPostNotFound:
+		return &e.APIError{
+			Status:  http.StatusGone,
+			Code:    e.ErrCodeNotFound,
+			Message: err.Error(),
+		}
+
 	default:
 		return &e.APIError{
 			Status:  http.StatusInternalServerError,

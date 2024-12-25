@@ -18,6 +18,7 @@ type Service interface {
 	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
+	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
 }
 
 type service struct {
@@ -92,4 +93,15 @@ func (s *service) DeletePost(ctx context.Context, id string) error {
 		return ErrPostNotFound
 	}
 	return s.repo.DeletePost(ctx, id)
+}
+
+func (s *service) AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error {
+	p, err := s.repo.FindByID(ctx, postID)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+	return s.repo.AddSocialMediaPublisher(ctx, postID, publisherID)
 }

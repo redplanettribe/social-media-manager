@@ -2,9 +2,11 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 )
@@ -232,4 +234,58 @@ func (r *ProjectRepository) DoesProjectNameExist(ctx context.Context, name, user
 	}
 
 	return exists, nil
+}
+
+func (r *ProjectRepository) EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (project_id, platform_id)
+		VALUES ($1, $2)
+	`, ProjectPlatform), projectID, socialPlatformID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) DoesSocialPlatformExist(ctx context.Context, socialPlatformID string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT EXISTS(
+			SELECT 1
+			FROM %s
+			WHERE id = $1
+		)
+	`, Platforms), socialPlatformID).Scan(&exists)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return false, err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+
+	return exists, nil
+}
+
+func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*project.SocialPlatform, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT p.id, p.name
+		FROM %s pp
+		INNER JOIN %s p ON pp.platform_id = p.id
+		WHERE pp.project_id = $1
+	`, ProjectPlatform, Platforms), projectID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var sns []*project.SocialPlatform
+	for rows.Next() {
+		sn := &project.SocialPlatform{}
+		err := rows.Scan(&sn.ID, &sn.Name)
+		if err != nil {
+			return nil, err
+		}
+		sns = append(sns, sn)
+	}
+	return sns, nil
 }

@@ -16,6 +16,8 @@ type Service interface {
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
 	AddUserToProject(ctx context.Context, projectID, email string) error
+	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
+	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
 }
 
 type service struct {
@@ -125,3 +127,18 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 
 	return s.repo.AddUserToProject(ctx, projectID, userID)
 }
+
+func (s *service) EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {
+	if ok, err := s.repo.DoesSocialPlatformExist(ctx, socialPlatformID); err != nil {
+		return err
+	} else if !ok {
+		return ErrSocialPlatformNotFound
+	}
+
+	return s.repo.EnableSocialPlatform(ctx, projectID, socialPlatformID)
+}
+
+func (s *service) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error) {
+	return s.repo.GetEnabledSocialPlatforms(ctx, projectID)
+}
+

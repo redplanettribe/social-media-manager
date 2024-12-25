@@ -1,10 +1,6 @@
 package social
 
-import "context"
 
-type Publisher interface {
-    Publish(ctx context.Context, content string, mediaURLs []string) error
-}
 
 type TwitterPublisher struct {
     // Twitter API client configuration

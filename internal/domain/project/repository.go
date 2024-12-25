@@ -12,4 +12,7 @@ type Repository interface {
 	AddUserToProject(ctx context.Context, projectID, userID string) error
 	IsUserInProject(ctx context.Context, projectID, userID string) (bool, error)
 	DoesProjectNameExist(ctx context.Context, name, userID string) (bool, error)
+	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
+	DoesSocialPlatformExist(ctx context.Context, socialPlatformID string) (bool, error)
+	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
 }

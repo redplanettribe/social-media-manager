@@ -177,6 +177,86 @@ func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// EnableSocialPlatform godoc
+// @Summary Enable a social platform
+// @Description Enable a social platform for a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param social_platform_id path string true "Social Platform ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 409 {object} errors.APIError "User already exists"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/enable-social-platform/{social_platform_id} [post]
+func (h *ProjectHandler) EnableSocialPlatform(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	socialPlatformID := r.PathValue("platform_id")
+	if socialPlatformID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Social platform id is required", map[string]string{
+			"platform_id": "required",
+		}), nil)
+		return
+	}
+
+	err := h.Service.EnableSocialPlatform(ctx, projectID, socialPlatformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetEnabledSocialPlatforms godoc
+// @Summary Get enabled social platforms
+// @Description Get the social platforms enabled for a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 200 {array} project.SocialPlatform
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/social-platforms [get]
+func (h *ProjectHandler) GetEnabledSocialPlatforms(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	platforms, err := h.Service.GetEnabledSocialPlatforms(ctx, projectID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(platforms)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
 func mapProjectErrorToAPIError(err error) *e.APIError {
 	switch {
 	case e.MatchError(

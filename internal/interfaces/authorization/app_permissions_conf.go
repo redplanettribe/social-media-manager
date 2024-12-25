@@ -8,6 +8,7 @@ func GetAppPermissions() *Permissions {
 		/* */ Write("projects").
 		/* */ Read("projects").
 		/* */ Delete("projects").
+		/* */ Read("platforms").
 		AddRole("admin").Inherit("user").
 		/* */ Read("roles").
 		/* */ Write("roles").
