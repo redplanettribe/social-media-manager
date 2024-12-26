@@ -16,6 +16,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/server"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
@@ -103,9 +104,12 @@ func main() {
 		appAuthorizer,
 		projectAuthorizer,
 	)
+	// Initialize the publisher queue
+	publisherQueue := publisher.NewPublisherQueue(&cfg.Publisher)
+	publisherQueue.Start(ctx)
 
 	// Start the post scheduler
-	scheduler := scheduler.NewPostScheduler(postService, projectService, &cfg.Scheduler)
+	scheduler := scheduler.NewPostScheduler(postService, projectService, publisherQueue, &cfg.Scheduler)
 	scheduler.Start(ctx)
 
 	// Start the Server

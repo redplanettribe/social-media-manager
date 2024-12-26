@@ -6,10 +6,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type Publisher interface {
-	Publish(ctx context.Context, content string, mediaURLs []string) error
-}
-
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
 	AddAPIKey(ctx context.Context, projectID, socialNetworkID, apiKey string) error

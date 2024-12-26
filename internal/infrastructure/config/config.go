@@ -16,6 +16,14 @@ type Config struct {
 	Logger    LoggerConfig
 	SSL       SSLConfig
 	Scheduler SchedulerConfig
+	Publisher PublisherConfig
+}
+
+type PublisherConfig struct {
+	WorkerNum     int
+	RetryNum      int
+	PublishBuffer int
+	RetryBuffer   int
 }
 
 type SchedulerConfig struct {
@@ -91,7 +99,13 @@ func LoadConfig() (*Config, error) {
 			KeyPath:  getEnv("SSL_KEY_PATH", ""),
 		},
 		Scheduler: SchedulerConfig{
-			Interval: 1 * time.Minute,
+			Interval: 3 * time.Second,
+		},
+		Publisher: PublisherConfig{
+			WorkerNum:     5,
+			RetryNum:      3,
+			PublishBuffer: 100,
+			RetryBuffer:   100,
 		},
 	}
 
