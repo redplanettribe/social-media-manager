@@ -28,6 +28,7 @@ type PublisherConfig struct {
 
 type SchedulerConfig struct {
 	Interval time.Duration
+	ChannelBuffer int
 }
 
 type AppConfig struct {
@@ -100,6 +101,7 @@ func LoadConfig() (*Config, error) {
 		},
 		Scheduler: SchedulerConfig{
 			Interval: 3 * time.Second,
+			ChannelBuffer: 100,
 		},
 		Publisher: PublisherConfig{
 			WorkerNum:     5,

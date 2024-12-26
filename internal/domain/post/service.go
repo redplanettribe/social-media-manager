@@ -19,6 +19,8 @@ type Service interface {
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
+	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error)
+	GetQueuePost(ctx context.Context, id string) (*QPost, error)
 }
 
 type service struct {
@@ -104,4 +106,14 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, postID, publisher
 		return ErrPostNotFound
 	}
 	return s.repo.AddSocialMediaPublisher(ctx, postID, publisherID)
+}
+
+func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error) {
+	// TODO: Implement this
+	return []*QPost{}, nil
+}
+
+func (s *service) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
+	// TODO: Implement this
+	return &QPost{}, nil
 }

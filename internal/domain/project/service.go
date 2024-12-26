@@ -18,6 +18,8 @@ type Service interface {
 	AddUserToProject(ctx context.Context, projectID, email string) error
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
+	FindOneReadyPostInQueue(ctx context.Context, projectID string) (string, error)
+	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
 }
 
 type service struct {
@@ -142,3 +144,12 @@ func (s *service) GetEnabledSocialPlatforms(ctx context.Context, projectID strin
 	return s.repo.GetEnabledSocialPlatforms(ctx, projectID)
 }
 
+func (s *service) FindOneReadyPostInQueue(ctx context.Context, projectID string) (string, error) {
+	// TODO: implement
+	return "", nil
+}
+
+func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error) {
+	// TODO: implement
+	return nil, nil
+}

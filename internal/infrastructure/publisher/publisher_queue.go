@@ -50,7 +50,7 @@ func (pq *PublisherQueue) Stop() {
 }
 
 // Enqueue adds a post to the publishCh
-func (pq *PublisherQueue) Enqueue(p *post.QPost) {
+func (pq *PublisherQueue) Enqueue(ctx context.Context, p *post.QPost) {
 	pq.publishCh <- p
 }
 
