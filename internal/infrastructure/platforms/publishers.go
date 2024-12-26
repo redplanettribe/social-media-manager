@@ -6,12 +6,14 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 )
 
+//go:generate mockery --name=Publisher --case=underscore --inpackage
 type Publisher interface {
 	Publish(ctx context.Context, post *post.QPost) error
 }
 
 
 // PublisherFactory is a factory for creating publishers
+//go:generate mockery --name=PublisherFactory --case=underscore --inpackage
 type PublisherFactory interface {
     Create(platform string, apiKey string) Publisher
 }

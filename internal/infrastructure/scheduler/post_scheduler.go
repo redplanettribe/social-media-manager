@@ -17,14 +17,14 @@ type PostScheduler struct {
 	postService    post.Service
 	projectService project.Service
 	cfg            *config.SchedulerConfig
-	publisherQueue *publisher.PublisherQueue
+	publisherQueue publisher.PublisherQueue
 	quit           chan struct{}
 }
 
 func NewPostScheduler(
 	postSvc post.Service,
 	projectSvc project.Service,
-	publisherQueue *publisher.PublisherQueue,
+	publisherQueue publisher.PublisherQueue,
 	cfg *config.SchedulerConfig,
 ) *PostScheduler {
 	return &PostScheduler{
@@ -59,11 +59,11 @@ func (s *PostScheduler) Start(ctx context.Context) {
 func (s *PostScheduler) Stop() {
 	close(s.quit)
 }
+
 // scanAndEnqueue orchestrates concurrent, chunked queries for posts.
 // It combines posts into a single channel, deduplicates them, then enqueues each.
 func (s *PostScheduler) scanAndEnqueue(ctx context.Context) error {
     fmt.Println("Tick: scanning for posts...")
-
     // Channel to collect QPost from multiple scanners
     qPosts := make(chan *post.QPost, s.cfg.ChannelBuffer)
 

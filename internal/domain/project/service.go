@@ -8,8 +8,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-
-
+//go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)

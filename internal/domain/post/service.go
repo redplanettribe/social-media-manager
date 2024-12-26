@@ -7,6 +7,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 )
 
+//go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	CreatePost(
 		ctx context.Context,
