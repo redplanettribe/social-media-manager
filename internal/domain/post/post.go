@@ -31,6 +31,7 @@ var (
 	ErrProjectNotFound       = errors.New("project not found")
 	ErrPostNotFound          = errors.New("post not found")
 	ErrPublisherNotInProject = errors.New("publisher not in project")
+	ErrPostScheduledTime	 = errors.New("post scheduled time is in the past")
 )
 
 type Post struct {

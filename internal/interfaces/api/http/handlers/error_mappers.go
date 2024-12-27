@@ -25,6 +25,15 @@ func mapPostErrorToAPIError(err error) *e.APIError {
 		}
 	case e.MatchError(
 		err,
+		post.ErrPostScheduledTime,
+	):
+		return &e.APIError{
+			Status:  http.StatusBadRequest,
+			Code:    e.ErrCodeBadRequest,
+			Message: err.Error(),
+		}
+	case e.MatchError(
+		err,
 		post.ErrPublisherNotInProject,
 	):
 		return &e.APIError{

@@ -126,5 +126,8 @@ func (s *service) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
 }
 
 func (s *service) SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error {
+	if sheduled_at.Before(time.Now()) {
+		return ErrPostScheduledTime	
+	}
 	return s.repo.SchedulePost(ctx, id, sheduled_at)
 }
