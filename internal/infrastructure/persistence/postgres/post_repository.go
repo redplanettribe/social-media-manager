@@ -32,6 +32,18 @@ func (r *PostRepository) Save(ctx context.Context, p *post.Post) error {
 	return nil
 }
 
+func (r *PostRepository) Update(ctx context.Context, p *post.Post) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET title = $2, text_content = $3, image_links = $4, video_links = $5, is_idea = $6, status = $7, scheduled_at = $8, updated_at = $9
+		WHERE id = $1
+	`, Posts), p.ID, p.Title, p.TextContent, p.ImageLinks, p.VideoLinks, p.IsIdea, p.Status, p.ScheduledAt, time.Now())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *PostRepository) FindByID(ctx context.Context, id string) (*post.Post, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT id, project_id, title, text_content, image_links, video_links, is_idea, status, scheduled_at, created_by, created_at, updated_at
@@ -198,4 +210,32 @@ func (r *PostRepository) IsPublisherPlatformEnabledForProject(ctx context.Contex
 	}
 
 	return count > 0, nil
+}
+
+func (r *PostRepository) GetProjectPostQueue(ctx context.Context, projectID string) (*post.Queue, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT post_queue
+		FROM %s
+		WHERE id = $1
+	`, Projects), projectID)
+
+	var queue *post.Queue
+	err := row.Scan(&queue)
+	if err != nil {
+		return queue, err
+	}
+
+	return queue, nil
+}
+
+func (r *PostRepository) AddToProjectQueue(ctx context.Context, projectID, postID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET post_queue = array_append(post_queue, $2)
+		WHERE id = $1
+	`, Projects), projectID, postID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

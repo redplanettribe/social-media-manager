@@ -2,9 +2,11 @@ package post
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
+	"golang.org/x/sync/errgroup"
 )
 
 //go:generate mockery --name=Service --case=underscore --inpackage
@@ -23,6 +25,7 @@ type Service interface {
 	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error)
 	GetQueuePost(ctx context.Context, id string) (*QPost, error)
 	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
+	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 }
 
 type service struct {
@@ -105,7 +108,7 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID
 		return err
 	} else if !ok {
 		return ErrPublisherNotInProject
-	}	
+	}
 	p, err := s.repo.FindByID(ctx, postID)
 	if err != nil {
 		return err
@@ -127,7 +130,53 @@ func (s *service) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
 
 func (s *service) SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error {
 	if sheduled_at.Before(time.Now()) {
-		return ErrPostScheduledTime	
+		return ErrPostScheduledTime
 	}
 	return s.repo.SchedulePost(ctx, id, sheduled_at)
+}
+
+func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID string) error {
+	var (
+		p     *Post
+		queue *Queue
+	)
+
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		var err error
+		p, err = s.repo.FindByID(gCtx, postID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		queue, err = s.repo.GetProjectPostQueue(gCtx, projectID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	fmt.Println("queue", queue)
+	if p == nil {
+		return ErrPostNotFound
+	}
+	if p.Status == string(PostStatusPublished) {
+		return ErrPostAlreadyPublished
+	}
+	if queue.Contains(p.ID) {
+		return ErrPostAlreadyInQueue
+	}
+
+	p.Status = string(PostStatusQueued)
+	p.ScheduledAt = time.Time{}
+
+	err := s.repo.Update(ctx, p)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.AddToProjectQueue(ctx, projectID, postID)
 }

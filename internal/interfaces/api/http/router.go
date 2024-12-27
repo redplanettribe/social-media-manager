@@ -154,6 +154,9 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("PATCH /posts/{project_id}/{post_id}/archive", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.ArchivePost),
 	))
+	r.Handle("PATCH /posts/{project_id}/{post_id}/enqueue", r.projectPermissions("write:posts").Chain(
+		http.HandlerFunc(h.AddPostToProjectQueue),
+	))
 	r.Handle("GET /posts/{project_id}/{post_id}", r.projectPermissions("read:posts").Chain(
 		http.HandlerFunc(h.GetPost),
 	))

@@ -32,6 +32,24 @@ func (_m *MockService) AddSocialMediaPublisher(ctx context.Context, projectID st
 	return r0
 }
 
+// AddToProjectQueue provides a mock function with given fields: ctx, projectID, postID
+func (_m *MockService) AddToProjectQueue(ctx context.Context, projectID string, postID string) error {
+	ret := _m.Called(ctx, projectID, postID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddToProjectQueue")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // ArchivePost provides a mock function with given fields: ctx, id
 func (_m *MockService) ArchivePost(ctx context.Context, id string) error {
 	ret := _m.Called(ctx, id)

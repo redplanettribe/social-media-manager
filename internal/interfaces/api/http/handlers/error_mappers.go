@@ -41,6 +41,16 @@ func mapPostErrorToAPIError(err error) *e.APIError {
 			Code:    e.ErrCodeForbidden,
 			Message: err.Error(),
 		}
+	case e.MatchError(
+		err,
+		post.ErrPostAlreadyInQueue,
+		post.ErrPostAlreadyPublished,
+	):
+		return &e.APIError{
+			Status:  http.StatusConflict,
+			Code:    e.ErrCodeConflict,
+			Message: err.Error(),
+		}
 
 	default:
 		return &e.APIError{
