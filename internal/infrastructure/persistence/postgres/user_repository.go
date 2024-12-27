@@ -195,3 +195,15 @@ func (r *UserRepository) RemoveRoleFromUser(ctx context.Context, userID, roleID 
 	}
 	return nil
 }
+
+func (r *UserRepository) DeleteUser(ctx context.Context, id string) error {
+	query := `
+		DELETE FROM users
+		WHERE id = $1
+	`
+	_, err := r.db.Exec(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

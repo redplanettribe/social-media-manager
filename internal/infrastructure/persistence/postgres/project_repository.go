@@ -306,3 +306,51 @@ func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, proje
 	}
 	return sns, nil
 }
+
+func (r *ProjectRepository) DeleteProject(ctx context.Context, projectID string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		} else {
+			err = tx.Commit(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1
+	`, ProjectPlatforms), projectID)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1
+	`, TeamMembersRoles), projectID)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1
+	`, TeamMembers), projectID)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE id = $1
+	`, Projects), projectID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

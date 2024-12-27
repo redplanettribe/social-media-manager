@@ -84,9 +84,9 @@ func LoadConfig() (*Config, error) {
 		DB: DBConfig{
 			Host:     getEnv("DB_HOST", "localhost"),
 			Port:     dbPort,
-			User:     getEnv("POSTGRES_USER", "postgres"),
-			Password: getEnv("POSTGRES_PASSWORD", ""),
-			Name:     getEnv("POSTGRES_DB", "postgres"),
+			User:     getEnv("POSTGRES_USER", "myuser"),
+			Password: getEnv("POSTGRES_PASSWORD", "mypassword"),
+			Name:     getEnv("POSTGRES_DB", "mydatabase"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
 		JWT: JWTConfig{
@@ -100,7 +100,7 @@ func LoadConfig() (*Config, error) {
 			KeyPath:  getEnv("SSL_KEY_PATH", ""),
 		},
 		Scheduler: SchedulerConfig{
-			Interval: 3 * time.Minute,
+			Interval: 3 * time.Second,
 			ChannelBuffer: 100,
 		},
 		Publisher: PublisherConfig{
