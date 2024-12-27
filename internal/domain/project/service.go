@@ -130,11 +130,35 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 }
 
 func (s *service) EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {
-	if ok, err := s.repo.DoesSocialPlatformExist(ctx, socialPlatformID); err != nil {
-		return err
-	} else if !ok {
-		return ErrSocialPlatformNotFound
-	}
+    var (
+        exists    bool
+        enabled   bool
+        g         errgroup.Group
+    )
+
+    g.Go(func() error {
+        var err error
+        exists, err = s.repo.DoesSocialPlatformExist(ctx, socialPlatformID)
+        return err
+    })
+
+    g.Go(func() error {
+        var err error
+        enabled, err = s.repo.IsProjectSocialPlatformEnabled(ctx, projectID, socialPlatformID)
+        return err
+    })
+
+    if err := g.Wait(); err != nil {
+        return err
+    }
+
+    if !exists {
+        return ErrSocialPlatformNotFound
+    }
+
+    if enabled {
+        return ErrSocialPlatformAlreadyEnabled
+    }
 
 	return s.repo.EnableSocialPlatform(ctx, projectID, socialPlatformID)
 }

@@ -14,5 +14,6 @@ type Repository interface {
 	DoesProjectNameExist(ctx context.Context, name, userID string) (bool, error)
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	DoesSocialPlatformExist(ctx context.Context, socialPlatformID string) (bool, error)
+	IsProjectSocialPlatformEnabled(ctx context.Context, projectID, socialPlatformID string) (bool, error)
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
 }

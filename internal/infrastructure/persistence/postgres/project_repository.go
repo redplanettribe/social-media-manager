@@ -266,6 +266,23 @@ func (r *ProjectRepository) DoesSocialPlatformExist(ctx context.Context, socialP
 	return exists, nil
 }
 
+func (r *ProjectRepository) IsProjectSocialPlatformEnabled(ctx context.Context, projectID, socialPlatformID string) (bool, error) {
+	var exists bool
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT EXISTS(
+			SELECT 1
+			FROM %s
+			WHERE project_id = $1 AND platform_id = $2
+		)
+	`, ProjectPlatforms), projectID, socialPlatformID).Scan(&exists)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return false, err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return false, nil
+	}
+	return exists, nil
+}
+
 func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*project.SocialPlatform, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT p.id, p.name

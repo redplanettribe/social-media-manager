@@ -262,6 +262,7 @@ func mapProjectErrorToAPIError(err error) *e.APIError {
 	case e.MatchError(
 		err,
 		project.ErrProjectExists,
+		project.ErrSocialPlatformAlreadyEnabled,
 	):
 		return &e.APIError{
 			Status:  http.StatusConflict,
