@@ -10,6 +10,13 @@ definitions:
       status:
         type: integer
     type: object
+  handlers.addAPIKeyRequest:
+    properties:
+      api_key:
+        type: string
+      social_platform_id:
+        type: string
+    type: object
   handlers.assignRoleRequest:
     properties:
       role_id:
@@ -59,6 +66,30 @@ definitions:
       password:
         type: string
     type: object
+  handlers.schedulePostRequest:
+    properties:
+      scheduled_at:
+        type: string
+    type: object
+  platform.Platform:
+    properties:
+      id:
+        $ref: '#/definitions/platform.PlatformID'
+      name:
+        type: string
+    type: object
+  platform.PlatformID:
+    enum:
+    - facebook
+    - twitter
+    - linkedin
+    - instagram
+    type: string
+    x-enum-varnames:
+    - Facebook
+    - Twitter
+    - LinkedIn
+    - Instagram
   post.Post:
     properties:
       created_at:
@@ -111,6 +142,13 @@ definitions:
           type: string
         type: array
       updated_at:
+        type: string
+    type: object
+  project.SocialPlatform:
+    properties:
+      id:
+        type: string
+      name:
         type: string
     type: object
   session.Session:
@@ -173,6 +211,59 @@ info:
   title: OpenCM API
   version: "1.0"
 paths:
+  /platforms:
+    get:
+      consumes:
+      - application/json
+      description: Get available social networks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/platform.Platform'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get available social networks
+      tags:
+      - platforms
+  /platforms/api-key:
+    post:
+      consumes:
+      - application/json
+      description: Add an API key to a social network
+      parameters:
+      - description: API key request
+        in: body
+        name: api_key
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.addAPIKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add an API key to a social network
+      tags:
+      - platforms
   /posts/{project_id}:
     get:
       consumes:
@@ -215,6 +306,43 @@ paths:
       tags:
       - posts
   /posts/{project_id}/{post_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post by its id. We might or might not want to implement
+        pagination and filtering. For the time being, we will keep it simple.
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a post
+      tags:
+      - posts
     get:
       consumes:
       - application/json
@@ -251,6 +379,180 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get a post by id
+      tags:
+      - posts
+  /posts/{project_id}/{post_id}/archive:
+    patch:
+      consumes:
+      - application/json
+      description: Archive a post by its id
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Archive a post
+      tags:
+      - posts
+  /posts/{project_id}/{post_id}/enqueue:
+    patch:
+      consumes:
+      - application/json
+      description: Add a post to a project queue by its id
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a post to a project queue
+      tags:
+      - posts
+  /posts/{project_id}/{post_id}/platforms/{platform_id}:
+    post:
+      consumes:
+      - application/json
+      description: Add a social media publisher platform to a post by its id
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Platform ID
+        in: path
+        name: platform_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a social media publisher platform to a post
+      tags:
+      - posts
+  /posts/{project_id}/{post_id}/schedule:
+    patch:
+      consumes:
+      - application/json
+      description: Schedule a post by its id
+      parameters:
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Scheduled at
+        in: body
+        name: scheduled_at
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.schedulePostRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Schedule a post
       tags:
       - posts
   /posts/{project_id}/add:
@@ -297,6 +599,47 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Create a new post
+      tags:
+      - posts
+  /posts/{project_id}/queue:
+    get:
+      consumes:
+      - application/json
+      description: Get all queued posts of a project by its id
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/post.Post'
+            type: array
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all queued posts of a project
       tags:
       - posts
   /projects:
@@ -450,6 +793,95 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Add a user to a project
+      tags:
+      - projects
+  /projects/{project_id}/enable-social-platform/{social_platform_id}:
+    post:
+      consumes:
+      - application/json
+      description: Enable a social platform for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Social Platform ID
+        in: path
+        name: social_platform_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "409":
+          description: User already exists
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Enable a social platform
+      tags:
+      - projects
+  /projects/{project_id}/social-platforms:
+    get:
+      consumes:
+      - application/json
+      description: Get the social platforms enabled for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/project.SocialPlatform'
+            type: array
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get enabled social platforms
       tags:
       - projects
   /users:

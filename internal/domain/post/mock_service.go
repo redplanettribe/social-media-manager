@@ -176,6 +176,36 @@ func (_m *MockService) GetPost(ctx context.Context, id string) (*Post, error) {
 	return r0, r1
 }
 
+// GetProjectQueuedPosts provides a mock function with given fields: ctx, projectID
+func (_m *MockService) GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error) {
+	ret := _m.Called(ctx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProjectQueuedPosts")
+	}
+
+	var r0 []*Post
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*Post, error)); ok {
+		return rf(ctx, projectID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*Post); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*Post)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetQueuePost provides a mock function with given fields: ctx, id
 func (_m *MockService) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
 	ret := _m.Called(ctx, id)

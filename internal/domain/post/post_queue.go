@@ -106,3 +106,7 @@ func (q *Queue) IsEmpty() bool {
 func (q *Queue) Len() int {
 	return len(*q)
 }
+
+func (q *Queue) Arr() []string {
+	return *q
+}

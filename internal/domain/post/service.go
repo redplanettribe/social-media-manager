@@ -26,6 +26,7 @@ type Service interface {
 	GetQueuePost(ctx context.Context, id string) (*QPost, error)
 	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
+	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 }
 
 type service struct {
@@ -166,6 +167,9 @@ func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID strin
 	if p.Status == string(PostStatusPublished) {
 		return ErrPostAlreadyPublished
 	}
+	if p.IsIdea {
+		return ErrPostIsIdea
+	}
 	if queue.Contains(p.ID) {
 		return ErrPostAlreadyInQueue
 	}
@@ -179,4 +183,33 @@ func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID strin
 	}
 
 	return s.repo.AddToProjectQueue(ctx, projectID, postID)
+}
+
+func (s *service) GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error) {
+	q, err := s.repo.GetProjectPostQueue(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	if q.IsEmpty() {
+		return []*Post{}, nil
+	}
+	qp, err := s.repo.GetProjectQueuedPosts(ctx, projectID, q.Arr())
+	if err != nil {
+		return nil, err
+	}
+	qp = sortPostsByQueue(qp, q)
+	return qp, nil
+}
+
+func sortPostsByQueue(posts []*Post, queue *Queue) []*Post {
+	sortedPosts := make([]*Post, 0)
+	// Double loop but it's fine since the queue is small
+	for _, postID := range queue.Arr() {
+		for _, post := range posts {
+			if post.ID == postID {
+				sortedPosts = append(sortedPosts, post)
+			}
+		}
+	}
+	return sortedPosts
 }

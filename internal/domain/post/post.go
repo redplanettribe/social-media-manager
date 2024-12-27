@@ -36,6 +36,7 @@ var (
 	ErrPostScheduledTime     = errors.New("post scheduled time is in the past")
 	ErrPostAlreadyInQueue    = errors.New("post already in queue")
 	ErrPostAlreadyPublished  = errors.New("post already published")
+	ErrPostIsIdea            = errors.New("post is an idea")
 )
 
 type Post struct {

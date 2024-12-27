@@ -157,7 +157,7 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 	var posts []*post.QPost
 	for rows.Next() {
 		p := &post.QPost{}
-		
+
 		err = rows.Scan(
 			&p.ID,
 			&p.ProjectID,
@@ -238,4 +238,52 @@ func (r *PostRepository) AddToProjectQueue(ctx context.Context, projectID, postI
 		return err
 	}
 	return nil
+}
+
+func (r *PostRepository) GetProjectQueuedPosts(ctx context.Context, projectID string, postIDs []string) ([]*post.Post, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT 
+			id, 
+			project_id, 
+			title, 
+			text_content, 
+			image_links, 
+			video_links, 
+			is_idea, 
+			status, 
+			scheduled_at, 
+			created_by, 
+			created_at, 
+			updated_at
+		FROM %s
+		WHERE project_id = $1 AND id = ANY($2)
+	`, Posts), projectID, postIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*post.Post
+	for rows.Next() {
+		p := &post.Post{}
+		err = rows.Scan(
+			&p.ID,
+			&p.ProjectID,
+			&p.Title,
+			&p.TextContent,
+			&p.ImageLinks,
+			&p.VideoLinks,
+			&p.IsIdea,
+			&p.Status,
+			&p.ScheduledAt,
+			&p.CreatedBy,
+			&p.CreatedAt,
+			&p.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+
+	return posts, nil
 }

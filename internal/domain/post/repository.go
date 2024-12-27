@@ -18,4 +18,5 @@ type Repository interface {
 	IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error)
 	GetProjectPostQueue(ctx context.Context, projectID string) (*Queue, error)
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
+	GetProjectQueuedPosts(ctx context.Context, projectID string, postIDs []string) ([]*Post, error)
 }
