@@ -398,3 +398,49 @@ func (h * PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Requ
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
+
+type movePostRequest struct {
+	CurrentIndex int `json:"current_index"`
+	NewIndex     int `json:"new_index"`
+}
+
+// MovePostInQueue godoc
+// @Summary Move a post in the project queue
+// @Description Move a post in the project queue by its current and new index
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param move body movePostRequest true "Move post request"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/queue/move [patch]
+func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
+	var req movePostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.MovePostInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}

@@ -66,6 +66,13 @@ definitions:
       password:
         type: string
     type: object
+  handlers.movePostRequest:
+    properties:
+      current_index:
+        type: integer
+      new_index:
+        type: integer
+    type: object
   handlers.schedulePostRequest:
     properties:
       scheduled_at:
@@ -640,6 +647,54 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get all queued posts of a project
+      tags:
+      - posts
+  /posts/{project_id}/queue/move:
+    patch:
+      consumes:
+      - application/json
+      description: Move a post in the project queue by its current and new index
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Move post request
+        in: body
+        name: move
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.movePostRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Move a post in the project queue
       tags:
       - posts
   /projects:

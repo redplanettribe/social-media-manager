@@ -287,3 +287,15 @@ func (r *PostRepository) GetProjectQueuedPosts(ctx context.Context, projectID st
 
 	return posts, nil
 }
+
+func (r *PostRepository) UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET post_queue = $2
+		WHERE id = $1
+	`, Projects), projectID, queue)
+	if err != nil {
+		return err
+	}
+	return nil
+}

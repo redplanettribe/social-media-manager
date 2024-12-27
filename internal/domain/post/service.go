@@ -27,6 +27,7 @@ type Service interface {
 	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
+	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
 }
 
 type service struct {
@@ -212,4 +213,16 @@ func sortPostsByQueue(posts []*Post, queue *Queue) []*Post {
 		}
 	}
 	return sortedPosts
+}
+
+func (s *service) MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error {
+	q, err := s.repo.GetProjectPostQueue(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	if q.IsEmpty() {
+		return nil
+	}
+	q.Move(currentIndex, newIndex)
+	return s.repo.UpdateProjectPostQueue(ctx, projectID, q.Arr())
 }
