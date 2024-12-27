@@ -34,6 +34,6 @@ func (f *publisherFactory) Create(platform string, apiKey string) Publisher {
     case "x":
         return NewX(apiKey)
     default:
-        return nil
+        return NewUnknownPublisher()
     }
 }

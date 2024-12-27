@@ -130,9 +130,9 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		INNER JOIN %s popl ON p.id = popl.post_id
 		INNER JOIN %s plat ON popl.platform_id = plat.id
 		INNER JOIN %s prpl ON plat.id = prpl.platform_id
-		WHERE p.scheduled_at < $2
+		WHERE p.status = $1 
+		AND p.scheduled_at < $2
 		AND prpl.api_key IS NOT NULL
-		AND p.status = $1 
 		ORDER BY p.scheduled_at
 		LIMIT $3 OFFSET $4;
 		`, Posts, PostPlatforms, Platforms, ProjectPlatforms),
@@ -144,22 +144,21 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 
 	var posts []*post.QPost
 	for rows.Next() {
-		p := &post.QPost{
-			Post: &post.Post{},
-		}
+		p := &post.QPost{}
+		
 		err = rows.Scan(
-			&p.Post.ID,
-			&p.Post.ProjectID,
-			&p.Post.Title,
-			&p.Post.TextContent,
-			&p.Post.ImageLinks,
-			&p.Post.VideoLinks,
-			&p.Post.IsIdea,
-			&p.Post.Status,
-			&p.Post.ScheduledAt,
-			&p.Post.CreatedBy,
-			&p.Post.CreatedAt,
-			&p.Post.UpdatedAt,
+			&p.ID,
+			&p.ProjectID,
+			&p.Title,
+			&p.TextContent,
+			&p.ImageLinks,
+			&p.VideoLinks,
+			&p.IsIdea,
+			&p.Status,
+			&p.ScheduledAt,
+			&p.CreatedBy,
+			&p.CreatedAt,
+			&p.UpdatedAt,
 			&p.ApiKey,
 			&p.Platform,
 			&p.PublishStatus,

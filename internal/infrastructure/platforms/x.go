@@ -18,7 +18,7 @@ func (t *X) Publish(ctx context.Context, post *post.QPost) error {
     // Publish to Twitter
     fmt.Println("Publishing to X")
 	time.Sleep(1 * time.Second)
-	return errors.New("error")
+	return errors.New("X platform not implemented")
 }
 
 func NewX(apiKey string) *X {

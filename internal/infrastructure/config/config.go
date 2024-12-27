@@ -100,7 +100,7 @@ func LoadConfig() (*Config, error) {
 			KeyPath:  getEnv("SSL_KEY_PATH", ""),
 		},
 		Scheduler: SchedulerConfig{
-			Interval: 3 * time.Second,
+			Interval: 10 * time.Second,
 			ChannelBuffer: 100,
 		},
 		Publisher: PublisherConfig{

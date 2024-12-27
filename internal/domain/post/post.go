@@ -31,7 +31,7 @@ var (
 	ErrProjectNotFound       = errors.New("project not found")
 	ErrPostNotFound          = errors.New("post not found")
 	ErrPublisherNotInProject = errors.New("publisher not in project")
-	ErrPostScheduledTime	 = errors.New("post scheduled time is in the past")
+	ErrPostScheduledTime     = errors.New("post scheduled time is in the past")
 )
 
 type Post struct {
@@ -50,7 +50,20 @@ type Post struct {
 }
 
 type QPost struct {
-	*Post
+	// Post fields
+	ID            string    `json:"id"`
+	ProjectID     string    `json:"project_id"`
+	Title         string    `json:"title"`
+	TextContent   string    `json:"text_content"`
+	ImageLinks    []string  `json:"image_links"`
+	VideoLinks    []string  `json:"video_links"`
+	IsIdea        bool      `json:"is_idea"`
+	Status        string    `json:"status"`
+	CreatedBy     string    `json:"created_by"`
+	ScheduledAt   time.Time `json:"scheduled_at"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
+	// Additional fields
 	ApiKey        string
 	Platform      string `json:"platform"`
 	PublishStatus string `json:"publish_status"`

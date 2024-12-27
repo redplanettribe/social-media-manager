@@ -109,7 +109,7 @@ func TestPublisherQueue_Enqueue(t *testing.T) {
 	}
 
 	testPost := &post.QPost{
-		Post:     &post.Post{ID: "test-1"},
+		ID: "test-1",
 		Platform: "test-platform",
 		ApiKey:   "test-key",
 	}
@@ -142,7 +142,7 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.QPost{
-				{Post: &post.Post{ID: "1"}, Platform: "x", ApiKey: "key1"},
+				{ID: "1", Platform: "x", ApiKey: "key1"},
 			},
 			publishError:    nil,
 			expectedRetries: 0,
@@ -156,7 +156,7 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.QPost{
-				{Post: &post.Post{ID: "2"}, Platform: "x", ApiKey: "key2"},
+				{ID: "2", Platform: "x", ApiKey: "key2"},
 			},
 			publishError:    fmt.Errorf("publish error"),
 			expectedRetries: 1,
@@ -170,8 +170,8 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				RetryBuffer:   3,
 			},
 			posts: []*post.QPost{
-				{Post: &post.Post{ID: "3"}, Platform: "x", ApiKey: "key3"},
-				{Post: &post.Post{ID: "4"}, Platform: "x", ApiKey: "key4"},
+				{ID: "3", Platform: "x", ApiKey: "key3"},
+				{ID: "4", Platform: "x", ApiKey: "key4"},
 			},
 			publishError:    fmt.Errorf("publish error"),
 			expectedRetries: 2,
@@ -236,7 +236,7 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.QPost{
-				{Post: &post.Post{ID: "retry-1"}, Platform: "x", ApiKey: "key1"},
+				{ID: "retry-1", Platform: "x", ApiKey: "key1"},
 			},
 			publishError:         nil,
 			expectedPublishCalls: 1,
@@ -250,7 +250,7 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.QPost{
-				{Post: &post.Post{ID: "retry-2"}, Platform: "x", ApiKey: "key2"},
+				{ID: "retry-2", Platform: "x", ApiKey: "key2"},
 			},
 			publishError:         fmt.Errorf("permanent error"),
 			expectedPublishCalls: 1,
@@ -264,9 +264,9 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 				RetryBuffer:   3,
 			},
 			posts: []*post.QPost{
-				{Post: &post.Post{ID: "retry-3"}, Platform: "x", ApiKey: "key3"},
-				{Post: &post.Post{ID: "retry-4"}, Platform: "x", ApiKey: "key4"},
-				{Post: &post.Post{ID: "retry-5"}, Platform: "x", ApiKey: "key5"},
+				{ID: "retry-3", Platform: "x", ApiKey: "key3"},
+				{ID: "retry-4", Platform: "x", ApiKey: "key4"},
+				{ID: "retry-5", Platform: "x", ApiKey: "key5"},
 			},
 			publishError:         fmt.Errorf("permanent error"),
 			expectedPublishCalls: 3, 

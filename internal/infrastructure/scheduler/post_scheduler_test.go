@@ -71,16 +71,16 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 		{
 			name: "successful scan with both scheduled and project posts",
 			scheduledPosts: []*post.QPost{
-				{Post: &post.Post{ID: "scheduled1"}, Platform: "platform1"},
-				{Post: &post.Post{ID: "scheduled2"}, Platform: "platform2"},
+				{ID: "scheduled1", Platform: "platform1"},
+				{ID: "scheduled2", Platform: "platform2"},
 			},
 			projects: []*project.Project{
 				{ID: "proj1"},
 				{ID: "proj2"},
 			},
 			projectPosts: map[string]*post.QPost{
-				"proj1": {Post: &post.Post{ID: "proj1-post"}, Platform: "platform1"},
-				"proj2": {Post: &post.Post{ID: "proj2-post"}, Platform: "platform2"},
+				"proj1": {ID: "proj1-post", Platform: "platform1"},
+				"proj2": {ID: "proj2-post", Platform: "platform2"},
 			},
 			expectedErrors:  false,
 			expectedEnqueue: 4,
@@ -88,14 +88,14 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 		{
 			name: "deduplication of posts",
 			scheduledPosts: []*post.QPost{
-				{Post: &post.Post{ID: "post1"}, Platform: "platform1"},
-				{Post: &post.Post{ID: "post1"}, Platform: "platform1"}, // duplicate
+				{ID: "post1", Platform: "platform1"},
+				{ID: "post1", Platform: "platform1"}, // duplicate
 			},
 			projects: []*project.Project{
 				{ID: "proj1"},
 			},
 			projectPosts: map[string]*post.QPost{
-				"proj1": {Post: &post.Post{ID: "post1"}, Platform: "platform1"}, // duplicate
+				"proj1": {ID: "post1", Platform: "platform1"}, // duplicate
 			},
 			expectedErrors:  false,
 			expectedEnqueue: 1,
@@ -166,8 +166,8 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 		{
 			name: "successful scan multiple chunks",
 			chunks: [][]*post.QPost{
-				{{Post: &post.Post{ID: "1"}}, {Post: &post.Post{ID: "2"}}},
-				{{Post: &post.Post{ID: "3"}}},
+				{{ID: "1"}, {ID: "2"}},
+				{{ID: "3"}},
 				{},
 			},
 			expectedError: nil,
@@ -177,7 +177,7 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 		{
 			name: "error during scan",
 			chunks: [][]*post.QPost{
-				{{Post: &post.Post{ID: "1"}}},
+				{{ID: "1"}},
 			},
 			expectedError: fmt.Errorf("scan error"),
 			expectedPosts: 0,
@@ -186,7 +186,7 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 		{
 			name: "context cancellation",
 			chunks: [][]*post.QPost{
-				{{Post: &post.Post{ID: "1"}}},
+				{{ID: "1"}},
 			},
 			contextCancel: true,
 			expectedError: context.Canceled,
@@ -271,8 +271,8 @@ func TestPostScheduler_ScanProjectQueues(t *testing.T) {
 				{},
 			},
 			projectPosts: map[string]*post.QPost{
-				"proj1": {Post: &post.Post{ID: "post1"}},
-				"proj2": {Post: &post.Post{ID: "post2"}},
+				"proj1": {ID: "post1"},
+				"proj2": {ID: "post2"},
 			},
 			expectedError: nil,
 			expectedPosts: 2,
