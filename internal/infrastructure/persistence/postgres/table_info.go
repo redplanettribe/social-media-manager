@@ -10,6 +10,7 @@ const (
 	TeamRoles        TableNames = "team_roles"
 	Posts            TableNames = "posts"
 	Platforms        TableNames = "platforms"
-	PostPlatform     TableNames = "post_platforms"
-	ProjectPlatform  TableNames = "project_platforms"
+	PostPlatforms    TableNames = "post_platforms"
+	ProjectPlatforms TableNames = "project_platforms"
+	Comments         TableNames = "comments"
 )

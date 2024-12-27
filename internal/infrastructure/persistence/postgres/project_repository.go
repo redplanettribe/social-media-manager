@@ -240,7 +240,7 @@ func (r *ProjectRepository) EnableSocialPlatform(ctx context.Context, projectID,
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		INSERT INTO %s (project_id, platform_id)
 		VALUES ($1, $2)
-	`, ProjectPlatform), projectID, socialPlatformID)
+	`, ProjectPlatforms), projectID, socialPlatformID)
 	if err != nil {
 		return err
 	}
@@ -272,7 +272,7 @@ func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, proje
 		FROM %s pp
 		INNER JOIN %s p ON pp.platform_id = p.id
 		WHERE pp.project_id = $1
-	`, ProjectPlatform, Platforms), projectID)
+	`, ProjectPlatforms, Platforms), projectID)
 	if err != nil {
 		return nil, err
 	}

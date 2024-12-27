@@ -101,9 +101,73 @@ func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, pu
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		INSERT INTO %s (post_id, publisher_id)
 		VALUES ($1, $2)
-	`, PostPlatform), postID, publisherID)
+	`, PostPlatforms), postID, publisherID)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.QPost, error) {
+	intervalStart := time.Now().Add(-5 * time.Minute)
+	intervalEnd := time.Now().Add(5 * time.Minute)
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT
+		p.id,
+		p.project_id,
+		p.title,
+		p.text_content,
+		p.image_links,
+		p.video_links,
+		p.is_idea,
+		p.status,
+		p.scheduled_at,
+		p.created_by,
+		p.created_at,
+		p.updated_at,
+		prpl.api_key,
+		plat.id,
+		popl.status
+		FROM %s p
+		JOIN %s popl ON p.id = popl.post_id
+		JOIN %s plat ON popl.platform_id = plat.id
+		JOIN %s prpl ON plat.id = prpl.platform_id
+		WHERE p.status = $1
+		AND p.scheduled_at BETWEEN $2 AND $3
+		ORDER BY p.scheduled_at
+		LIMIT $4 OFFSET $5
+		`, Posts, PostPlatforms, Platforms, ProjectPlatforms),
+		post.PostStatusScheduled, intervalStart, intervalEnd, chunksize, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*post.QPost
+	for rows.Next() {
+		p := &post.QPost{}
+		err = rows.Scan(
+			&p.ID,
+			&p.ProjectID,
+			&p.Title,
+			&p.TextContent,
+			&p.ImageLinks,
+			&p.VideoLinks,
+			&p.IsIdea,
+			&p.Status,
+			&p.ScheduledAt,
+			&p.CreatedBy,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.ApiKey,
+			&p.Platform,
+			&p.PublishStatus,
+		)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+
+	return posts, nil
 }

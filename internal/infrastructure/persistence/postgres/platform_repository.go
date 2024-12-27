@@ -61,7 +61,7 @@ func (r *PlatformRepository) IsSocialNetworkEnabledForProject(ctx context.Contex
 		SELECT COUNT(*)
 		FROM %s
 		WHERE project_id = $1 AND platform_id = $2
-	`, ProjectPlatform), projectID, socialPlatformID)
+	`, ProjectPlatforms), projectID, socialPlatformID)
 
 	var count int
 	err := row.Scan(&count)
@@ -77,7 +77,7 @@ func (r *PlatformRepository) AddAPIKey(ctx context.Context, projectID, socialPla
 		UPDATE %s
 		SET api_key = $1
 		WHERE project_id = $2 AND platform_id = $3
-	`, ProjectPlatform), apiKey, projectID, socialPlatformID)
+	`, ProjectPlatforms), apiKey, projectID, socialPlatformID)
 
 	return err
 }

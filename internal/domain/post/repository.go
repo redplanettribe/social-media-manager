@@ -11,4 +11,5 @@ type Repository interface {
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
+	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*QPost, error)
 }

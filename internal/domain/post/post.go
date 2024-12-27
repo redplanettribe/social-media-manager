@@ -33,20 +33,16 @@ type Post struct {
 	IsIdea      bool      `json:"is_idea"`
 	Status      string    `json:"status"`
 	CreatedBy   string    `json:"created_by"`
-	PublishTo   []string  `json:"to"`
 	ScheduledAt time.Time `json:"scheduled_at"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-type Platform struct {
-	Platform string `json:"platform"`
-	ApiKey   string
-}
 type QPost struct {
 	*Post
-	Platform string `json:"platform"`
-	ApiKey   string
+	ApiKey        string
+	Platform      string `json:"platform"`
+	PublishStatus string `json:"publish_status"`
 }
 
 func NewPost(

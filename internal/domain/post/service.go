@@ -110,8 +110,7 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, postID, publisher
 }
 
 func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error) {
-	// TODO: Implement this
-	return []*QPost{}, nil
+	return s.repo.FindScheduledReadyPosts(ctx, offset, chunkSize)
 }
 
 func (s *service) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
