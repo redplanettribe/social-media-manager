@@ -145,6 +145,12 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("POST /posts/{project_id}/add", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.CreatePost),
 	))
+	r.Handle("POST /posts/{project_id}/{post_id}/platforms/{platform_id}", r.projectPermissions("write:posts").Chain(
+		http.HandlerFunc(h.AddSocialMediaPublisherPlatform),
+	))
+	r.Handle("PATCH /posts/{project_id}/{post_id}/schedule", r.projectPermissions("write:posts").Chain(
+		http.HandlerFunc(h.SchedulePost),
+	))
 	r.Handle("PATCH /posts/{project_id}/{post_id}/archive", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.ArchivePost),
 	))

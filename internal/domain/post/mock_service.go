@@ -14,17 +14,17 @@ type MockService struct {
 	mock.Mock
 }
 
-// AddSocialMediaPublisher provides a mock function with given fields: ctx, postID, publisherID
-func (_m *MockService) AddSocialMediaPublisher(ctx context.Context, postID string, publisherID string) error {
-	ret := _m.Called(ctx, postID, publisherID)
+// AddSocialMediaPublisher provides a mock function with given fields: ctx, projectID, postID, publisherID
+func (_m *MockService) AddSocialMediaPublisher(ctx context.Context, projectID string, postID string, publisherID string) error {
+	ret := _m.Called(ctx, projectID, postID, publisherID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddSocialMediaPublisher")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, postID, publisherID)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID, publisherID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -216,6 +216,24 @@ func (_m *MockService) ListProjectPosts(ctx context.Context, projectID string) (
 	}
 
 	return r0, r1
+}
+
+// SchedulePost provides a mock function with given fields: ctx, id, scheduled_at
+func (_m *MockService) SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error {
+	ret := _m.Called(ctx, id, scheduled_at)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SchedulePost")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) error); ok {
+		r0 = rf(ctx, id, scheduled_at)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
 }
 
 // NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

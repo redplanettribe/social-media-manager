@@ -17,10 +17,20 @@ const (
 	PostStatusArchived  PostStatus = "archived"
 )
 
+type PublisherPostStatus string
+
+const (
+	PublisherPostStatusReady      PublisherPostStatus = "ready"
+	PublisherPostStatusProcessing PublisherPostStatus = "processing"
+	PublisherPostStatusPublished  PublisherPostStatus = "published"
+	PublisherPostStatusFailed     PublisherPostStatus = "failed"
+)
+
 // Error messages
 var (
-	ErrProjectNotFound = errors.New("project not found")
-	ErrPostNotFound    = errors.New("post not found")
+	ErrProjectNotFound       = errors.New("project not found")
+	ErrPostNotFound          = errors.New("post not found")
+	ErrPublisherNotInProject = errors.New("publisher not in project")
 )
 
 type Post struct {

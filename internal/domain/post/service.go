@@ -19,9 +19,10 @@ type Service interface {
 	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
-	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
+	AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error
 	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error)
 	GetQueuePost(ctx context.Context, id string) (*QPost, error)
+	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
 }
 
 type service struct {
@@ -98,7 +99,13 @@ func (s *service) DeletePost(ctx context.Context, id string) error {
 	return s.repo.DeletePost(ctx, id)
 }
 
-func (s *service) AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error {
+func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error {
+	ok, err := s.repo.IsPublisherPlatformEnabledForProject(ctx, projectID, publisherID)
+	if err != nil {
+		return err
+	} else if !ok {
+		return ErrPublisherNotInProject
+	}	
 	p, err := s.repo.FindByID(ctx, postID)
 	if err != nil {
 		return err
@@ -116,4 +123,8 @@ func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize
 func (s *service) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
 	// TODO: Implement this
 	return &QPost{}, nil
+}
+
+func (s *service) SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error {
+	return s.repo.SchedulePost(ctx, id, sheduled_at)
 }

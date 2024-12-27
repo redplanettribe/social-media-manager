@@ -2,6 +2,7 @@ package post
 
 import (
 	"context"
+	time "time"
 )
 
 type Repository interface {
@@ -12,4 +13,6 @@ type Repository interface {
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
 	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*QPost, error)
+	SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error
+	IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error)
 }

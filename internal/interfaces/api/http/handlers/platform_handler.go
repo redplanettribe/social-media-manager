@@ -90,21 +90,3 @@ func (h *PlatformHandler) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
-
-func mapPlatformErrorToAPIError(err error) *e.APIError {
-	switch {
-	case e.MatchError(err, platform.ErrSocialPlatformNotFound):
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-
-	default:
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-	}
-}

@@ -99,9 +99,9 @@ func (r *PostRepository) DeletePost(ctx context.Context, id string) error {
 
 func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (post_id, publisher_id)
-		VALUES ($1, $2)
-	`, PostPlatforms), postID, publisherID)
+		INSERT INTO %s (post_id, platform_id, status)
+		VALUES ($1, $2, $3)
+	`, PostPlatforms), postID, publisherID, post.PublisherPostStatusReady)
 	if err != nil {
 		return err
 	}
@@ -109,8 +109,6 @@ func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, pu
 }
 
 func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.QPost, error) {
-	intervalStart := time.Now().Add(-5 * time.Minute)
-	intervalEnd := time.Now().Add(5 * time.Minute)
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT
 		p.id,
@@ -133,11 +131,11 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		JOIN %s plat ON popl.platform_id = plat.id
 		JOIN %s prpl ON plat.id = prpl.platform_id
 		WHERE p.status = $1
-		AND p.scheduled_at BETWEEN $2 AND $3
+		AND p.scheduled_at <= $2
 		ORDER BY p.scheduled_at
-		LIMIT $4 OFFSET $5
+		LIMIT $3 OFFSET $4
 		`, Posts, PostPlatforms, Platforms, ProjectPlatforms),
-		post.PostStatusScheduled, intervalStart, intervalEnd, chunksize, offset)
+		post.PostStatusScheduled, time.Now().Add(5*time.Minute), chunksize, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -170,4 +168,32 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 	}
 
 	return posts, nil
+}
+
+func (r *PostRepository) SchedulePost(ctx context.Context, id string, scheduledAt time.Time) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET scheduled_at = $2, status = $3, updated_at = $4
+		WHERE id = $1
+	`, Posts), id, scheduledAt, post.PostStatusScheduled, time.Now())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *PostRepository) IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s
+		WHERE project_id = $1 AND platform_id = $2
+	`, ProjectPlatforms), projectID, publisherID)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }

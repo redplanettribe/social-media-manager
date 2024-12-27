@@ -224,21 +224,99 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func mapPostErrorToAPIError(err error) *e.APIError {
-	switch {
-
-	case err == post.ErrPostNotFound:
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-
-	default:
-		return &e.APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    e.ErrCodeInternal,
-			Message: err.Error(),
-		}
+// AddSocialMediaPublisherPlatform godoc
+// @Summary Add a social media publisher platform to a post
+// @Description Add a social media publisher platform to a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param platform_id path string true "Platform ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/platforms/{platform_id} [post]
+func (h *PostHandler) AddSocialMediaPublisherPlatform(w http.ResponseWriter, r *http.Request) {
+	platformID := r.PathValue("platform_id")
+	if platformID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Publisher ID is required", map[string]string{
+			"platform_id": "required",
+		}))
+		return
 	}
+
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+
+	err := h.Service.AddSocialMediaPublisher(r.Context(), projectID, postID, platformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+type schedulePostRequest struct {
+	ScheduledAt time.Time `json:"scheduled_at"`
+}
+
+// SchedulePost godoc
+// @Summary Schedule a post
+// @Description Schedule a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Param project_id path string true "Project ID"
+// @Param scheduled_at body schedulePostRequest true "Scheduled at"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/schedule [patch]
+func (h* PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
+	var req schedulePostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+		return
+	}
+
+	if req.ScheduledAt.IsZero() {
+		e.WriteHttpError(w, e.NewValidationError("Scheduled at is required", map[string]string{
+			"scheduled_at": "required",
+		}))
+		return
+	}
+
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.SchedulePost(r.Context(), postID, req.ScheduledAt)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusNoContent)
 }
