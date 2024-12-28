@@ -403,3 +403,30 @@ func (r *ProjectRepository) CreateProjectSettings(ctx context.Context, projectID
 
 	return err
 }
+
+func (r *ProjectRepository) FindActiveProjectsChunk(ctx context.Context, limit, offset int) ([]*project.Project, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT id, name, description, post_queue, idea_queue, created_by, created_at, updated_at
+		FROM %s
+		WHERE post_queue IS NOT NULL
+		AND cardinality(post_queue) > 0
+		ORDER BY created_at DESC
+		LIMIT $1 OFFSET $2
+	`, Projects), limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var projects []*project.Project
+	for rows.Next() {
+		p := &project.Project{}
+		err = rows.Scan(&p.ID, &p.Name, &p.Description, &p.PostQueue, &p.IdeaQueue, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		projects = append(projects, p)
+	}
+
+	return projects, nil
+}

@@ -18,12 +18,11 @@ type Service interface {
 	AddUserToProject(ctx context.Context, projectID, email string) error
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
-
-	// TODO: implement
 	SetTimeZone(ctx context.Context, projectID, timeZone string) error
 	AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
-	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
+	// TODO: implement
 	IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error)
+	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
 }
 
 type service struct {
@@ -207,12 +206,14 @@ func (s *service) AddTimeSlot(ctx context.Context, projectID string, dayOfWeek t
 	return nil
 }
 
-func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error) {
-	// TODO: implement
-	return nil, nil
+func (s *service) IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error) {
+	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
+	if err != nil {
+		return false, err
+	}
+	return sch.IsTime(time.Now()), nil
 }
 
-func (s *service) IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error) {
-	// TODO: implement
-	return false, nil
+func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error) {
+	return s.repo.FindActiveProjectsChunk(ctx, offset, chunkSize)
 }

@@ -53,7 +53,7 @@ func Decode(encoded string) (*WeeklyPostSchedule, error) {
 	return &schedule, nil
 }
 
-// IsTime checks if the given time matches any scheduled slot.
+// IsTime checks if the given time matches any scheduled slot within the time margin.
 func (w *WeeklyPostSchedule) IsTime(t time.Time) bool {
 	loc, err := time.LoadLocation(w.TimeZone)
 	if err != nil {
