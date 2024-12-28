@@ -129,6 +129,12 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("POST /projects/{project_id}/enable-social-platform/{platform_id}", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.EnableSocialPlatform),
 	))
+	r.Handle("PATCH /projects/{project_id}/time-zone", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.SetTimeZone),
+	))
+	r.Handle("PATCH /projects/{project_id}/time-slots", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.AddTimeSlot),
+	))
 	r.Handle("GET /projects", r.appPermissions("read:projects").Chain(
 		http.HandlerFunc(h.ListProjects),
 	))

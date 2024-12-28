@@ -1,0 +1,1 @@
+DROP Table IF EXISTS project_settings;

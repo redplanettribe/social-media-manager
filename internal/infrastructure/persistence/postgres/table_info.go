@@ -13,4 +13,5 @@ const (
 	PostPlatforms    TableNames = "post_platforms"
 	ProjectPlatforms TableNames = "project_platforms"
 	Comments         TableNames = "comments"
+	ProjectSettings  TableNames = "project_settings"
 )

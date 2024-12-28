@@ -20,4 +20,5 @@ type Repository interface {
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string, postIDs []string) ([]*Post, error)
 	UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error
+	GetPostsForPlatformPublishQueue(ctx context.Context, postID string) ([]*QPost, error)
 }

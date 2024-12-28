@@ -28,6 +28,7 @@ type Service interface {
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
+	DequeuePostsToPublish(ctx context.Context, projectID string) ([]*QPost, error)
 }
 
 type service struct {
@@ -225,4 +226,20 @@ func (s *service) MovePostInQueue(ctx context.Context, projectID string, current
 	}
 	q.Move(currentIndex, newIndex)
 	return s.repo.UpdateProjectPostQueue(ctx, projectID, q.Arr())
+}
+
+func (s *service) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*QPost, error) {
+	q, err := s.repo.GetProjectPostQueue(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	if q.IsEmpty() {
+		return nil, nil
+	}
+	postID := q.Shift()
+	err = s.repo.UpdateProjectPostQueue(ctx, projectID, q.Arr())
+	if err != nil {
+		return nil, err
+	}
+	return s.repo.GetPostsForPlatformPublishQueue(ctx, postID)
 }

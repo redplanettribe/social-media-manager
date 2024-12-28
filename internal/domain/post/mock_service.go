@@ -116,6 +116,36 @@ func (_m *MockService) DeletePost(ctx context.Context, id string) error {
 	return r0
 }
 
+// DequeuePostsToPublish provides a mock function with given fields: ctx, projectID
+func (_m *MockService) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*QPost, error) {
+	ret := _m.Called(ctx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DequeuePostsToPublish")
+	}
+
+	var r0 []*QPost
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*QPost, error)); ok {
+		return rf(ctx, projectID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*QPost); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*QPost)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // FindScheduledReadyPosts provides a mock function with given fields: ctx, offset, chunkSize
 func (_m *MockService) FindScheduledReadyPosts(ctx context.Context, offset int, chunkSize int) ([]*QPost, error) {
 	ret := _m.Called(ctx, offset, chunkSize)

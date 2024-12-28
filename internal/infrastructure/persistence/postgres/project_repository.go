@@ -15,7 +15,6 @@ type ProjectRepository struct {
 	db *pgxpool.Pool
 }
 
-
 func NewProjectRepository(db *pgxpool.Pool) *ProjectRepository {
 	return &ProjectRepository{db: db}
 }
@@ -353,4 +352,54 @@ func (r *ProjectRepository) DeleteProject(ctx context.Context, projectID string)
 	}
 
 	return nil
+}
+
+func (r *ProjectRepository) GetProjectSchedule(ctx context.Context, projectID string) (*project.WeeklyPostSchedule, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT schedule
+		FROM %s
+		WHERE project_id = $1
+	`, ProjectSettings), projectID)
+
+	var encoded string
+	err := row.Scan(&encoded)
+	if err != nil {
+		return nil, err
+	}
+
+	schedule, err := project.Decode(encoded)
+	if err != nil {
+		return nil, err
+	}
+
+	return schedule, nil
+}
+
+func (r *ProjectRepository) SaveSchedule(ctx context.Context, projectID string, schedule *project.WeeklyPostSchedule) error {
+	encoded, err := schedule.Encode()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET schedule = $1
+		WHERE project_id = $2
+	`, ProjectSettings), encoded, projectID)
+
+	return err
+}
+
+func (r *ProjectRepository) CreateProjectSettings(ctx context.Context, projectID string, schedule *project.WeeklyPostSchedule) error {
+	encoded, err := schedule.Encode()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.db.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (project_id, schedule)
+		VALUES ($1, $2)
+	`, ProjectSettings), projectID, encoded)
+
+	return err
 }

@@ -299,3 +299,62 @@ func (r *PostRepository) UpdateProjectPostQueue(ctx context.Context, projectID s
 	}
 	return nil
 }
+
+func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, postID string) ([]*post.QPost, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT
+			p.id,
+			p.project_id,
+			p.title,
+			p.text_content,
+			p.image_links,
+			p.video_links,
+			p.is_idea,
+			p.status,
+			p.scheduled_at,
+			p.created_by,
+			p.created_at,
+			p.updated_at,
+			prpl.api_key,
+			plat.id,
+			popl.status publish_status
+		FROM %s p
+		INNER JOIN %s popl ON p.id = popl.post_id
+		INNER JOIN %s plat ON popl.platform_id = plat.id
+		INNER JOIN %s prpl ON plat.id = prpl.platform_id
+		WHERE p.id = $1
+		AND prpl.api_key IS NOT NULL
+	`, Posts, PostPlatforms, Platforms, ProjectPlatforms), postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []*post.QPost
+	for rows.Next() {
+		p := &post.QPost{}
+		err = rows.Scan(
+			&p.ID,
+			&p.ProjectID,
+			&p.Title,
+			&p.TextContent,
+			&p.ImageLinks,
+			&p.VideoLinks,
+			&p.IsIdea,
+			&p.Status,
+			&p.ScheduledAt,
+			&p.CreatedBy,
+			&p.CreatedAt,
+			&p.UpdatedAt,
+			&p.ApiKey,
+			&p.Platform,
+			&p.PublishStatus,
+		)
+		if err != nil {
+			return nil, err
+		}
+		posts = append(posts, p)
+	}
+
+	return posts, nil
+}

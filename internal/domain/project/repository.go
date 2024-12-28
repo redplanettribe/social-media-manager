@@ -16,4 +16,7 @@ type Repository interface {
 	DoesSocialPlatformExist(ctx context.Context, socialPlatformID string) (bool, error)
 	IsProjectSocialPlatformEnabled(ctx context.Context, projectID, socialPlatformID string) (bool, error)
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
+	GetProjectSchedule(ctx context.Context, projectID string) (*WeeklyPostSchedule, error)
+	SaveSchedule(ctx context.Context, projectID string, schedule *WeeklyPostSchedule) error
+	CreateProjectSettings(ctx context.Context, projectID string, schedule *WeeklyPostSchedule) error
 }

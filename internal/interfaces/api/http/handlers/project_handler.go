@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
@@ -255,4 +256,100 @@ func (h *ProjectHandler) GetEnabledSocialPlatforms(w http.ResponseWriter, r *htt
 	if err != nil {
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
+}
+
+type setTimeZoneRequest struct {
+	TimeZone string `json:"time_zone"`
+}
+
+// SetTimeZone godoc
+// @Summary Set the time zone for a project
+// @Description Set the time zone for a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param time_zone body setTimeZoneRequest true "Time zone request"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/time-zone [patch]
+func (h *ProjectHandler) SetTimeZone(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var req setTimeZoneRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+		return
+	}
+	if req.TimeZone == "" {
+		e.WriteHttpError(w, e.NewValidationError("Time zone is required", map[string]string{
+			"time_zone": "required",
+		}))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.SetTimeZone(ctx, projectID, req.TimeZone)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+type addTimeSlotRequest struct {
+	DayOfWeek time.Weekday `json:"day_of_week"`
+	Hour      int          `json:"hour"`
+	Minute    int          `json:"minute"`
+}
+
+// AddTimeSlot godoc
+// @Summary Add a time slot to a project
+// @Description Add a time slot to a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param time_slot body addTimeSlotRequest true "Time slot request"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/time-slots [patch]
+func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	var req addTimeSlotRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+		return
+	}
+
+	err := h.Service.AddTimeSlot(ctx, projectID, req.DayOfWeek, req.Hour, req.Minute)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

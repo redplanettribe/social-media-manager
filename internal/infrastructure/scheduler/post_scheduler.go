@@ -145,7 +145,7 @@ func (s *PostScheduler) scanScheduledPosts(ctx context.Context, out chan<- *post
 // Also pages through results in chunks to avoid big loads.
 func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.QPost) error {
 	// chunkSize for projects
-	const chunkSize = 100
+	const chunkSize = 20
 	offset := 0
 
 	for {
@@ -169,23 +169,29 @@ func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.
 
 		for _, proj := range projs {
 			projectID := proj.ID
-
 			g.Go(func() error {
-				// Each project can only have one post to publish
-				postID, err := s.projectService.FindOneReadyPostInQueue(gCtx, projectID)
+				// Check if it's time to publish for this project according to its configured schedule
+				ok, err := s.projectService.IsProjectTimeToPublish(gCtx, projectID)
 				if err != nil {
 					return err
 				}
-				qp, err := s.postService.GetQueuePost(gCtx, postID)
+				if !ok {
+					return nil // not time to publish
+				}
+
+				// Each post can have multiple platforms to publish
+				qps, err := s.postService.DequeuePostsToPublish(gCtx, projectID)
 				if err != nil {
 					return err
 				}
-				if qp == nil {
+				if qps == nil {
 					return nil // no post to enqueue
 				}
 
-				// Send the single post to the channel
-				out <- qp
+				// Send each post to the out channel to enqueue
+				for _, qp := range qps {
+					out <- qp
+				}
 				return nil
 			})
 		}

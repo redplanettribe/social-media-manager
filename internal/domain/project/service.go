@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
@@ -17,18 +18,22 @@ type Service interface {
 	AddUserToProject(ctx context.Context, projectID, email string) error
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
-	FindOneReadyPostInQueue(ctx context.Context, projectID string) (string, error)
+
+	// TODO: implement
+	SetTimeZone(ctx context.Context, projectID, timeZone string) error
+	AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
 	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
+	IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error)
 }
 
 type service struct {
-	repo Repository
+	repo     Repository
 	userRepo user.Repository
 }
 
 func NewService(repo Repository, uRepo user.Repository) Service {
 	return &service{
-		repo: repo,
+		repo:     repo,
 		userRepo: uRepo,
 	}
 }
@@ -51,6 +56,12 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 	}
 
 	project, err = s.repo.Save(ctx, project)
+	if err != nil {
+		return nil, err
+	}
+
+	shc := NewWeeklyPostSchedule("America/New_York", []TimeSlot{})
+	err = s.repo.CreateProjectSettings(ctx, project.ID, shc)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +96,7 @@ func (s *service) GetProject(ctx context.Context, projectID string) (*ProjectRes
 	var (
 		project *Project
 		users   []*TeamMember
-		g 	 errgroup.Group
+		g       errgroup.Group
 	)
 
 	g.Go(func() error {
@@ -100,9 +111,9 @@ func (s *service) GetProject(ctx context.Context, projectID string) (*ProjectRes
 		return err
 	})
 
-    if err := g.Wait(); err != nil {
-        return nil, err
-    }
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
 
 	return &ProjectResponse{
 		Project: project,
@@ -111,7 +122,7 @@ func (s *service) GetProject(ctx context.Context, projectID string) (*ProjectRes
 }
 
 func (s *service) AddUserToProject(ctx context.Context, projectID, email string) error {
-	u,err:= s.userRepo.FindByEmail(ctx, email);
+	u, err := s.userRepo.FindByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -120,7 +131,7 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 	}
 
 	userID := u.ID
-	if ok, err :=s.repo.IsUserInProject(ctx, projectID, userID); err != nil {
+	if ok, err := s.repo.IsUserInProject(ctx, projectID, userID); err != nil {
 		return err
 	} else if ok {
 		return ErrUserAlreadyInProject
@@ -130,35 +141,35 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 }
 
 func (s *service) EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {
-    var (
-        exists    bool
-        enabled   bool
-        g         errgroup.Group
-    )
+	var (
+		exists  bool
+		enabled bool
+		g       errgroup.Group
+	)
 
-    g.Go(func() error {
-        var err error
-        exists, err = s.repo.DoesSocialPlatformExist(ctx, socialPlatformID)
-        return err
-    })
+	g.Go(func() error {
+		var err error
+		exists, err = s.repo.DoesSocialPlatformExist(ctx, socialPlatformID)
+		return err
+	})
 
-    g.Go(func() error {
-        var err error
-        enabled, err = s.repo.IsProjectSocialPlatformEnabled(ctx, projectID, socialPlatformID)
-        return err
-    })
+	g.Go(func() error {
+		var err error
+		enabled, err = s.repo.IsProjectSocialPlatformEnabled(ctx, projectID, socialPlatformID)
+		return err
+	})
 
-    if err := g.Wait(); err != nil {
-        return err
-    }
+	if err := g.Wait(); err != nil {
+		return err
+	}
 
-    if !exists {
-        return ErrSocialPlatformNotFound
-    }
+	if !exists {
+		return ErrSocialPlatformNotFound
+	}
 
-    if enabled {
-        return ErrSocialPlatformAlreadyEnabled
-    }
+	if enabled {
+		return ErrSocialPlatformAlreadyEnabled
+	}
 
 	return s.repo.EnableSocialPlatform(ctx, projectID, socialPlatformID)
 }
@@ -167,12 +178,41 @@ func (s *service) GetEnabledSocialPlatforms(ctx context.Context, projectID strin
 	return s.repo.GetEnabledSocialPlatforms(ctx, projectID)
 }
 
-func (s *service) FindOneReadyPostInQueue(ctx context.Context, projectID string) (string, error) {
-	// TODO: implement
-	return "", nil
+func (s *service) SetTimeZone(ctx context.Context, projectID, timeZone string) error {
+	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	sch.SetTimeZone(timeZone)
+	err = s.repo.SaveSchedule(ctx, projectID, sch)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *service) AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error {
+	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	err = sch.AddSlot(dayOfWeek, hour, minute)
+	if err != nil {
+		return err
+	}
+	err = s.repo.SaveSchedule(ctx, projectID, sch)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error) {
 	// TODO: implement
 	return nil, nil
+}
+
+func (s *service) IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error) {
+	// TODO: implement
+	return false, nil
 }
