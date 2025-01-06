@@ -5,38 +5,37 @@ CONTAINER_NAME = my-postgres-container
 # Default target
 .PHONY: start
 start:
-	@echo "Running Docker container..."
+	@echo "Composing local containers..."
 	docker compose up -d
+	@echo "Running backend with Air..."
+	make watch
+
 .PHONY: watch
 watch:
 	@echo "Running Air..."
 	air -c .air.toml
 .PHONY: stop
 stop:
-	@echo "Stopping Docker container..."
-	docker stop $(CONTAINER_NAME)
-	@echo "Removing Docker container..."
-	docker rm $(CONTAINER_NAME)
-.PHONY: clean
-clean:
-	@echo "Removing Docker image..."
-	docker rmi $(IMAGE_NAME)
+	@echo "Stopping local containers..."
+	docker compose down
+
+
 
 # Migrations
-.PHONY: create
-create:
+.PHONY: create-migration
+create-migration:
 	@echo "Creating new migration..."
 	migrate create -ext sql -dir ./internal/infrastructure/persistence/migrations -seq $(name)
 
-.PHONY: migrate
-migrate:
+.PHONY: migrate-up
+migrate-up:
 	@echo "Running migrations..."
-	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" up
+	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" up $(step)
 
-.PHONY: rollback
-rollback:
+.PHONY: migrate-down
+migrate-down:
 	@echo "Rolling back migrations..."
-	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" down
+	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" down $(step)
 
 # Find directories with Go files containing //go:generate directives
 GENERATE_DIRS := $(sort $(dir $(shell find . -name '*.go' -exec grep -l '^//go:generate' {} +)))

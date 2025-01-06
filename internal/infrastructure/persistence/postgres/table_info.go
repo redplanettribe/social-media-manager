@@ -9,6 +9,7 @@ const (
 	TeamMembersRoles TableNames = "team_members_roles"
 	TeamRoles        TableNames = "team_roles"
 	Posts            TableNames = "posts"
+	Media            TableNames = "media"
 	Platforms        TableNames = "platforms"
 	PostPlatforms    TableNames = "post_platforms"
 	ProjectPlatforms TableNames = "project_platforms"

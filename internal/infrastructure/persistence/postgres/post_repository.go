@@ -23,9 +23,9 @@ func NewPostRepository(db *pgxpool.Pool) *PostRepository {
 func (r *PostRepository) Save(ctx context.Context, p *post.Post) error {
 	fmt.Println("repo")
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (id, project_id, title, text_content, image_links, video_links, is_idea, status, scheduled_at, created_by, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-	`, Posts), p.ID, p.ProjectID, p.Title, p.TextContent, p.ImageLinks, p.VideoLinks, p.IsIdea, p.Status, p.ScheduledAt, p.CreatedBy, time.Now(), time.Now())
+		INSERT INTO %s (id, project_id, title, text_content, is_idea, status, scheduled_at, created_by, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	`, Posts), p.ID, p.ProjectID, p.Title, p.TextContent, p.IsIdea, p.Status, p.ScheduledAt, p.CreatedBy, time.Now(), time.Now())
 	if err != nil {
 		return err
 	}
@@ -35,9 +35,9 @@ func (r *PostRepository) Save(ctx context.Context, p *post.Post) error {
 func (r *PostRepository) Update(ctx context.Context, p *post.Post) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		UPDATE %s
-		SET title = $2, text_content = $3, image_links = $4, video_links = $5, is_idea = $6, status = $7, scheduled_at = $8, updated_at = $9
+		SET title = $2, text_content = $3, is_idea = $6, status = $7, scheduled_at = $8, updated_at = $9
 		WHERE id = $1
-	`, Posts), p.ID, p.Title, p.TextContent, p.ImageLinks, p.VideoLinks, p.IsIdea, p.Status, p.ScheduledAt, time.Now())
+	`, Posts), p.ID, p.Title, p.TextContent, p.IsIdea, p.Status, p.ScheduledAt, time.Now())
 	if err != nil {
 		return err
 	}
@@ -46,13 +46,13 @@ func (r *PostRepository) Update(ctx context.Context, p *post.Post) error {
 
 func (r *PostRepository) FindByID(ctx context.Context, id string) (*post.Post, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
-		SELECT id, project_id, title, text_content, image_links, video_links, is_idea, status, scheduled_at, created_by, created_at, updated_at
+		SELECT id, project_id, title, text_content, is_idea, status, scheduled_at, created_by, created_at, updated_at
 		FROM %s
 		WHERE id = $1
 	`, Posts), id)
 
 	p := &post.Post{}
-	err := row.Scan(&p.ID, &p.ProjectID, &p.Title, &p.TextContent, &p.ImageLinks, &p.VideoLinks, &p.IsIdea, &p.Status, &p.ScheduledAt, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+	err := row.Scan(&p.ID, &p.ProjectID, &p.Title, &p.TextContent, &p.IsIdea, &p.Status, &p.ScheduledAt, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
 	} else if errors.Is(err, pgx.ErrNoRows) {
@@ -64,7 +64,7 @@ func (r *PostRepository) FindByID(ctx context.Context, id string) (*post.Post, e
 
 func (r *PostRepository) FindByProjectID(ctx context.Context, projectID string) ([]*post.Post, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT id, project_id, title, text_content, image_links, video_links, is_idea, status, scheduled_at, created_by, created_at, updated_at
+		SELECT id, project_id, title, text_content, is_idea, status, scheduled_at, created_by, created_at, updated_at
 		FROM %s
 		WHERE project_id = $1
 	`, Posts), projectID)
@@ -76,7 +76,7 @@ func (r *PostRepository) FindByProjectID(ctx context.Context, projectID string) 
 	var posts []*post.Post
 	for rows.Next() {
 		p := &post.Post{}
-		err = rows.Scan(&p.ID, &p.ProjectID, &p.Title, &p.TextContent, &p.ImageLinks, &p.VideoLinks, &p.IsIdea, &p.Status, &p.ScheduledAt, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
+		err = rows.Scan(&p.ID, &p.ProjectID, &p.Title, &p.TextContent, &p.IsIdea, &p.Status, &p.ScheduledAt, &p.CreatedBy, &p.CreatedAt, &p.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -127,8 +127,6 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		p.project_id,
 		p.title,
 		p.text_content,
-		p.image_links,
-		p.video_links,
 		p.is_idea,
 		p.status,
 		p.scheduled_at,
@@ -163,8 +161,6 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 			&p.ProjectID,
 			&p.Title,
 			&p.TextContent,
-			&p.ImageLinks,
-			&p.VideoLinks,
 			&p.IsIdea,
 			&p.Status,
 			&p.ScheduledAt,
@@ -271,8 +267,6 @@ func (r *PostRepository) GetProjectQueuedPosts(ctx context.Context, projectID st
 			&p.ProjectID,
 			&p.Title,
 			&p.TextContent,
-			&p.ImageLinks,
-			&p.VideoLinks,
 			&p.IsIdea,
 			&p.Status,
 			&p.ScheduledAt,
@@ -307,8 +301,6 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 			p.project_id,
 			p.title,
 			p.text_content,
-			p.image_links,
-			p.video_links,
 			p.is_idea,
 			p.status,
 			p.scheduled_at,
@@ -338,8 +330,6 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 			&p.ProjectID,
 			&p.Title,
 			&p.TextContent,
-			&p.ImageLinks,
-			&p.VideoLinks,
 			&p.IsIdea,
 			&p.Status,
 			&p.ScheduledAt,

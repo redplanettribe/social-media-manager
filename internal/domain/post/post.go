@@ -40,34 +40,30 @@ var (
 )
 
 type Post struct {
-	ID          string    `json:"id"`
-	ProjectID   string    `json:"project_id"`
-	Title       string    `json:"title"`
-	TextContent string    `json:"text_content"`
-	ImageLinks  []string  `json:"image_links"`
-	VideoLinks  []string  `json:"video_links"`
-	IsIdea      bool      `json:"is_idea"`
-	Status      string    `json:"status"`
-	CreatedBy   string    `json:"created_by"`
-	ScheduledAt time.Time `json:"scheduled_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string        `json:"id"`
+	ProjectID   string        `json:"project_id"`
+	Title       string        `json:"title"`
+	TextContent string        `json:"text_content"`
+	IsIdea      bool          `json:"is_idea"`
+	Status      string        `json:"status"`
+	CreatedBy   string        `json:"created_by"`
+	ScheduledAt time.Time     `json:"scheduled_at"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
 type QPost struct {
 	// Post fields
-	ID          string    `json:"id"`
-	ProjectID   string    `json:"project_id"`
-	Title       string    `json:"title"`
-	TextContent string    `json:"text_content"`
-	ImageLinks  []string  `json:"image_links"`
-	VideoLinks  []string  `json:"video_links"`
-	IsIdea      bool      `json:"is_idea"`
-	Status      string    `json:"status"`
-	CreatedBy   string    `json:"created_by"`
-	ScheduledAt time.Time `json:"scheduled_at"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID          string        `json:"id"`
+	ProjectID   string        `json:"project_id"`
+	Title       string        `json:"title"`
+	TextContent string        `json:"text_content"`
+	IsIdea      bool          `json:"is_idea"`
+	Status      string        `json:"status"`
+	CreatedBy   string        `json:"created_by"`
+	ScheduledAt time.Time     `json:"scheduled_at"`
+	CreatedAt   time.Time     `json:"created_at"`
+	UpdatedAt   time.Time     `json:"updated_at"`
 	// Additional fields
 	ApiKey        string
 	Platform      string `json:"platform"`
@@ -99,8 +95,6 @@ func NewPost(
 		ProjectID:   projectID,
 		Title:       title,
 		TextContent: content,
-		ImageLinks:  imageLinks,
-		VideoLinks:  videoLinks,
 		IsIdea:      isIdea,
 		Status:      string(PostStatusDraft),
 		CreatedBy:   userID,

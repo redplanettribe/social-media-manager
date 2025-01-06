@@ -3,8 +3,6 @@ CREATE TABLE IF NOT EXISTS posts (
     project_id uuid NOT NULL,
     title TEXT NOT NULL,
     text_content TEXT NOT NULL,
-    image_links TEXT [],
-    video_links TEXT [],
     is_idea BOOLEAN NOT NULL,
     status VARCHAR(20) NOT NULL,
     scheduled_at TIMESTAMP,
