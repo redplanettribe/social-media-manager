@@ -15,8 +15,7 @@ services:
     image: minio/minio:latest
     env_file:
       - .env
-    entrypoint: ["minio"]
-    command: ["server", "app/data", "--console-address", ":9001", "--address", ":9000"]
+    entrypoint: ["minio", "server", "app/data", "--console-address", ":9001", "--address", ":9000"]
     container_name: ocm-minio
     ports:
       - "9000:9000"

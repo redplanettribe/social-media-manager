@@ -10,15 +10,23 @@ import (
 )
 
 type Config struct {
-	App       AppConfig
-	DB        DBConfig
-	JWT       JWTConfig
-	Logger    LoggerConfig
-	SSL       SSLConfig
-	Scheduler SchedulerConfig
-	Publisher PublisherConfig
+	App         AppConfig
+	DB          DBConfig
+	ObjectStore ObjectStoreConfig
+	JWT         JWTConfig
+	Logger      LoggerConfig
+	SSL         SSLConfig
+	Scheduler   SchedulerConfig
+	Publisher   PublisherConfig
 }
 
+type ObjectStoreConfig struct {
+	Endpoint        string // including port
+	AccessKey       string
+	SecretAccessKey string
+	Bucket          string
+	Region          string
+}
 type PublisherConfig struct {
 	WorkerNum     int
 	RetryNum      int
@@ -27,7 +35,7 @@ type PublisherConfig struct {
 }
 
 type SchedulerConfig struct {
-	Interval time.Duration
+	Interval      time.Duration
 	ChannelBuffer int
 }
 
@@ -89,6 +97,15 @@ func LoadConfig() (*Config, error) {
 			Name:     getEnv("POSTGRES_DB", "mydatabase"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
+
+		ObjectStore: ObjectStoreConfig{
+			Endpoint:        getEnv("OBJECT_STORE_ENDPOINT", "http://localhost:9000"),
+			AccessKey:       getEnv("OBJECT_STORE_ACCESS_KEY", "minio"),
+			SecretAccessKey: getEnv("OBJECT_STORE_SECRET_ACCESS_KEY", ""),
+			Bucket:          getEnv("OBJECT_STORE_BUCKET", "mybucket"),
+			Region:          getEnv("OBJECT_STORE_REGION", "us-east-1"),
+		},
+
 		JWT: JWTConfig{
 			SecretKey: getEnv("JWT_SECRET", "your_secret_key"),
 		},
@@ -100,7 +117,7 @@ func LoadConfig() (*Config, error) {
 			KeyPath:  getEnv("SSL_KEY_PATH", ""),
 		},
 		Scheduler: SchedulerConfig{
-			Interval: 10 * time.Second,
+			Interval:      10 * time.Second,
 			ChannelBuffer: 100,
 		},
 		Publisher: PublisherConfig{
