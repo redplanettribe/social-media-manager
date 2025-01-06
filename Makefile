@@ -5,15 +5,8 @@ CONTAINER_NAME = my-postgres-container
 # Default target
 .PHONY: start
 start:
-	@echo "Building Docker image..."
-	docker build -t $(IMAGE_NAME) .
 	@echo "Running Docker container..."
-	docker run -d \
-		--name $(CONTAINER_NAME) \
-		-p 5432:5432 \
-		--env-file .env \
-		-v my_dbdata:/var/lib/postgresql/data-$(IMAGE_NAME) \
-		$(IMAGE_NAME)
+	docker compose up -d
 .PHONY: watch
 watch:
 	@echo "Running Air..."
