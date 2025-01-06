@@ -20,8 +20,6 @@ func NewPostHandler(service post.Service) *PostHandler {
 type createPostRequest struct {
 	Title       string    `json:"title"`
 	TextContent string    `json:"text_content"`
-	ImageLinks  []string  `json:"image_links"`
-	VideoLinks  []string  `json:"video_links"`
 	IsIdea      bool      `json:"is_idea"`
 	ScheduledAt time.Time `json:"scheduled_at"`
 }
@@ -68,8 +66,6 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		projectID,
 		req.Title,
 		req.TextContent,
-		req.ImageLinks,
-		req.VideoLinks,
 		req.IsIdea,
 		req.ScheduledAt,
 	)

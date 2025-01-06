@@ -68,9 +68,9 @@ func (_m *MockService) ArchivePost(ctx context.Context, id string) error {
 	return r0
 }
 
-// CreatePost provides a mock function with given fields: ctx, projectID, title, textContent, imageURLs, videoURLs, isIdea, scheduledAt
-func (_m *MockService) CreatePost(ctx context.Context, projectID string, title string, textContent string, imageURLs []string, videoURLs []string, isIdea bool, scheduledAt time.Time) (*Post, error) {
-	ret := _m.Called(ctx, projectID, title, textContent, imageURLs, videoURLs, isIdea, scheduledAt)
+// CreatePost provides a mock function with given fields: ctx, projectID, title, textContent, isIdea, scheduledAt
+func (_m *MockService) CreatePost(ctx context.Context, projectID string, title string, textContent string, isIdea bool, scheduledAt time.Time) (*Post, error) {
+	ret := _m.Called(ctx, projectID, title, textContent, isIdea, scheduledAt)
 
 	if len(ret) == 0 {
 		panic("no return value specified for CreatePost")
@@ -78,19 +78,19 @@ func (_m *MockService) CreatePost(ctx context.Context, projectID string, title s
 
 	var r0 *Post
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, []string, []string, bool, time.Time) (*Post, error)); ok {
-		return rf(ctx, projectID, title, textContent, imageURLs, videoURLs, isIdea, scheduledAt)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, bool, time.Time) (*Post, error)); ok {
+		return rf(ctx, projectID, title, textContent, isIdea, scheduledAt)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, []string, []string, bool, time.Time) *Post); ok {
-		r0 = rf(ctx, projectID, title, textContent, imageURLs, videoURLs, isIdea, scheduledAt)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, bool, time.Time) *Post); ok {
+		r0 = rf(ctx, projectID, title, textContent, isIdea, scheduledAt)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*Post)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, []string, []string, bool, time.Time) error); ok {
-		r1 = rf(ctx, projectID, title, textContent, imageURLs, videoURLs, isIdea, scheduledAt)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, bool, time.Time) error); ok {
+		r1 = rf(ctx, projectID, title, textContent, isIdea, scheduledAt)
 	} else {
 		r1 = ret.Error(1)
 	}

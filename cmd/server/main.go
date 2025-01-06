@@ -9,12 +9,14 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	_ "github.com/pedrodcsjostrom/opencm/docs"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
+	minioS3 "github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/miniIO"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/scheduler"
@@ -92,6 +94,15 @@ func main() {
 	platformService := platform.NewService(platformRepo)
 	platformHandler := handlers.NewPlatformHandler(platformService)
 
+	mediaObjectRepo, err := minioS3.NewS3Client(&cfg.ObjectStore)
+	if err != nil {
+		log.Fatalf("Could not create media object repository: %v", err)
+	}
+	mediaMetaDataRepo := postgres.NewMediaRepository(dbPool)
+	mediaService := media.NewService(mediaMetaDataRepo, mediaObjectRepo)
+	mediaHandler := handlers.NewMediaHandler(mediaService)
+
+
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
 	httpRouter := api.NewRouter(
@@ -100,6 +111,7 @@ func main() {
 		projectHandler,
 		postHandler,
 		platformHandler,
+		mediaHandler,
 		authenticator,
 		appAuthorizer,
 		projectAuthorizer,

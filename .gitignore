@@ -24,7 +24,8 @@ cmd/**/server.exe
 # Dependency directories (comment out if you are vendoring)
 # /vendor/
 
-# Logs and temporary files
+# Logs and temporary files and directories
+tmp
 *.log
 *.tmp
 

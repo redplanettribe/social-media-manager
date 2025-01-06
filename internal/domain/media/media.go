@@ -1,6 +1,10 @@
 package media
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type MediaType string
 
@@ -10,7 +14,7 @@ const (
 	MediaTypeShortVideo MediaType = "short_video"
 )
 
-type Media struct {
+type MetaData struct {
 	ID           string    `json:"id"`
 	PostID       string    `json:"post_id"`
 	Type         MediaType `json:"media_type"`
@@ -21,4 +25,25 @@ type Media struct {
 	Length       int       `json:"length"`
 	AddedBy      string    `json:"added_by"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+func NewMetadata(postID, fileName string, data []byte) (*MetaData, error) {
+	analyzer, err := GetAnalyzer(fileName)
+	if err != nil {
+		return nil, err
+	}
+    mediaInfo, err := analyzer.Analyze(data)
+    if err != nil {
+        return nil, err
+    }
+
+    return &MetaData{
+        ID:        uuid.New().String(),
+        PostID:    postID,
+        Type:      mediaInfo.Type,
+        Width:     mediaInfo.Width,
+        Height:    mediaInfo.Height,
+        Length:    mediaInfo.Length,
+        CreatedAt: time.Now(),
+    }, nil
 }

@@ -21,11 +21,13 @@ type Config struct {
 }
 
 type ObjectStoreConfig struct {
-	Endpoint        string // including port
-	AccessKey       string
-	SecretAccessKey string
-	Bucket          string
-	Region          string
+	Endpoint         string // including port
+	AccessKey        string
+	SecretAccessKey  string
+	Bucket           string
+	Region           string
+	UseSSL           bool
+	S3ForcePathStyle bool
 }
 type PublisherConfig struct {
 	WorkerNum     int
@@ -97,13 +99,14 @@ func LoadConfig() (*Config, error) {
 			Name:     getEnv("POSTGRES_DB", "mydatabase"),
 			SSLMode:  getEnv("DB_SSLMODE", "disable"),
 		},
-
 		ObjectStore: ObjectStoreConfig{
-			Endpoint:        getEnv("OBJECT_STORE_ENDPOINT", "http://localhost:9000"),
-			AccessKey:       getEnv("OBJECT_STORE_ACCESS_KEY", "minio"),
-			SecretAccessKey: getEnv("OBJECT_STORE_SECRET_ACCESS_KEY", ""),
-			Bucket:          getEnv("OBJECT_STORE_BUCKET", "mybucket"),
-			Region:          getEnv("OBJECT_STORE_REGION", "us-east-1"),
+			Endpoint:         getEnv("OBJECT_STORE_ENDPOINT", "http://localhost:9000"),
+			AccessKey:        getEnv("OBJECT_STORE_ACCESS_KEY", "minio"),
+			SecretAccessKey:  getEnv("OBJECT_STORE_SECRET_ACCESS_KEY", ""),
+			Bucket:           getEnv("OBJECT_STORE_BUCKET", "post-media"),
+			Region:           getEnv("OBJECT_STORE_REGION", "us-east-1"),
+			UseSSL:           getEnv("OBJECT_STORE_USE_SSL", "true") == "true",
+			S3ForcePathStyle: getEnv("OBJECT_STORE_S3_FORCE_PATH_STYLE", "true") == "true",
 		},
 
 		JWT: JWTConfig{

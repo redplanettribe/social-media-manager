@@ -73,7 +73,6 @@ type QPost struct {
 func NewPost(
 	projectID, userID string,
 	title, content string,
-	imageLinks, videoLinks []string,
 	isIdea bool,
 	scheduledAt time.Time,
 ) (*Post, error) {

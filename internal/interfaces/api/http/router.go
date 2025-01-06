@@ -32,6 +32,7 @@ func NewRouter(
 	projectHandler *handlers.ProjectHandler,
 	postHandler *handlers.PostHandler,
 	platformHandler *handlers.PlatformHandler,
+	mediaHandler *handlers.MediaHandler,
 	authenticator authentication.Authenticator,
 	appAuthorizer authorization.AppAuthorizer,
 	projectAuthorizer authorization.ProjectAuthorizer,
@@ -61,6 +62,7 @@ func NewRouter(
 	r.setupProjectRoutes(projectHandler)
 	r.setupPostRoutes(postHandler)
 	r.setupPlatformRoutes(platformHandler)
+	r.setupMediaRoutes(mediaHandler)
 
 	return r
 }
@@ -187,6 +189,13 @@ func (r *Router) setupPlatformRoutes(h *handlers.PlatformHandler) {
 	))
 	r.Handle("PATCH /platforms/{project_id}/api-key", r.projectPermissions("write:platforms").Chain(
 		http.HandlerFunc(h.AddAPIKey),
+	))
+}
+
+/*MEDIA ROUTES*/
+func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
+	r.Handle("POST /media/{project_id}/{post_id}", r.projectPermissions("write:media").Chain(
+		http.HandlerFunc(h.UploadMedia),
 	))
 }
 
