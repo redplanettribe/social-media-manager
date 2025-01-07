@@ -27,23 +27,32 @@ type MetaData struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-func NewMetadata(postID, fileName string, data []byte) (*MetaData, error) {
+func NewMetadata(postID, userID, fileName string, data []byte) (*MetaData, error) {
 	analyzer, err := GetAnalyzer(fileName)
 	if err != nil {
 		return nil, err
 	}
-    mediaInfo, err := analyzer.Analyze(data)
-    if err != nil {
-        return nil, err
-    }
+	mediaInfo, err := analyzer.Analyze(data)
+	if err != nil {
+		return nil, err
+	}
 
-    return &MetaData{
-        ID:        uuid.New().String(),
-        PostID:    postID,
-        Type:      mediaInfo.Type,
-        Width:     mediaInfo.Width,
-        Height:    mediaInfo.Height,
-        Length:    mediaInfo.Length,
-        CreatedAt: time.Now(),
-    }, nil
+	// Not adding the URL and Thumbnail URL here, as it will be added by the object repository
+	return &MetaData{
+		ID:           uuid.New().String(),
+		PostID:       postID,
+		Type:         mediaInfo.Type,
+		Url:          "",
+		ThumbnailUrl: "",
+		Width:        mediaInfo.Width,
+		Height:       mediaInfo.Height,
+		Length:       mediaInfo.Length,
+		AddedBy:      userID,
+		CreatedAt:    time.Now(),
+	}, nil
+}
+
+type Urls struct {
+	Url          string
+	ThumbnailUrl string
 }

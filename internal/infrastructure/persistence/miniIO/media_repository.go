@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -40,12 +41,31 @@ func NewS3Client(cfg *config.ObjectStoreConfig) (*S3Client, error) {
 	}, nil
 }
 
-func (c *S3Client) UploadFile(ctx context.Context, projectID, postID, fileName string, data []byte) error {
-	key := fmt.Sprintf("project-%s/post-%s/%s", projectID, postID, fileName)
+func (c *S3Client) UploadFile(ctx context.Context, projectID, postID, fileName string, data []byte, metadata *media.MetaData)  error {
+	key := c.getKey(projectID, postID, fileName)
 	_, err := c.client.PutObjectWithContext(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(c.cfg.Bucket),
 		Key:    aws.String(key),
 		Body:   bytes.NewReader(data),
 	})
-	return err
+	if err != nil {
+		return  err
+	}
+	
+	if c.isThumbnail(fileName) {
+		metadata.ThumbnailUrl = fmt.Sprintf("%s/%s/%s", c.cfg.Endpoint, c.cfg.Bucket, key)
+	} else {
+		metadata.Url = fmt.Sprintf("%s/%s/%s", c.cfg.Endpoint, c.cfg.Bucket, key)
+	}
+
+	return nil
+}
+
+func (c *S3Client) getKey(projectID, postID, fileName string) string {
+	return fmt.Sprintf("project-%s/post-%s/%s", projectID, postID, fileName)
+}
+
+// returns true if filename starts with "th-"
+func (c *S3Client) isThumbnail(fileName string) bool {
+	return fileName[:3] == "th-"
 }
