@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
@@ -152,6 +153,27 @@ func mapUserErrorToAPIError(err error) *e.APIError {
 			Status:  http.StatusInternalServerError,
 			Code:    e.ErrCodeInternal,
 			Message: "Internal server error",
+		}
+	}
+}
+
+func mapMediaErrorToAPIError(err error) *e.APIError {
+	switch {
+	case e.MatchError(
+		err,
+		media.ErrUnsupportedMediaType,
+	):
+		return &e.APIError{
+			Status:  http.StatusBadRequest,
+			Code:    e.ErrCodeBadRequest,
+			Message: err.Error(),
+		}
+
+	default:
+		return &e.APIError{
+			Status:  http.StatusInternalServerError,
+			Code:    e.ErrCodeInternal,
+			Message: err.Error(),
 		}
 	}
 }

@@ -51,21 +51,30 @@ func (c *S3Client) UploadFile(ctx context.Context, projectID, postID, fileName s
 	if err != nil {
 		return  err
 	}
-	
-	if c.isThumbnail(fileName) {
-		metadata.ThumbnailUrl = fmt.Sprintf("%s/%s/%s", c.cfg.Endpoint, c.cfg.Bucket, key)
-	} else {
-		metadata.Url = fmt.Sprintf("%s/%s/%s", c.cfg.Endpoint, c.cfg.Bucket, key)
-	}
-
 	return nil
+}
+
+func (c *S3Client) GetFile(ctx context.Context, projectID, postID, fileName string) ([]byte, error) {
+	key := c.getKey(projectID, postID, fileName)
+	result, err := c.client.GetObjectWithContext(ctx, &s3.GetObjectInput{
+		Bucket: aws.String(c.cfg.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer result.Body.Close()
+	
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(result.Body)
+	return buf.Bytes(), nil
 }
 
 func (c *S3Client) getKey(projectID, postID, fileName string) string {
 	return fmt.Sprintf("project-%s/post-%s/%s", projectID, postID, fileName)
 }
 
-// returns true if filename starts with "th-"
-func (c *S3Client) isThumbnail(fileName string) bool {
-	return fileName[:3] == "th-"
-}
+// // returns true if filename starts with "th-"
+// func (c *S3Client) isThumbnail(fileName string) bool {
+// 	return fileName[:3] == "th-"
+// }
