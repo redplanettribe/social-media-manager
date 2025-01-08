@@ -1,0 +1,129 @@
+Table users {
+  id             uuid          [pk]
+  username       varchar(50)   [unique, not null]
+  email          varchar(255)  [unique, not null]
+  password_hash  varchar(255)  [not null]
+  salt           varchar(32)   [not null]
+  created_at     timestamp     [default: `NOW()`]
+  updated_at     timestamp     [default: `NOW()`]
+}
+
+
+Table roles {
+  id    serial       [pk]
+  name  varchar(50)  [unique, not null]
+}
+
+Table user_roles {
+  user_id uuid      [ref: > users.id, not null]
+  role_id integer   [ref: > roles.id, not null]
+
+  Indexes {
+    (user_id, role_id) [unique]
+  }
+}
+
+Table sessions{
+  id             uuid          [pk]
+  user_id        uuid          [ref: > users.id, not null]
+  expires_at     timestamp     [not null]
+  created_at     timestamp     [default: `NOW()`]
+  updated_at     timestamp     [default: `NOW()`] 
+}
+
+Table projects {
+  id          uuid        [pk]
+  name        varchar(100)  [not null]
+  post_queue  uuid[]          
+  idea_queue  uuid[]        
+  created_by  uuid       [ref: > users.id, not null]
+  created_at  timestamp     [default: `NOW()`]
+  updated_at  timestamp     [default: `NOW()`]
+}
+
+Table settings {
+  project_id        integer      [ref: - projects.id, pk]
+  publish_schedule  text 
+}
+
+Table team_members {
+  project_id   uuid   [ref: > projects.id, not null]
+  user_id   uuid   [ref: > users.id, not null]
+  added_at  timestamp [default: `NOW()`]
+
+  Indexes {
+    (project_id, user_id) [unique]
+  }
+}
+
+Table team_member_roles {
+  user_id      uuid   [ref: > team_members.user_id,not null]   
+  team_role_id serial [ref: > team_roles.id,not null]
+}
+
+
+Table team_roles {
+  id      serial   [pk]
+  role  varchar(20)  [unique, not null]
+}
+
+Table posts {
+  id                      serial         [pk]
+  project_id              uuid        [ref: > projects.id, not null]
+  title                   text           [not null]
+  text_content            text
+  is_idea                 boolean        [default: false, not null]
+  status                  varchar(20)    [default: 'draft', not null]
+  scheduled_publish_date  timestamp   
+  created_by              uuid        [ref: > users.id, not null]
+  created_at              timestamp      [default: `NOW()`]
+  updated_at              timestamp      [default: `NOW()`]
+  // Note: 'status' can be 'draft', 'ready', 'scheduled', or 'published'
+}
+
+Table media {
+  id                uuid          [pk]
+  post_id           uuid          [ref: > posts.id]
+  type              vachar(15)
+  url               text
+  filename          varchar(255) [unique, not null]
+  width             int
+  height            int
+  length            int
+  added_by          uuid          [ref: > users.id]
+  created_at        timestamp     [default: `NOW()`]
+}
+
+Table comments {
+  id          serial    [pk]
+  post_id     uuid   [ref: > posts.id, not null]
+  user_id     uuid   [ref: > users.id, not null]
+  content     text      [not null]
+  created_at  timestamp [default: `NOW()`]
+  updated_at  timestamp [default: `NOW()`]
+}
+
+Table platforms {
+  id        uuid       [pk]
+  name      varchar(50)  [unique, not null]
+  logo_link varchar(50)
+}
+
+Table post_platforms {
+  post_id                 uuid       [ref: > posts.id, pk]
+  platform_id             uuid       [ref: > platforms.id, pk]
+  status                  varchar(20)   [default: 'scheduled', not null]
+
+  // Note: 'status' can be 'scheduled', 'published', or 'failed'
+}
+
+Table post_platform_media {
+  media_id                uuid          [pk, ref: > media.id]
+  post_id                 uuid          [pk, ref: > post_platforms.post_id]
+  platform_id             uuid          [pk, ref: > post_platforms.platform_id]
+}
+Table projects_platforms {
+  platform_id             uuid       [ref: > platforms.id, pk]
+  project_id              uuid        [ref: > projects.id , pk]
+  api_key   varchar(20)  
+}
