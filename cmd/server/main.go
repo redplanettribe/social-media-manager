@@ -13,14 +13,13 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
+	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher_queue"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	minioS3 "github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/miniIO"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
-	pq "github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher_queue"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/server"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
@@ -91,8 +90,8 @@ func main() {
 	postService := post.NewService(postRepo)
 	postHandler := handlers.NewPostHandler(postService)
 
-	publisherFactory := platforms.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
-	
+	publisherFactory := platform.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
+
 	encrypter := encrypting.NewAESEncrypter(&cfg.Encryption)
 	platformRepo := postgres.NewPlatformRepository(dbPool)
 	platformService := platform.NewService(platformRepo, encrypter, publisherFactory)

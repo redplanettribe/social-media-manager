@@ -6,12 +6,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
-	pq "github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher_queue"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
+	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher_queue"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 )
 
 func TestPostScheduler_Start(t *testing.T) {

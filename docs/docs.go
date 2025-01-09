@@ -61,14 +61,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/platforms/api-key": {
+        "/platforms/{project_id}/secrets": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Add an API key to a social network",
+                "description": "Add a secret to a social network",
                 "consumes": [
                     "application/json"
                 ],
@@ -78,11 +78,18 @@ const docTemplate = `{
                 "tags": [
                     "platforms"
                 ],
-                "summary": "Add an API key to a social network",
+                "summary": "Add a secret to a social network",
                 "parameters": [
                     {
-                        "description": "API key request",
-                        "name": "api_key",
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -91,11 +98,14 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK"
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "string"
+                        }
                     },
                     "400": {
-                        "description": "Validation error",
+                        "description": "Bad request",
                         "schema": {
                             "$ref": "#/definitions/errors.APIError"
                         }
@@ -1144,6 +1154,146 @@ const docTemplate = `{
                 }
             }
         },
+        "/projects/{project_id}/time-slots": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add a time slot to a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Add a time slot to a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Time slot request",
+                        "name": "time_slot",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.addTimeSlotRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "410": {
+                        "description": "Project not found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/projects/{project_id}/time-zone": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Set the time zone for a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Set the time zone for a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Time zone request",
+                        "name": "time_zone",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.setTimeZoneRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "410": {
+                        "description": "Project not found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "post": {
                 "description": "Register a new user with username, password and email",
@@ -1462,13 +1612,19 @@ const docTemplate = `{
         "handlers.addAPIKeyRequest": {
             "type": "object",
             "properties": {
-                "api_key": {
+                "secret_key": {
+                    "type": "string"
+                },
+                "secret_value": {
                     "type": "string"
                 },
                 "social_platform_id": {
                     "type": "string"
                 }
             }
+        },
+        "handlers.addTimeSlotRequest": {
+            "type": "object"
         },
         "handlers.assignRoleRequest": {
             "type": "object",
@@ -1484,12 +1640,6 @@ const docTemplate = `{
         "handlers.createPostRequest": {
             "type": "object",
             "properties": {
-                "image_links": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "is_idea": {
                     "type": "boolean"
                 },
@@ -1501,12 +1651,6 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
-                },
-                "video_links": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -1565,6 +1709,14 @@ const docTemplate = `{
                 }
             }
         },
+        "handlers.setTimeZoneRequest": {
+            "type": "object",
+            "properties": {
+                "time_zone": {
+                    "type": "string"
+                }
+            }
+        },
         "platform.Platform": {
             "type": "object",
             "properties": {
@@ -1580,13 +1732,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "facebook",
-                "twitter",
+                "x",
                 "linkedin",
                 "instagram"
             ],
             "x-enum-varnames": [
                 "Facebook",
-                "Twitter",
+                "X",
                 "LinkedIn",
                 "Instagram"
             ]
@@ -1602,12 +1754,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "image_links": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "is_idea": {
                     "type": "boolean"
@@ -1629,12 +1775,6 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
-                },
-                "video_links": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },

@@ -8,8 +8,8 @@ import (
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
+	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher_queue"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
-	pq "github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher_queue"
 	"golang.org/x/sync/errgroup"
 )
 

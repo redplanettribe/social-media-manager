@@ -1,4 +1,4 @@
-package platforms
+package platform
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
 )
 
 //go:generate mockery --name=Publisher --case=underscore --inpackage
@@ -41,7 +42,7 @@ func (pf *publisherFactory) Create(platform string, secrets string) (Publisher, 
     e := pf.encrypter
     switch platform {
     case "linkedin":
-        p = NewLinkedin(secrets, e)
+        p = platforms.NewLinkedin(secrets, e)
     default:
         return nil, errors.New("unknown platform")
     }

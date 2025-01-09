@@ -12,10 +12,14 @@ definitions:
     type: object
   handlers.addAPIKeyRequest:
     properties:
-      api_key:
+      secret_key:
+        type: string
+      secret_value:
         type: string
       social_platform_id:
         type: string
+    type: object
+  handlers.addTimeSlotRequest:
     type: object
   handlers.assignRoleRequest:
     properties:
@@ -26,10 +30,6 @@ definitions:
     type: object
   handlers.createPostRequest:
     properties:
-      image_links:
-        items:
-          type: string
-        type: array
       is_idea:
         type: boolean
       scheduled_at:
@@ -38,10 +38,6 @@ definitions:
         type: string
       title:
         type: string
-      video_links:
-        items:
-          type: string
-        type: array
     type: object
   handlers.createProjectRequest:
     properties:
@@ -78,6 +74,11 @@ definitions:
       scheduled_at:
         type: string
     type: object
+  handlers.setTimeZoneRequest:
+    properties:
+      time_zone:
+        type: string
+    type: object
   platform.Platform:
     properties:
       id:
@@ -88,13 +89,13 @@ definitions:
   platform.PlatformID:
     enum:
     - facebook
-    - twitter
+    - x
     - linkedin
     - instagram
     type: string
     x-enum-varnames:
     - Facebook
-    - Twitter
+    - X
     - LinkedIn
     - Instagram
   post.Post:
@@ -105,10 +106,6 @@ definitions:
         type: string
       id:
         type: string
-      image_links:
-        items:
-          type: string
-        type: array
       is_idea:
         type: boolean
       project_id:
@@ -123,10 +120,6 @@ definitions:
         type: string
       updated_at:
         type: string
-      video_links:
-        items:
-          type: string
-        type: array
     type: object
   project.Project:
     properties:
@@ -241,25 +234,32 @@ paths:
       summary: Get available social networks
       tags:
       - platforms
-  /platforms/api-key:
+  /platforms/{project_id}/secrets:
     post:
       consumes:
       - application/json
-      description: Add an API key to a social network
+      description: Add a secret to a social network
       parameters:
-      - description: API key request
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Request body
         in: body
-        name: api_key
+        name: request
         required: true
         schema:
           $ref: '#/definitions/handlers.addAPIKeyRequest'
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
+          schema:
+            type: string
         "400":
-          description: Validation error
+          description: Bad request
           schema:
             $ref: '#/definitions/errors.APIError'
         "500":
@@ -268,7 +268,7 @@ paths:
             $ref: '#/definitions/errors.APIError'
       security:
       - ApiKeyAuth: []
-      summary: Add an API key to a social network
+      summary: Add a secret to a social network
       tags:
       - platforms
   /posts/{project_id}:
@@ -937,6 +937,96 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get enabled social platforms
+      tags:
+      - projects
+  /projects/{project_id}/time-slots:
+    patch:
+      consumes:
+      - application/json
+      description: Add a time slot to a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Time slot request
+        in: body
+        name: time_slot
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.addTimeSlotRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a time slot to a project
+      tags:
+      - projects
+  /projects/{project_id}/time-zone:
+    patch:
+      consumes:
+      - application/json
+      description: Set the time zone for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Time zone request
+        in: body
+        name: time_zone
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.setTimeZoneRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Set the time zone for a project
       tags:
       - projects
   /users:

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -15,11 +14,11 @@ type Service interface {
 
 type service struct {
 	repo             Repository
-	publisherFactory platforms.PublisherFactory
+	publisherFactory PublisherFactory
 	encrypter        encrypting.Encrypter
 }
 
-func NewService(r Repository, e encrypting.Encrypter, pf platforms.PublisherFactory) Service {
+func NewService(r Repository, e encrypting.Encrypter, pf PublisherFactory) Service {
 	return &service{
 		repo:             r,
 		publisherFactory: pf,

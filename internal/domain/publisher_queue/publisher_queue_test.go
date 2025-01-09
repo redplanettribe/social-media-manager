@@ -1,4 +1,4 @@
-package publisher
+package publisher_queue
 
 import (
 	"context"
@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -46,7 +46,7 @@ func TestPublisherQueue_Start(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-			pf:= platforms.NewMockPublisherFactory(t)
+			pf:= platform.NewMockPublisherFactory(t)
 			pq := NewPublisherQueue(tt.cfg, pf)
 			pq.Start(ctx)
 
@@ -68,7 +68,7 @@ func TestPublisherQueue_Stop(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	pf:= platforms.NewMockPublisherFactory(t)
+	pf:= platform.NewMockPublisherFactory(t)
 	pq := NewPublisherQueue(cfg, pf)
 	pq.Start(ctx)
 
@@ -95,10 +95,10 @@ func TestPublisherQueue_Enqueue(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	mockPublisher := platforms.NewMockPublisher(t)
+	mockPublisher := platform.NewMockPublisher(t)
 	mockPublisher.On("Publish", mock.Anything, mock.Anything).Return(nil)
 
-	mockPublisherFactory := platforms.NewMockPublisherFactory(t)
+	mockPublisherFactory := platform.NewMockPublisherFactory(t)
 	mockPublisherFactory.On("Create", mock.Anything, mock.Anything).Return(mockPublisher)
 
 	pq := &publisherQueue{
@@ -184,10 +184,10 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			mockPublisher := platforms.NewMockPublisher(t)
+			mockPublisher := platform.NewMockPublisher(t)
 			mockPublisher.On("Publish", mock.Anything, mock.Anything).Return(tt.publishError)
 
-			publisherFactory := platforms.NewMockPublisherFactory(t)
+			publisherFactory := platform.NewMockPublisherFactory(t)
 			publisherFactory.On("Create", mock.Anything, mock.Anything).Return(mockPublisher)
 
 			pq := &publisherQueue{
@@ -279,10 +279,10 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
-			mockPublisher := platforms.NewMockPublisher(t)
+			mockPublisher := platform.NewMockPublisher(t)
 			mockPublisher.On("Publish", mock.Anything, mock.Anything).Return(tt.publishError)
 
-			publisherFactory := platforms.NewMockPublisherFactory(t)
+			publisherFactory := platform.NewMockPublisherFactory(t)
 			publisherFactory.On("Create", mock.Anything, mock.Anything).Return(mockPublisher)
 
 			pq := &publisherQueue{

@@ -1,4 +1,4 @@
-package publisher
+package publisher_queue
 
 import (
 	"context"
@@ -6,9 +6,9 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
 )
 
 //go:generate mockery --name=PublisherQueue --case=underscore --inpackage
@@ -23,14 +23,14 @@ type PublisherQueue interface {
 type publisherQueue struct {
 	publishCh        chan *post.QPost
 	retryCh          chan *post.QPost
-	publisherFactory platforms.PublisherFactory
+	publisherFactory platform.PublisherFactory
 	cfg              *config.PublisherConfig
 	wg               *sync.WaitGroup
 	running          int32
 }
 
 // NewPublisherQueue initializes the queue with desired worker counts
-func NewPublisherQueue(cfg *config.PublisherConfig, pf platforms.PublisherFactory) PublisherQueue {
+func NewPublisherQueue(cfg *config.PublisherConfig, pf platform.PublisherFactory) PublisherQueue {
 	return &publisherQueue{
 		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
 		retryCh:          make(chan *post.QPost, cfg.RetryBuffer),
