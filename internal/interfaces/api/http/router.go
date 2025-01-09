@@ -187,8 +187,8 @@ func (r *Router) setupPlatformRoutes(h *handlers.PlatformHandler) {
 	r.Handle("GET /platforms", r.appPermissions("read:platforms").Chain(
 		http.HandlerFunc(h.GetAvailableSocialNetworks),
 	))
-	r.Handle("PATCH /platforms/{project_id}/api-key", r.projectPermissions("write:platforms").Chain(
-		http.HandlerFunc(h.AddAPIKey),
+	r.Handle("PATCH /platforms/{project_id}/secrets", r.projectPermissions("write:platforms").Chain(
+		http.HandlerFunc(h.AddSecret),
 	))
 }
 

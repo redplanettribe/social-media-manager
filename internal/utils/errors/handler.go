@@ -10,7 +10,7 @@ import (
 // WriteBusinessError writes a standardized error response
 func WriteBusinessError(w http.ResponseWriter, err error, mapErrorToAPIError func(err error) *APIError) {
 	fmt.Printf("Error: %v\n", err)
-	var apiError *APIError
+	apiError := NewInternalError("Internal server error")
 	if !errors.As(err, &apiError) && mapErrorToAPIError != nil {
 		apiError = mapErrorToAPIError(err)
 	}

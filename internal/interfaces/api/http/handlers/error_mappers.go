@@ -73,8 +73,8 @@ func mapPlatformErrorToAPIError(err error) *e.APIError {
 
 	default:
 		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
+			Status:  http.StatusInternalServerError,
+			Code:    e.ErrCodeInternal,
 			Message: err.Error(),
 		}
 	}
@@ -177,3 +177,4 @@ func mapMediaErrorToAPIError(err error) *e.APIError {
 		}
 	}
 }
+

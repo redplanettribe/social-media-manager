@@ -33,9 +33,10 @@ func (s *service) GetAvailableSocialNetworks(ctx context.Context) ([]Platform, e
 
 func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, key, secret string) error {
 	var (
-		sp        *Platform
-		isEnabled bool
-		g         errgroup.Group
+		sp               *Platform
+		encryptedSecrets *string
+		isEnabled        bool
+		g                errgroup.Group
 	)
 
 	g.Go(func() error {
@@ -50,6 +51,14 @@ func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, ke
 		return err
 	})
 
+	g.Go(func() error {
+		var err error
+		encryptedSecrets, err = s.repo.GetSecrets(ctx, projectID, socialPlatformID)
+		if encryptedSecrets == nil {
+			encryptedSecrets = new(string)
+		}
+		return err
+	})
 	if err := g.Wait(); err != nil {
 		return err
 	}
@@ -60,14 +69,6 @@ func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, ke
 
 	if !isEnabled {
 		return ErrSocialPlatformNotEnabledForProject
-	}
-
-	encryptedSecrets, err := s.repo.GetSecrets(ctx, projectID, socialPlatformID)
-	if err != nil {
-		return err
-	}
-	if encryptedSecrets == nil {
-		encryptedSecrets = new(string)
 	}
 
 	publisher, err := s.publisherFactory.Create(socialPlatformID, *encryptedSecrets)

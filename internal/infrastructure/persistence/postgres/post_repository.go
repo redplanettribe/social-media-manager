@@ -133,7 +133,7 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		p.created_by,
 		p.created_at,
 		p.updated_at,
-		prpl.api_key,
+		prpl.secrets,
 		plat.id,
 		popl.status publish_status
 		FROM %s p
@@ -142,7 +142,7 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		INNER JOIN %s prpl ON plat.id = prpl.platform_id
 		WHERE p.status = $1 
 		AND p.scheduled_at < $2
-		AND prpl.api_key IS NOT NULL
+		AND prpl.secrets IS NOT NULL
 		ORDER BY p.scheduled_at
 		LIMIT $3 OFFSET $4;
 		`, Posts, PostPlatforms, Platforms, ProjectPlatforms),
@@ -307,7 +307,7 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 			p.created_by,
 			p.created_at,
 			p.updated_at,
-			prpl.api_key,
+			prpl.secrets,
 			plat.id,
 			popl.status publish_status
 		FROM %s p
@@ -315,7 +315,7 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 		INNER JOIN %s plat ON popl.platform_id = plat.id
 		INNER JOIN %s prpl ON plat.id = prpl.platform_id
 		WHERE p.id = $1
-		AND prpl.api_key IS NOT NULL
+		AND prpl.secrets IS NOT NULL
 	`, Posts, PostPlatforms, Platforms, ProjectPlatforms), postID)
 	if err != nil {
 		return nil, err
