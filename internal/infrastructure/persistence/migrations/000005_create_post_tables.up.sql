@@ -17,6 +17,10 @@ CREATE TABLE IF NOT EXISTS platforms (
     name VARCHAR(50) NOT NULL
 );
 
+INSERT INTO platforms (id, name)
+VALUES ('linkedin', 'LinkedIn');
+
+
 CREATE TABLE IF NOT EXISTS post_platforms (
     post_id uuid NOT NULL,
     platform_id VARCHAR(10) NOT NULL,

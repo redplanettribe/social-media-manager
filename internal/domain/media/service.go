@@ -29,12 +29,16 @@ func NewService(repo Repository, objectRepo ObjectRepository) Service {
 func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName string, data []byte) (*MetaData, error) {
 	userID := ctx.Value(middlewares.UserIDKey).(string)
 
-	metadata, err := NewMetadata(postID, userID, fileName, data)
+	existingMetadata, err := s.repo.GetMetadata(ctx, postID, fileName)
+	if err == nil && existingMetadata != nil {
+		return nil, ErrFileAlreadyExists
+	}
+
+	md, err := NewMetadata(postID, userID, fileName, data)
 	if err != nil {
 		return nil, err
 	}
-
-	err = s.objectRepo.UploadFile(ctx, projectID, postID, fileName, data, metadata)
+	err = s.objectRepo.UploadFile(ctx, projectID, postID, fileName, data, md)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +46,7 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName s
 	// TODO:
 	// we should process the file and save the thumbnail also
 
-	return s.repo.SaveMetadata(ctx, metadata)
+	return s.repo.SaveMetadata(ctx, md)
 }
 
 func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error) {

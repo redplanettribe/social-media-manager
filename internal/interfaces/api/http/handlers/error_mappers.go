@@ -186,7 +186,25 @@ func mapMediaErrorToAPIError(err error) *e.APIError {
 			Code:    e.ErrCodeBadRequest,
 			Message: err.Error(),
 		}
-
+	case e.MatchError(err,
+		media.ErrPostDoesNotBelongToProject,
+		media.ErrMediaDoesNotBelongToPost,
+		media.ErrPlatformNotEnabledForProject,
+		media.ErrPostNotLinkedToPlatform,
+	):
+		return &e.APIError{
+			Status:  http.StatusForbidden,
+			Code:    e.ErrCodeForbidden,
+			Message: err.Error(),
+		}
+	case e.MatchError(err,
+		media.ErrFileAlreadyExists,
+	):
+		return &e.APIError{
+			Status:  http.StatusConflict,
+			Code:    e.ErrCodeConflict,
+			Message: err.Error(),
+		}
 	default:
 		return &e.APIError{
 			Status:  http.StatusInternalServerError,
