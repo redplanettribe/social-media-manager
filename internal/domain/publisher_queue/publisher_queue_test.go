@@ -103,7 +103,7 @@ func TestPublisherQueue_Enqueue(t *testing.T) {
 
 	pq := &publisherQueue{
 		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
-		retryCh:          make(chan *post.QPost, cfg.RetryBuffer),
+		failedCh:          make(chan *post.QPost, cfg.RetryBuffer),
 		publisherFactory: mockPublisherFactory,
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
@@ -192,7 +192,7 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 
 			pq := &publisherQueue{
 				publishCh:        make(chan *post.QPost, tt.cfg.PublishBuffer),
-				retryCh:          make(chan *post.QPost, tt.cfg.RetryBuffer),
+				failedCh:          make(chan *post.QPost, tt.cfg.RetryBuffer),
 				publisherFactory: publisherFactory,
 				cfg:              tt.cfg,
 				wg:               &sync.WaitGroup{},
@@ -213,7 +213,7 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 			close(pq.publishCh)
 			pq.wg.Wait()
 
-			assert.Equal(t, tt.expectedRetries, len(pq.retryCh),
+			assert.Equal(t, tt.expectedRetries, len(pq.failedCh),
 				"Unexpected number of retries")
 			mockPublisher.AssertNumberOfCalls(t, "Publish", len(tt.posts))
 		})
@@ -287,37 +287,37 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 
 			pq := &publisherQueue{
 				publishCh:        make(chan *post.QPost, tt.cfg.PublishBuffer),
-				retryCh:          make(chan *post.QPost, tt.cfg.RetryBuffer),
+				failedCh:          make(chan *post.QPost, tt.cfg.RetryBuffer),
 				publisherFactory: publisherFactory,
 				cfg:              tt.cfg,
 				wg:               &sync.WaitGroup{},
 			}
 
 			// Start the retry worker
-			go pq.runRetryWorker(ctx)
+			go pq.runFailedHandlerWorker(ctx)
 
 			// Send posts to retry channel
 			for _, p := range tt.posts {
-				pq.retryCh <- p
+				pq.failedCh <- p
 			}
 
 			// Wait for processing
 			time.Sleep(50 * time.Millisecond)
 
 			// Close and wait
-			close(pq.retryCh)
+			close(pq.failedCh)
 			pq.wg.Wait()
 
 			// Verify the publish calls
 			mockPublisher.AssertNumberOfCalls(t, "Publish", tt.expectedPublishCalls)
 
 			// Verify no posts remain in the retry channel
-			assert.Equal(t, 0, len(pq.retryCh),
+			assert.Equal(t, 0, len(pq.failedCh),
 				"Unexpected number of posts remaining in retry channel")
 
 			// Additional verification that channel is empty
 			select {
-			case _, ok := <-pq.retryCh:
+			case _, ok := <-pq.failedCh:
 				assert.False(t, ok, "Retry channel should be closed")
 			default:
 				// Channel is empty, which is expected

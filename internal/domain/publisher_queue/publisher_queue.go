@@ -22,7 +22,7 @@ type PublisherQueue interface {
 // PublisherQueue manages the channels and workers for publishing
 type publisherQueue struct {
 	publishCh        chan *post.QPost
-	retryCh          chan *post.QPost
+	failedCh          chan *post.QPost
 	publisherFactory platform.PublisherFactory
 	cfg              *config.PublisherConfig
 	wg               *sync.WaitGroup
@@ -33,7 +33,7 @@ type publisherQueue struct {
 func NewPublisherQueue(cfg *config.PublisherConfig, pf platform.PublisherFactory) PublisherQueue {
 	return &publisherQueue{
 		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
-		retryCh:          make(chan *post.QPost, cfg.RetryBuffer),
+		failedCh:          make(chan *post.QPost, cfg.RetryBuffer),
 		publisherFactory: pf,
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
@@ -47,14 +47,14 @@ func (pq *publisherQueue) Start(ctx context.Context) {
 		go pq.runPublishWorker(ctx)
 	}
 	for i := 0; i < pq.cfg.RetryNum; i++ {
-		go pq.runRetryWorker(ctx)
+		go pq.runFailedHandlerWorker(ctx)
 	}
 }
 
 // Stop signals workers to finish
 func (pq *publisherQueue) Stop() {
 	close(pq.publishCh)
-	close(pq.retryCh)
+	close(pq.failedCh)
 	pq.wg.Wait()
 }
 
@@ -81,14 +81,14 @@ func (pq *publisherQueue) runPublishWorker(ctx context.Context) {
                 return
             }
             if err := pq.publishPost(ctx, p); err != nil {
-                pq.retryCh <- p
+                pq.failedCh <- p
             }
         }
     }
 }
 
-// runRetryWorker tries to re-publish failed posts
-func (pq *publisherQueue) runRetryWorker(ctx context.Context) {
+// runFailedHandlerWorker tries to re-publish failed posts
+func (pq *publisherQueue) runFailedHandlerWorker(ctx context.Context) {
 	pq.wg.Add(1)
     pq.incrementRunning()
     defer func() {
@@ -100,7 +100,7 @@ func (pq *publisherQueue) runRetryWorker(ctx context.Context) {
         select {
         case <-ctx.Done():
             return
-        case p, ok := <-pq.retryCh:
+        case p, ok := <-pq.failedCh:
             if !ok {
                 return
             }
