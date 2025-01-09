@@ -30,7 +30,6 @@ func (r *MediaRepository) SaveMetadata(ctx context.Context, m *media.MetaData) (
 }
 
 func (r *MediaRepository) GetMetadata(ctx context.Context, postID, fileName string) (*media.MetaData, error) {
-	fmt.Println("filename", fileName)
 	var m media.MetaData
 	err := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT id, post_id, file_name, media_type, format, width, height, length, added_by, created_at

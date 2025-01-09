@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 )
@@ -33,7 +34,8 @@ func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	}
 }
 
-func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost) error {
+
+func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost, media []*media.Media) error {
 	// Publish to Linkedin
 	fmt.Println("Publishing to Linkedin: ", post.Title, post.ID)
 	time.Sleep(1 * time.Second)

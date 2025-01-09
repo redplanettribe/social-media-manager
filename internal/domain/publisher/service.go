@@ -111,23 +111,29 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 	return g.Wait()
 }
 
-func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, socialNetworkID string) error {
+func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
 	var (
 		isEnabled bool
-		p         *post.PublishPost
-		// m 		   *media.Media
+		publishPost         *post.PublishPost
+		media 		   []*media.Media
 		g         errgroup.Group
 	)
 
 	g.Go(func() error {
 		var err error
-		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(ctx, projectID, socialNetworkID)
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(ctx, projectID, platformID)
 		return err
 	})
 
 	g.Go(func() error {
 		var err error
-		p, err = s.postService.GetPostToPublish(ctx, postID)
+		publishPost, err = s.postService.GetPostToPublish(ctx, postID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		media, err = s.mediaService.GetMediaForPost(ctx, projectID, postID, platformID)
 		return err
 	})
 
@@ -139,16 +145,16 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return ErrSocialPlatformNotEnabledForProject
 	}
 
-	if p == nil {
+	if publishPost == nil {
 		return post.ErrPostNotFound
 	}
 
-	publisher, err := s.publisherFactory.Create(socialNetworkID, p.Secrets)
+	publisher, err := s.publisherFactory.Create(platformID, publishPost.Secrets)
 	if err != nil {
 		return err
 	}
 
-	if err := publisher.Publish(ctx, p); err != nil {
+	if err := publisher.Publish(ctx, publishPost, media); err != nil {
 		return err
 	}
 
