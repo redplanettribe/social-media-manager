@@ -14,7 +14,7 @@ func NewHasher() *Hasher {
 	return &Hasher{}
 }
 
-// HashPasswordWithSalt generates a salt and hashes the password using PBKDF2.
+// HasWithSalt generates a salt and hashes the password using PBKDF2.
 // It returns the hashed password and the salt as hexadecimal strings.
 func (h *Hasher) Hash(password string) (string, string, error) {
 	// Generate a 16-byte random salt.
@@ -37,7 +37,7 @@ func (h *Hasher) Hash(password string) (string, string, error) {
 	return hashedPassword, saltString, nil
 }
 
-// ValidatePassword verifies if the provided password matches the hashed password using the salt.
+// Validate verifies if the provided password matches the hashed password using the salt.
 // It returns true if the password is correct, false otherwise.
 func (h *Hasher) Validate(password, hashedPassword, salt string) bool {
 	// Decode the salt from hexadecimal to bytes.

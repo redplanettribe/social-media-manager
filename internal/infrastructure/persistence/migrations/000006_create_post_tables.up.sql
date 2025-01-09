@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS post_platforms (
 CREATE TABLE IF NOT EXISTS project_platforms (
     project_id uuid NOT NULL,
     platform_id VARCHAR(10) NOT NULL,
-    api_key VARCHAR(20),
+    secrets TEXT,
     PRIMARY KEY (project_id, platform_id),
     FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
     FOREIGN KEY (platform_id) REFERENCES platforms (id) ON DELETE CASCADE

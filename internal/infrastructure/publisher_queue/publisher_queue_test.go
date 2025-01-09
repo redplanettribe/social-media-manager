@@ -46,8 +46,8 @@ func TestPublisherQueue_Start(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
-
-			pq := NewPublisherQueue(tt.cfg)
+			pf:= platforms.NewMockPublisherFactory(t)
+			pq := NewPublisherQueue(tt.cfg, pf)
 			pq.Start(ctx)
 
 			// Wait for workers to start
@@ -68,7 +68,8 @@ func TestPublisherQueue_Stop(t *testing.T) {
 	}
 
 	ctx := context.Background()
-	pq := NewPublisherQueue(cfg)
+	pf:= platforms.NewMockPublisherFactory(t)
+	pq := NewPublisherQueue(cfg, pf)
 	pq.Start(ctx)
 
 	// Wait for workers to start

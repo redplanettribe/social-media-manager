@@ -9,24 +9,34 @@ type MockPublisherFactory struct {
 	mock.Mock
 }
 
-// Create provides a mock function with given fields: platform, apiKey
-func (_m *MockPublisherFactory) Create(platform string, apiKey string) Publisher {
-	ret := _m.Called(platform, apiKey)
+// Create provides a mock function with given fields: platform, secrets
+func (_m *MockPublisherFactory) Create(platform string, secrets string) (Publisher, error) {
+	ret := _m.Called(platform, secrets)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
 	}
 
 	var r0 Publisher
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, string) (Publisher, error)); ok {
+		return rf(platform, secrets)
+	}
 	if rf, ok := ret.Get(0).(func(string, string) Publisher); ok {
-		r0 = rf(platform, apiKey)
+		r0 = rf(platform, secrets)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(Publisher)
 		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(string, string) error); ok {
+		r1 = rf(platform, secrets)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewMockPublisherFactory creates a new instance of MockPublisherFactory. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

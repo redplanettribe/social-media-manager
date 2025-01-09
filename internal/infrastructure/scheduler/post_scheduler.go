@@ -9,7 +9,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher"
+	pq "github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher_queue"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -17,14 +17,14 @@ type PostScheduler struct {
 	postService    post.Service
 	projectService project.Service
 	cfg            *config.SchedulerConfig
-	publisherQueue publisher.PublisherQueue
+	publisherQueue pq.PublisherQueue
 	quit           chan struct{}
 }
 
 func NewPostScheduler(
 	postSvc post.Service,
 	projectSvc project.Service,
-	publisherQueue publisher.PublisherQueue,
+	publisherQueue pq.PublisherQueue,
 	cfg *config.SchedulerConfig,
 ) *PostScheduler {
 	return &PostScheduler{

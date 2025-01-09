@@ -17,3 +17,7 @@ func NewUnknownPublisher() *UnknownPublisher {
 func (p *UnknownPublisher) Publish(ctx context.Context, post *post.QPost) error {
 	return errors.New("unknown platform")
 }
+
+func (p *UnknownPublisher) ValidateSecret(key, secret string) error {
+	return nil
+}

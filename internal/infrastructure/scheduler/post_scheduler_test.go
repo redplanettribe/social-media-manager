@@ -9,7 +9,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher"
+	pq "github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher_queue"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -18,12 +18,12 @@ func TestPostScheduler_Start(t *testing.T) {
 	tests := []struct {
 		name     string
 		interval time.Duration
-		setup    func(*post.MockService, *project.MockService, *publisher.MockPublisherQueue)
+		setup    func(*post.MockService, *project.MockService, *pq.MockPublisherQueue)
 	}{
 		{
 			name:     "starts scheduler with correct interval",
 			interval: 100 * time.Millisecond,
-			setup: func(mps *post.MockService, mpjs *project.MockService, mpq *publisher.MockPublisherQueue) {
+			setup: func(mps *post.MockService, mpjs *project.MockService, mpq *pq.MockPublisherQueue) {
 				mps.On("FindScheduledReadyPosts", mock.Anything, 0, 100).Return([]*post.QPost{}, nil)
 				mpjs.On("FindActiveProjectsChunk", mock.Anything, 0, 100).Return([]*project.Project{}, nil)
 			},
@@ -37,7 +37,7 @@ func TestPostScheduler_Start(t *testing.T) {
 
 			mockPostSvc := post.NewMockService(t)
 			mockProjectSvc := project.NewMockService(t)
-			mockPubQueue := publisher.NewMockPublisherQueue(t)
+			mockPubQueue := pq.NewMockPublisherQueue(t)
 
 			tt.setup(mockPostSvc, mockProjectSvc, mockPubQueue)
 
@@ -108,7 +108,7 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 
 			mockPostSvc := post.NewMockService(t)
 			mockProjectSvc := project.NewMockService(t)
-			mockPubQueue := publisher.NewMockPublisherQueue(t)
+			mockPubQueue := pq.NewMockPublisherQueue(t)
 
 			// Setup scheduled posts
 			mockPostSvc.On("FindScheduledReadyPosts", mock.Anything, 0, 100).
@@ -201,7 +201,7 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 
 			mockPostSvc := post.NewMockService(t)
 			mockProjectSvc := project.NewMockService(t)
-			mockPubQueue := publisher.NewMockPublisherQueue(t)
+			mockPubQueue := pq.NewMockPublisherQueue(t)
 
 			// Setup chunks
 			for i, chunk := range tt.chunks {
@@ -293,7 +293,7 @@ func TestPostScheduler_ScanProjectQueues(t *testing.T) {
 
 			mockPostSvc := post.NewMockService(t)
 			mockProjectSvc := project.NewMockService(t)
-			mockPubQueue := publisher.NewMockPublisherQueue(t)
+			mockPubQueue := pq.NewMockPublisherQueue(t)
 
 			// Setup project chunks
 			for i, chunk := range tt.projects {

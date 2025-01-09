@@ -3,27 +3,35 @@ package platform
 import (
 	"context"
 
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
 	"golang.org/x/sync/errgroup"
 )
 
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
-	AddAPIKey(ctx context.Context, projectID, socialNetworkID, apiKey string) error
+	AddSecret(ctx context.Context, projectID, socialNetworkID, key, secret string) error
 }
 
 type service struct {
-	repo Repository
+	repo             Repository
+	publisherFactory platforms.PublisherFactory
+	encrypter        encrypting.Encrypter
 }
 
-func NewService(repo Repository) Service {
-	return &service{repo: repo}
+func NewService(r Repository, e encrypting.Encrypter, pf platforms.PublisherFactory) Service {
+	return &service{
+		repo:             r,
+		publisherFactory: pf,
+		encrypter:        e,
+	}
 }
 
 func (s *service) GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error) {
 	return s.repo.FindAll(ctx)
 }
 
-func (s *service) AddAPIKey(ctx context.Context, projectID, socialPlatformID, apiKey string) error {
+func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, key, secret string) error {
 	var (
 		sp        *Platform
 		isEnabled bool
@@ -54,5 +62,23 @@ func (s *service) AddAPIKey(ctx context.Context, projectID, socialPlatformID, ap
 		return ErrSocialPlatformNotEnabledForProject
 	}
 
-	return s.repo.AddAPIKey(ctx, projectID, socialPlatformID, apiKey)
+	encryptedSecrets, err := s.repo.GetSecrets(ctx, projectID, socialPlatformID)
+	if err != nil {
+		return err
+	}
+	if encryptedSecrets == nil {
+		encryptedSecrets = new(string)
+	}
+
+	publisher, err := s.publisherFactory.Create(socialPlatformID, *encryptedSecrets)
+	if err != nil {
+		return err
+	}
+
+	newSecrets, err := publisher.AddSecret(key, secret)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.SetSecrets(ctx, projectID, socialPlatformID, newSecrets)
 }

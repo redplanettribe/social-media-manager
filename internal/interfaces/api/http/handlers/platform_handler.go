@@ -81,7 +81,7 @@ func (h *PlatformHandler) AddAPIKey(w http.ResponseWriter, r *http.Request) {
 
 	projectID := r.PathValue("project_id")
 
-	err := h.Service.AddAPIKey(r.Context(), projectID, req.SocialPlatformID, req.APIKey)
+	err := h.Service.AddSecret(r.Context(), projectID, req.SocialPlatformID, req.APIKey)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapPlatformErrorToAPIError)
 		return

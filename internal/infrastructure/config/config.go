@@ -13,11 +13,18 @@ type Config struct {
 	App         AppConfig
 	DB          DBConfig
 	ObjectStore ObjectStoreConfig
-	JWT         JWTConfig
 	Logger      LoggerConfig
 	SSL         SSLConfig
 	Scheduler   SchedulerConfig
 	Publisher   PublisherConfig
+	Encryption  DataEncryptionConfig
+}
+
+type DataEncryptionConfig struct {
+	Key        string
+	Salt       string
+	KeySize    int
+	Iterations int
 }
 
 type ObjectStoreConfig struct {
@@ -54,10 +61,6 @@ type DBConfig struct {
 	Password string
 	Name     string
 	SSLMode  string
-}
-
-type JWTConfig struct {
-	SecretKey string
 }
 
 type LoggerConfig struct {
@@ -108,9 +111,11 @@ func LoadConfig() (*Config, error) {
 			UseSSL:           getEnv("OBJECT_STORE_USE_SSL", "true") == "true",
 			S3ForcePathStyle: getEnv("OBJECT_STORE_S3_FORCE_PATH_STYLE", "true") == "true",
 		},
-
-		JWT: JWTConfig{
-			SecretKey: getEnv("JWT_SECRET", "your_secret_key"),
+		Encryption: DataEncryptionConfig{
+			Key:        getEnv("ENCRYPTION_KEY", "your_encryption_key"),
+			Salt:       getEnv("ENCRYPTION_SALT", "your_encryption_salt"),
+			KeySize:    32,
+			Iterations: 6000,
 		},
 		Logger: LoggerConfig{
 			Level: getEnv("LOG_LEVEL", "debug"),

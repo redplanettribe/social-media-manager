@@ -18,7 +18,8 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	minioS3 "github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/miniIO"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
+	pq "github.com/pedrodcsjostrom/opencm/internal/infrastructure/publisher_queue"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/server"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
@@ -90,8 +91,11 @@ func main() {
 	postService := post.NewService(postRepo)
 	postHandler := handlers.NewPostHandler(postService)
 
+	publisherFactory := platforms.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
+	
+	encrypter := encrypting.NewAESEncrypter(&cfg.Encryption)
 	platformRepo := postgres.NewPlatformRepository(dbPool)
-	platformService := platform.NewService(platformRepo)
+	platformService := platform.NewService(platformRepo, encrypter, publisherFactory)
 	platformHandler := handlers.NewPlatformHandler(platformService)
 
 	mediaObjectRepo, err := minioS3.NewS3Client(&cfg.ObjectStore)
@@ -101,7 +105,6 @@ func main() {
 	mediaMetaDataRepo := postgres.NewMediaRepository(dbPool)
 	mediaService := media.NewService(mediaMetaDataRepo, mediaObjectRepo)
 	mediaHandler := handlers.NewMediaHandler(mediaService)
-
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
@@ -117,7 +120,7 @@ func main() {
 		projectAuthorizer,
 	)
 	// Initialize the publisher queue
-	publisherQueue := publisher.NewPublisherQueue(&cfg.Publisher)
+	publisherQueue := pq.NewPublisherQueue(&cfg.Publisher, publisherFactory)
 	publisherQueue.Start(ctx)
 
 	// Start the post scheduler

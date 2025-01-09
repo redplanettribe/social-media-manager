@@ -14,6 +14,17 @@ type X struct {
 	apiKey string
 }
 
+func NewX(apiKey string) *X {
+	return &X{
+		ID: "x",
+		apiKey: apiKey,
+	}
+}
+
+func (t *X) AddSecret(key, secret string) (string, error) {
+	return "", nil
+}
+
 func (t *X) Publish(ctx context.Context, post *post.QPost) error {
     // Publish to Twitter
     fmt.Println("Publishing to X")
@@ -21,9 +32,3 @@ func (t *X) Publish(ctx context.Context, post *post.QPost) error {
 	return errors.New("X platform not implemented")
 }
 
-func NewX(apiKey string) *X {
-	return &X{
-		ID: "x",
-		apiKey: apiKey,
-	}
-}

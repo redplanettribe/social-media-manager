@@ -13,6 +13,14 @@ type Instagram struct {
 	apiKey string
 }
 
+func NewInstagram(apikey string) *Instagram {
+	return &Instagram{
+		ID: "instagram",
+		apiKey: apikey,
+	}
+}
+
+
 func (f *Instagram) Publish(ctx context.Context, post *post.QPost) error {
 	// Publish to Facebook
 	fmt.Println("Publishing to Instagram")
@@ -20,10 +28,7 @@ func (f *Instagram) Publish(ctx context.Context, post *post.QPost) error {
 	return nil
 }
 
-
-func NewInstagram(apikey string) *Instagram {
-	return &Instagram{
-		ID: "instagram",
-		apiKey: apikey,
-	}
+func (f *Instagram) AddSecret(key, secret string) (string, error) {
+	return "", nil
 }
+

@@ -72,12 +72,33 @@ func (r *PlatformRepository) IsSocialNetworkEnabledForProject(ctx context.Contex
 	return count > 0, nil
 }
 
-func (r *PlatformRepository) AddAPIKey(ctx context.Context, projectID, socialPlatformID, apiKey string) error {
+func (r *PlatformRepository) GetSecrets(ctx context.Context, projectID, socialPlatformID string) (*string, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT secrets
+		FROM %s
+		WHERE project_id = $1 AND platform_id = $2
+	`, ProjectPlatforms), projectID, socialPlatformID)
+
+	var secrets *string
+	err := row.Scan(&secrets)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return nil, err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+
+	return secrets, nil
+}
+
+func (r *PlatformRepository) SetSecrets(ctx context.Context, projectID, socialPlatformID, secrets string) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		UPDATE %s
-		SET api_key = $1
-		WHERE project_id = $2 AND platform_id = $3
-	`, ProjectPlatforms), apiKey, projectID, socialPlatformID)
+		SET secrets = $3
+		WHERE project_id = $1 AND platform_id = $2
+	`, ProjectPlatforms), projectID, socialPlatformID, secrets)
+	if err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }

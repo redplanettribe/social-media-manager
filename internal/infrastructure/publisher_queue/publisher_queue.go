@@ -30,11 +30,11 @@ type publisherQueue struct {
 }
 
 // NewPublisherQueue initializes the queue with desired worker counts
-func NewPublisherQueue(cfg *config.PublisherConfig) PublisherQueue {
+func NewPublisherQueue(cfg *config.PublisherConfig, pf platforms.PublisherFactory) PublisherQueue {
 	return &publisherQueue{
 		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
 		retryCh:          make(chan *post.QPost, cfg.RetryBuffer),
-		publisherFactory: platforms.NewPublisherFactory(),
+		publisherFactory: pf,
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
 		running:          0,
@@ -122,7 +122,10 @@ func (pq *publisherQueue) CountRunning() int {
 
 // publishPost sends a post to the correct publisher
 func (pq *publisherQueue) publishPost(ctx context.Context, p *post.QPost) error {
-	pub := pq.publisherFactory.Create(p.Platform, p.ApiKey)
+	pub, err := pq.publisherFactory.Create(p.Platform, p.ApiKey)
+	if err != nil {
+		return err
+	}
 	if err := pub.Publish(ctx, p); err != nil {
 		return err
 	}

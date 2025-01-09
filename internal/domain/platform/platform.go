@@ -12,7 +12,7 @@ type PlatformID string
 
 const (
 	Facebook  PlatformID = "facebook"
-	Twitter   PlatformID = "twitter"
+	X         PlatformID = "x"
 	LinkedIn  PlatformID = "linkedin"
 	Instagram PlatformID = "instagram"
 	// ...
