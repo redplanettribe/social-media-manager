@@ -120,6 +120,30 @@ func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, pu
 	return nil
 }
 
+func (r *PostRepository) GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT platform_id
+		FROM %s
+		WHERE post_id = $1
+	`, PostPlatforms), postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var publishers []string
+	for rows.Next() {
+		var publisher string
+		err = rows.Scan(&publisher)
+		if err != nil {
+			return nil, err
+		}
+		publishers = append(publishers, publisher)
+	}
+
+	return publishers, nil
+}
+
 func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.PublishPost, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT

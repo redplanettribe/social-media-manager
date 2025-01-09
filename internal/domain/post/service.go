@@ -21,6 +21,7 @@ type Service interface {
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error
+	GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error)
 	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error)
 	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
 	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
@@ -116,6 +117,10 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID
 		return ErrPostNotFound
 	}
 	return s.repo.AddSocialMediaPublisher(ctx, postID, publisherID)
+}
+
+func (s *service) GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error) {
+	return s.repo.GetSocialMediaPublishers(ctx, postID)
 }
 
 func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error) {

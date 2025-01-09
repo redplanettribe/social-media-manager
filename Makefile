@@ -37,6 +37,10 @@ migrate-down:
 	@echo "Rolling back migrations..."
 	migrate -path ./internal/infrastructure/persistence/migrations -database "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@localhost:5432/$(POSTGRES_DB)?sslmode=disable" down $(step)
 
+.PHONY: generate
+generate: generate-api-docs generate-mocks
+	
+
 # Find directories with Go files containing //go:generate directives
 GENERATE_DIRS := $(sort $(dir $(shell find . -name '*.go' -exec grep -l '^//go:generate' {} +)))
 

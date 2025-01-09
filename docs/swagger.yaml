@@ -79,25 +79,6 @@ definitions:
       time_zone:
         type: string
     type: object
-  platform.Platform:
-    properties:
-      id:
-        $ref: '#/definitions/platform.PlatformID'
-      name:
-        type: string
-    type: object
-  platform.PlatformID:
-    enum:
-    - facebook
-    - x
-    - linkedin
-    - instagram
-    type: string
-    x-enum-varnames:
-    - Facebook
-    - X
-    - LinkedIn
-    - Instagram
   post.Post:
     properties:
       created_at:
@@ -151,6 +132,25 @@ definitions:
       name:
         type: string
     type: object
+  publisher.Platform:
+    properties:
+      id:
+        $ref: '#/definitions/publisher.PlatformID'
+      name:
+        type: string
+    type: object
+  publisher.PlatformID:
+    enum:
+    - facebook
+    - x
+    - linkedin
+    - instagram
+    type: string
+    x-enum-varnames:
+    - Facebook
+    - X
+    - LinkedIn
+    - Instagram
   session.Session:
     properties:
       createdAt:
@@ -211,66 +211,6 @@ info:
   title: OpenCM API
   version: "1.0"
 paths:
-  /platforms:
-    get:
-      consumes:
-      - application/json
-      description: Get available social networks
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/platform.Platform'
-            type: array
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Get available social networks
-      tags:
-      - platforms
-  /platforms/{project_id}/secrets:
-    post:
-      consumes:
-      - application/json
-      description: Add a secret to a social network
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.addAPIKeyRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            type: string
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Add a secret to a social network
-      tags:
-      - platforms
   /posts/{project_id}:
     get:
       consumes:
@@ -1029,6 +969,105 @@ paths:
       summary: Set the time zone for a project
       tags:
       - projects
+  /publishers:
+    get:
+      consumes:
+      - application/json
+      description: Get available social networks
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/publisher.Platform'
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get available social networks
+      tags:
+      - publishers
+  /publishers/{project_id}/{post_id}/{social_network_id}:
+    post:
+      consumes:
+      - application/json
+      description: Publish post to social network
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Social Network ID
+        in: path
+        name: social_network_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Publish post to social network
+      tags:
+      - publishers
+  /publishers/{project_id}/secrets:
+    post:
+      consumes:
+      - application/json
+      description: Add a secret to a social network
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.addAPIKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a secret to a social network
+      tags:
+      - publishers
   /users:
     post:
       consumes:

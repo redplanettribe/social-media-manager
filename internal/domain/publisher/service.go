@@ -12,7 +12,7 @@ import (
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
 	AddSecret(ctx context.Context, projectID, socialNetworkID, key, secret string) error
-	PublishPost(ctx context.Context, postID string) error
+	PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
 	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, socialNetworkID string) error
 }
 
@@ -91,8 +91,23 @@ func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, ke
 	return s.repo.SetSecrets(ctx, projectID, socialPlatformID, newSecrets)
 }
 
-func (s *service) PublishPost(ctx context.Context, postID string) error {
-	return nil
+func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error {
+
+	publishers, err := s.postService.GetSocialMediaPublishers(ctx, postID)
+	if err != nil {
+		return err
+	}
+
+	g, gCtx := errgroup.WithContext(ctx)
+
+	for _, publisherID := range publishers {
+		pid := publisherID
+		g.Go(func() error {
+			return s.PublishPostToSocialNetwork(gCtx, projecID, postID, pid)
+		})
+	}
+	
+	return g.Wait()
 }
 
 func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, socialNetworkID string) error {

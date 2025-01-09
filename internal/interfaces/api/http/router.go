@@ -187,6 +187,9 @@ func (r *Router) setupPublisherRoutes(h *handlers.PlatformHandler) {
 	r.Handle("POST /publishers/{project_id}/{post_id}/{social_network_id}", r.projectPermissions("write:publishers").Chain(
 		http.HandlerFunc(h.PublishPostToSocialNetwork),
 	))
+	r.Handle("POST /publishers/{project_id}/{post_id}", r.projectPermissions("write:publishers").Chain(
+		http.HandlerFunc(h.PublishPostToAssignedSocialNetworks),
+	))
 	r.Handle("GET /publishers", r.appPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.GetAvailableSocialNetworks),
 	))

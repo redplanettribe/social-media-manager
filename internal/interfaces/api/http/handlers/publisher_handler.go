@@ -22,7 +22,7 @@ func NewPlatformHandler(service publisher.Service) *PlatformHandler {
 // @Tags publishers
 // @Accept json
 // @Produce json
-// @Success 200 {object} []platform.Platform
+// @Success 200 {object} []publisher.Platform
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /publishers [get]
@@ -105,6 +105,24 @@ func (h *PlatformHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *h
 	}
 
 	err := h.Service.PublishPostToSocialNetwork(r.Context(),projectID, postID, socialNetworkID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPlatformErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *PlatformHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
+
+	if postID == "" || projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+		return
+	}
+
+	err := h.Service.PublishPostToAssignedSocialNetworks(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapPlatformErrorToAPIError)
 		return

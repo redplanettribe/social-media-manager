@@ -266,6 +266,36 @@ func (_m *MockService) GetProjectQueuedPosts(ctx context.Context, projectID stri
 	return r0, r1
 }
 
+// GetSocialMediaPublishers provides a mock function with given fields: ctx, postID
+func (_m *MockService) GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error) {
+	ret := _m.Called(ctx, postID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetSocialMediaPublishers")
+	}
+
+	var r0 []string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]string, error)); ok {
+		return rf(ctx, postID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) []string); ok {
+		r0 = rf(ctx, postID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, postID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ListProjectPosts provides a mock function with given fields: ctx, projectID
 func (_m *MockService) ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error) {
 	ret := _m.Called(ctx, projectID)
