@@ -75,7 +75,7 @@ func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName 
 }
 
 func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error) {
-	mediaNames, err := s.repo.GetMediaNamesForPost(ctx, projectID, postID, platformID)
+	mediaNames, err := s.repo.GetMediaFileNamesForPost(ctx, postID, platformID)
 	if err != nil {
 		return nil, err
 	}

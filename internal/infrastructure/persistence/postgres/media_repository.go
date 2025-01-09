@@ -45,9 +45,28 @@ func (r *MediaRepository) GetMetadata(ctx context.Context, postID, fileName stri
 	return &m, nil
 }
 
-func (r *MediaRepository) GetMediaNamesForPost(ctx context.Context, projectID, postID, platformID string) ([]string, error) {
-	// TODO: implement
-	return nil, nil
+func (r *MediaRepository) GetMediaFileNamesForPost(ctx context.Context, postID, platformID string) ([]string, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT file_name
+		FROM %s m
+		JOIN %s ppm ON m.id = ppm.media_id
+		WHERE ppm.post_id = $1 AND ppm.platform_id = $2
+	`, Media, PostPlatformMedia), postID, platformID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var fileNames []string
+	for rows.Next() {
+		var fileName string
+		err := rows.Scan(&fileName)
+		if err != nil {
+			return nil, err
+		}
+		fileNames = append(fileNames, fileName)
+	}
+	return fileNames, nil
 }
 
 func (r *MediaRepository) LinkMediaToPublishPost(ctx context.Context, postID, mediaID, platformID string) error {
