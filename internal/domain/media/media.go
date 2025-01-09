@@ -1,10 +1,23 @@
 package media
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var (
+	ErrInvalidMedia= errors.New("invalid media")
+	ErrPostDoesNotBelongToProject= errors.New("post does not belong to project")
+	ErrMediaDoesNotBelongToPost= errors.New("media does not belong to post")
+	ErrPlatformNotEnabledForProject= errors.New("platform not enabled for project")
+	ErrPostNotLinkedToPlatform= errors.New("post not linked to platform")
+)
+type Media struct {
+	Data []byte
+	*MetaData
+}
 
 type MediaType string
 

@@ -107,7 +107,7 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 			return s.PublishPostToSocialNetwork(gCtx, projecID, postID, pid)
 		})
 	}
-	
+
 	return g.Wait()
 }
 
@@ -115,6 +115,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	var (
 		isEnabled bool
 		p         *post.PublishPost
+		// m 		   *media.Media
 		g         errgroup.Group
 	)
 

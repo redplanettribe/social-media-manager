@@ -9,7 +9,9 @@ import (
 
 type Service interface {
 	UploadMedia(ctx context.Context, projectID, postID, fileName string, data []byte) (*MetaData, error)
-	GetMediaFile(ctx context.Context, projectID, postID, fileName string) ([]byte, *MetaData, error)
+	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
+	GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
+	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
 }
 
 type service struct {
@@ -43,7 +45,7 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName s
 	return s.repo.SaveMetadata(ctx, metadata)
 }
 
-func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName string) ([]byte, *MetaData, error) {
+func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error) {
 	var (
 		file     []byte
 		metadata *MetaData
@@ -63,8 +65,95 @@ func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName 
 	})
 
 	if err := eg.Wait(); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return file, metadata, nil
+	return &Media{
+		Data:     file,
+		MetaData: metadata,
+	}, nil
+}
+
+func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error) {
+	mediaNames, err := s.repo.GetMediaNamesForPost(ctx, projectID, postID, platformID)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		medias  = make([]*Media, len(mediaNames))
+		g, gCtx = errgroup.WithContext(ctx)
+	)
+
+	for i, mediaName := range mediaNames {
+		i, name := i, mediaName
+		g.Go(func() error {
+			media, err := s.GetMediaFile(gCtx, projectID, postID, name)
+			if err != nil {
+				return err
+			}
+			medias[i] = media
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return medias, nil
+}
+
+func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error {
+
+	var (
+		doesPostBelongToProject    bool
+		doesMediaBelongToPost     bool
+		isThePostLinkedToPlatform bool
+		isPlatformEnabled         bool
+	)
+	
+	g, gCtx := errgroup.WithContext(ctx)
+	
+	g.Go(func() error {
+		var err error
+		doesPostBelongToProject, err = s.repo.DoesPostBelongToProject(gCtx, projectID, postID)
+		return err
+	})
+	
+	g.Go(func() error {
+		var err error
+		doesMediaBelongToPost, err = s.repo.DoesMediaBelongToPost(gCtx, postID, mediaID)
+		return err
+	})
+	
+	g.Go(func() error {
+		var err error
+		isPlatformEnabled, err = s.repo.IsPlatformEnabledForProject(gCtx, projectID, platformID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		isThePostLinkedToPlatform, err = s.repo.IsThePostEnabledToPlatform(gCtx, postID, platformID)
+		return err
+	})
+	
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	
+	if !doesPostBelongToProject {
+		return ErrPostDoesNotBelongToProject
+	}
+	if !doesMediaBelongToPost {
+		return ErrMediaDoesNotBelongToPost
+	}
+	if !isPlatformEnabled {
+		return ErrPlatformNotEnabledForProject
+	}
+	if !isThePostLinkedToPlatform {
+		return ErrPostNotLinkedToPlatform
+	}
+
+	return s.repo.LinkMediaToPublishPost(ctx, postID, mediaID, platformID)
 }

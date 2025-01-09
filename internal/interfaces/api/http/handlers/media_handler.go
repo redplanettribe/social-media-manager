@@ -24,6 +24,22 @@ type uploadMediaResponse struct {
 	*media.MetaData
 }
 
+// UploadMedia godoc
+// @Summary Upload media file
+// @Description Upload media file
+// @Tags media
+// @Accept multipart/form-data
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param file formData file true "File to upload"
+// @Success 201 {object} uploadMediaResponse
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 403 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /media/{project_id}/{post_id} [post]
 func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
@@ -69,8 +85,21 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-
-
+// GetMediaFile godoc
+// @Summary Get media file
+// @Description Get media file. This endpoint shouldn't be used. Use the frontend to get the media file directly from the bucket.
+// @Tags media
+// @Produce octet-stream
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param file_name path string true "File name"
+// @Success 200 {string} string
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 403 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /media/{project_id}/{post_id}/{file_name} [get]
 func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
@@ -94,19 +123,76 @@ func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 		}))
 		return
 	}
-	
-	data, metaData, err := h.Service.GetMediaFile(r.Context(), projectID, postID, filename)
+
+	m, err := h.Service.GetMediaFile(r.Context(), projectID, postID, filename)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapMediaErrorToAPIError)
 		return
 	}
 
-	w.Header().Set("Content-Type", fmt.Sprintf("%s/%s", metaData.Type, metaData.Format))
+	w.Header().Set("Content-Type", fmt.Sprintf("%s/%s", m.Type, m.Format))
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(data)))
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(m.Data)))
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write(data)
+	_, err = w.Write(m.Data)
 	if err != nil {
 		e.WriteHttpError(w, e.NewInternalError("Failed to write response"))
 	}
+}
+
+type linkMediaToPublishPostRequest struct {
+	MediaID    string `json:"media_id"`
+	PlatformID string `json:"platform_id"`
+	PostID     string `json:"post_id"`
+}
+
+// LinkMediaToPublishPost godoc
+// @Summary Link media to publish post
+// @Description Link media to publish post
+// @Tags media
+// @Accept json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param platform_id path string true "Platform ID"
+// @Param media_id body linkMediaToPublishPostRequest true "Media ID"
+// @Success 204
+// @Failure 400 {object} errorResponse
+// @Failure 401 {object} errorResponse
+// @Failure 403 {object} errorResponse
+// @Failure 404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Router /media/{project_id}/link-to-post [post]
+func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	var req linkMediaToPublishPostRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request",nil))
+		return
+	}
+
+	mediaID, platformID, postID := req.MediaID, req.PlatformID, req.PostID
+	if mediaID == "" || platformID == "" || postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Media id, platform id and post id are required", map[string]string{
+			"media_id":    "required",
+			"platform_id": "required",
+			"post_id":     "required",
+		}))
+		return
+	}
+
+	err = h.Service.LinkMediaToPublishPost(r.Context(), projectID, postID, mediaID, platformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapMediaErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

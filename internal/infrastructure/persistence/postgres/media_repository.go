@@ -44,3 +44,75 @@ func (r *MediaRepository) GetMetadata(ctx context.Context, postID, fileName stri
 	}
 	return &m, nil
 }
+
+func (r *MediaRepository) GetMediaNamesForPost(ctx context.Context, projectID, postID, platformID string) ([]string, error) {
+	// TODO: implement
+	return nil, nil
+}
+
+func (r *MediaRepository) LinkMediaToPublishPost(ctx context.Context, postID, mediaID, platformID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (post_id, media_id, platform_id)
+		VALUES ($1, $2, $3)
+	`, PostPlatformMedia), postID, mediaID, platformID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *MediaRepository) DoesPostBelongToProject(ctx context.Context, projectID, postID string) (bool, error) {
+	var count int
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s
+		WHERE id = $1 AND project_id = $2
+	`, Posts), postID, projectID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *MediaRepository) DoesMediaBelongToPost(ctx context.Context, postID, mediaID string) (bool, error) {
+	var count int
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s
+		WHERE post_id = $1 AND id = $2
+	`, Media), postID, mediaID).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *MediaRepository) IsPlatformEnabledForProject(ctx context.Context, projectID, platformID string) (bool, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s
+		WHERE project_id = $1 AND platform_id = $2
+	`, ProjectPlatforms), projectID, platformID)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func (r *MediaRepository) IsThePostEnabledToPlatform(ctx context.Context, postID, platformID string) (bool, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s
+		WHERE post_id = $1 AND platform_id = $2
+	`, PostPlatforms), postID, platformID)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
