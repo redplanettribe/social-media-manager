@@ -1,4 +1,4 @@
-package publisher_queue
+package publisher
 
 import (
 	"context"

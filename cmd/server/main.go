@@ -13,7 +13,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher_queue"
+	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
