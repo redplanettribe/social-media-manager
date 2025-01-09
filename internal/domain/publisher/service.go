@@ -9,6 +9,7 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+//go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
 	AddSecret(ctx context.Context, projectID, socialNetworkID, key, secret string) error

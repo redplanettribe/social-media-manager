@@ -119,7 +119,7 @@ func main() {
 		projectAuthorizer,
 	)
 	// Initialize the publisher queue
-	publisherQueue := pq.NewPublisherQueue(&cfg.Publisher, publisherFactory)
+	publisherQueue := pq.NewPublisherQueue(&cfg.Publisher, publisherFactory, publisherService)
 	publisherQueue.Start(ctx)
 
 	// Start the post scheduler

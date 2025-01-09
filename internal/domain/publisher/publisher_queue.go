@@ -26,10 +26,11 @@ type publisherQueue struct {
 	cfg              *config.PublisherConfig
 	wg               *sync.WaitGroup
 	running          int32
+	service          Service
 }
 
 // NewPublisherQueue initializes the queue with desired worker counts
-func NewPublisherQueue(cfg *config.PublisherConfig, pf PublisherFactory) PublisherQueue {
+func NewPublisherQueue(cfg *config.PublisherConfig, pf PublisherFactory, svc Service) PublisherQueue {
 	return &publisherQueue{
 		publishCh:        make(chan *post.PublishPost, cfg.PublishBuffer),
 		failedCh:         make(chan *post.PublishPost, cfg.RetryBuffer),
@@ -37,6 +38,7 @@ func NewPublisherQueue(cfg *config.PublisherConfig, pf PublisherFactory) Publish
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
 		running:          0,
+		service:          svc,
 	}
 }
 
@@ -103,13 +105,9 @@ func (pq *publisherQueue) runFailedHandlerWorker(ctx context.Context) {
 			if !ok {
 				return
 			}
-			if err := pq.publishPost(ctx, p); err != nil {
-				fmt.Printf("Post %s failed again: %v\n", p.ID, err)
-				// handle permanent failure, logging, etc.
-				// remove from retryCh to avoid infinite loop
-
-				continue
-			}
+			// we could do any number of things here, like exponential backoff, logging, changing status in db, etc.
+			// at the moment let's only logg it
+			fmt.Print("Processing failed post", p)
 		}
 	}
 }
@@ -121,14 +119,7 @@ func (pq *publisherQueue) CountRunning() int {
 
 // publishPost sends a post to the correct publisher
 func (pq *publisherQueue) publishPost(ctx context.Context, p *post.PublishPost) error {
-	pub, err := pq.publisherFactory.Create(p.Platform, p.Secrets)
-	if err != nil {
-		return err
-	}
-	if err := pub.Publish(ctx, p); err != nil {
-		return err
-	}
-	return nil
+	return pq.service.PublishPostToSocialNetwork(ctx, p.ProjectID, p.ID, p.Platform)
 }
 
 func (pq *publisherQueue) incrementRunning() {
