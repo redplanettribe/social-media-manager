@@ -184,10 +184,10 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 
 /*PLATFORM ROUTES*/
 func (r *Router) setupPlatformRoutes(h *handlers.PlatformHandler) {
-	r.Handle("GET /platforms", r.appPermissions("read:platforms").Chain(
+	r.Handle("GET /publishers", r.appPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.GetAvailableSocialNetworks),
 	))
-	r.Handle("PATCH /platforms/{project_id}/secrets", r.projectPermissions("write:platforms").Chain(
+	r.Handle("PATCH /publishers/{project_id}/secrets", r.projectPermissions("write:publishers").Chain(
 		http.HandlerFunc(h.AddSecret),
 	))
 }

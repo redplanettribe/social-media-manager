@@ -1,8 +1,10 @@
-package platform
+package publisher
 
 import (
 	"context"
 
+	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
+	post "github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"golang.org/x/sync/errgroup"
 )
@@ -16,13 +18,17 @@ type service struct {
 	repo             Repository
 	publisherFactory PublisherFactory
 	encrypter        encrypting.Encrypter
+	postService      post.Service
+	mediaService     media.Service
 }
 
-func NewService(r Repository, e encrypting.Encrypter, pf PublisherFactory) Service {
+func NewService(r Repository, e encrypting.Encrypter, pf PublisherFactory, ps post.Service, m media.Service) Service {
 	return &service{
 		repo:             r,
 		publisherFactory: pf,
 		encrypter:        e,
+		postService:      ps,
+		mediaService:     m,
 	}
 }
 

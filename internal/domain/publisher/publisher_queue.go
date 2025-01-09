@@ -6,7 +6,6 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
 )
@@ -22,18 +21,18 @@ type PublisherQueue interface {
 // PublisherQueue manages the channels and workers for publishing
 type publisherQueue struct {
 	publishCh        chan *post.QPost
-	failedCh          chan *post.QPost
-	publisherFactory platform.PublisherFactory
+	failedCh         chan *post.QPost
+	publisherFactory PublisherFactory
 	cfg              *config.PublisherConfig
 	wg               *sync.WaitGroup
 	running          int32
 }
 
 // NewPublisherQueue initializes the queue with desired worker counts
-func NewPublisherQueue(cfg *config.PublisherConfig, pf platform.PublisherFactory) PublisherQueue {
+func NewPublisherQueue(cfg *config.PublisherConfig, pf PublisherFactory) PublisherQueue {
 	return &publisherQueue{
 		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
-		failedCh:          make(chan *post.QPost, cfg.RetryBuffer),
+		failedCh:         make(chan *post.QPost, cfg.RetryBuffer),
 		publisherFactory: pf,
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
@@ -66,58 +65,58 @@ func (pq *publisherQueue) Enqueue(ctx context.Context, p *post.QPost) {
 // runPublishWorker consumes publishCh, on error sends to retryCh
 func (pq *publisherQueue) runPublishWorker(ctx context.Context) {
 	pq.wg.Add(1)
-    pq.incrementRunning()
-    defer func() {
-        pq.decrementRunning()
-        pq.wg.Done()
-    }()
+	pq.incrementRunning()
+	defer func() {
+		pq.decrementRunning()
+		pq.wg.Done()
+	}()
 
-    for {
-        select {
-        case <-ctx.Done():
-            return
-        case p, ok := <-pq.publishCh:
-            if !ok {
-                return
-            }
-            if err := pq.publishPost(ctx, p); err != nil {
-                pq.failedCh <- p
-            }
-        }
-    }
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case p, ok := <-pq.publishCh:
+			if !ok {
+				return
+			}
+			if err := pq.publishPost(ctx, p); err != nil {
+				pq.failedCh <- p
+			}
+		}
+	}
 }
 
 // runFailedHandlerWorker tries to re-publish failed posts
 func (pq *publisherQueue) runFailedHandlerWorker(ctx context.Context) {
 	pq.wg.Add(1)
-    pq.incrementRunning()
-    defer func() {
-        pq.decrementRunning()
-        pq.wg.Done()
-    }()
+	pq.incrementRunning()
+	defer func() {
+		pq.decrementRunning()
+		pq.wg.Done()
+	}()
 
-    for {
-        select {
-        case <-ctx.Done():
-            return
-        case p, ok := <-pq.failedCh:
-            if !ok {
-                return
-            }
-            if err := pq.publishPost(ctx, p); err != nil {
-                fmt.Printf("Post %s failed again: %v\n", p.ID, err)
-                // handle permanent failure, logging, etc.
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case p, ok := <-pq.failedCh:
+			if !ok {
+				return
+			}
+			if err := pq.publishPost(ctx, p); err != nil {
+				fmt.Printf("Post %s failed again: %v\n", p.ID, err)
+				// handle permanent failure, logging, etc.
 				// remove from retryCh to avoid infinite loop
 
-                continue
-            }
-        }
-    }
+				continue
+			}
+		}
+	}
 }
 
 // CountRunning returns how many goroutines are active
 func (pq *publisherQueue) CountRunning() int {
-    return pq.getRunning()
+	return pq.getRunning()
 }
 
 // publishPost sends a post to the correct publisher

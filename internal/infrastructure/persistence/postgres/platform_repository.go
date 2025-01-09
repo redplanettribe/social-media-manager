@@ -7,18 +7,18 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 )
 
-type PlatformRepository struct {
+type PublisherRepository struct {
 	db *pgxpool.Pool
 }
 
-func NewPlatformRepository(db *pgxpool.Pool) *PlatformRepository {
-	return &PlatformRepository{db: db}
+func NewPublisherRepository(db *pgxpool.Pool) *PublisherRepository {
+	return &PublisherRepository{db: db}
 }
 
-func (r *PlatformRepository) FindAll(ctx context.Context) ([]platform.Platform, error) {
+func (r *PublisherRepository) FindAll(ctx context.Context) ([]publisher.Platform, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT id, name
 		FROM %s
@@ -28,9 +28,9 @@ func (r *PlatformRepository) FindAll(ctx context.Context) ([]platform.Platform, 
 	}
 	defer rows.Close()
 
-	var sns []platform.Platform
+	var sns []publisher.Platform
 	for rows.Next() {
-		sn := platform.Platform{}
+		sn := publisher.Platform{}
 		err := rows.Scan(&sn.ID, &sn.Name)
 		if err != nil {
 			return nil, err
@@ -40,11 +40,11 @@ func (r *PlatformRepository) FindAll(ctx context.Context) ([]platform.Platform, 
 	return sns, nil
 }
 
-func (r *PlatformRepository) FindByID(ctx context.Context, id string) (*platform.Platform, error) {
+func (r *PublisherRepository) FindByID(ctx context.Context, id string) (*publisher.Platform, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(
 		`SELECT id, name FROM %s WHERE id = $1`, Platforms), id)
 
-	sn := &platform.Platform{}
+	sn := &publisher.Platform{}
 	err := row.Scan(&sn.ID, &sn.Name)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
@@ -55,8 +55,8 @@ func (r *PlatformRepository) FindByID(ctx context.Context, id string) (*platform
 	return sn, nil
 }
 
-// Checks if a record on the ProjectPlatform table exists for the given project and social platform. It should be only one row
-func (r *PlatformRepository) IsSocialNetworkEnabledForProject(ctx context.Context, projectID, socialPlatformID string) (bool, error) {
+// Checks if a record on the ProjectPlatform table exists for the given project and social publisher. It should be only one row
+func (r *PublisherRepository) IsSocialNetworkEnabledForProject(ctx context.Context, projectID, socialPlatformID string) (bool, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT COUNT(*)
 		FROM %s
@@ -72,7 +72,7 @@ func (r *PlatformRepository) IsSocialNetworkEnabledForProject(ctx context.Contex
 	return count > 0, nil
 }
 
-func (r *PlatformRepository) GetSecrets(ctx context.Context, projectID, socialPlatformID string) (*string, error) {
+func (r *PublisherRepository) GetSecrets(ctx context.Context, projectID, socialPlatformID string) (*string, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT secrets
 		FROM %s
@@ -90,7 +90,7 @@ func (r *PlatformRepository) GetSecrets(ctx context.Context, projectID, socialPl
 	return secrets, nil
 }
 
-func (r *PlatformRepository) SetSecrets(ctx context.Context, projectID, socialPlatformID, secrets string) error {
+func (r *PublisherRepository) SetSecrets(ctx context.Context, projectID, socialPlatformID, secrets string) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		UPDATE %s
 		SET secrets = $3

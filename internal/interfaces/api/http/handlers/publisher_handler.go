@@ -4,30 +4,30 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
 type PlatformHandler struct {
-	Service platform.Service
+	Service publisher.Service
 }
 
-func NewPlatformHandler(service platform.Service) *PlatformHandler {
+func NewPlatformHandler(service publisher.Service) *PlatformHandler {
 	return &PlatformHandler{Service: service}
 }
 
 // GetAvailableSocialNetworks godoc
 // @Summary Get available social networks
 // @Description Get available social networks
-// @Tags platforms
+// @Tags publishers
 // @Accept json
 // @Produce json
 // @Success 200 {object} []platform.Platform
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /platforms [get]
+// @Router /publishers [get]
 func (h *PlatformHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *http.Request) {
-	platforms, err := h.Service.GetAvailableSocialNetworks(r.Context())
+	publishers, err := h.Service.GetAvailableSocialNetworks(r.Context())
 	if err != nil {
 		e.WriteBusinessError(w, err, mapPlatformErrorToAPIError)
 		return
@@ -35,7 +35,7 @@ func (h *PlatformHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *h
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(platforms)
+	err = json.NewEncoder(w).Encode(publishers)
 	if err != nil {
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
@@ -50,7 +50,7 @@ type addAPIKeyRequest struct {
 // AddSecret godoc
 // @Summary Add a secret to a social network
 // @Description Add a secret to a social network
-// @Tags platforms
+// @Tags publishers
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
@@ -59,7 +59,7 @@ type addAPIKeyRequest struct {
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /platforms/{project_id}/secrets [post]
+// @Router /publishers/{project_id}/secrets [post]
 func (h *PlatformHandler) AddSecret(w http.ResponseWriter, r *http.Request) {
 	var req addAPIKeyRequest
 	err := json.NewDecoder(r.Body).Decode(&req)

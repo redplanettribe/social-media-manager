@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
@@ -64,7 +64,7 @@ func mapPostErrorToAPIError(err error) *e.APIError {
 
 func mapPlatformErrorToAPIError(err error) *e.APIError {
 	switch {
-	case e.MatchError(err, platform.ErrSocialPlatformNotFound):
+	case e.MatchError(err, publisher.ErrSocialPlatformNotFound):
 		return &e.APIError{
 			Status:  http.StatusGone,
 			Code:    e.ErrCodeNotFound,

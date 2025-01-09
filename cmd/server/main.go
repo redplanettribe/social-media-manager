@@ -10,9 +10,9 @@ import (
 
 	_ "github.com/pedrodcsjostrom/opencm/docs"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/platform"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
+	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
@@ -71,14 +71,21 @@ func main() {
 	}
 	defer dbPool.Close()
 
+	mediaObjectRepo, err := minioS3.NewS3Client(&cfg.ObjectStore)
+	if err != nil {
+		log.Fatalf("Could not create media object repository: %v", err)
+	}
+
 	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbPool)))
+	publisherFactory := publisher.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
+	encrypter := encrypting.NewAESEncrypter(&cfg.Encryption)
+	passworHasher := encrypting.NewHasher()
 
 	healthHandler := handlers.NewHealthHandler()
 
-	userRepo := postgres.NewUserRepository(dbPool)
-	passworHasher := encrypting.NewHasher()
 	sessionRepo := postgres.NewSessionRepository(dbPool)
 	sessionManager := session.NewManager(sessionRepo)
+	userRepo := postgres.NewUserRepository(dbPool)
 	userService := user.NewService(userRepo, sessionManager, passworHasher)
 	userHandler := handlers.NewUserHandler(userService)
 
@@ -90,20 +97,13 @@ func main() {
 	postService := post.NewService(postRepo)
 	postHandler := handlers.NewPostHandler(postService)
 
-	publisherFactory := platform.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
-
-	encrypter := encrypting.NewAESEncrypter(&cfg.Encryption)
-	platformRepo := postgres.NewPlatformRepository(dbPool)
-	platformService := platform.NewService(platformRepo, encrypter, publisherFactory)
-	platformHandler := handlers.NewPlatformHandler(platformService)
-
-	mediaObjectRepo, err := minioS3.NewS3Client(&cfg.ObjectStore)
-	if err != nil {
-		log.Fatalf("Could not create media object repository: %v", err)
-	}
 	mediaMetaDataRepo := postgres.NewMediaRepository(dbPool)
 	mediaService := media.NewService(mediaMetaDataRepo, mediaObjectRepo)
 	mediaHandler := handlers.NewMediaHandler(mediaService)
+
+	publisherRepo := postgres.NewPublisherRepository(dbPool)
+	publisherService := publisher.NewService(publisherRepo, encrypter, publisherFactory, postService, mediaService)
+	publisherHandler := handlers.NewPlatformHandler(publisherService)
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
@@ -112,7 +112,7 @@ func main() {
 		userHandler,
 		projectHandler,
 		postHandler,
-		platformHandler,
+		publisherHandler,
 		mediaHandler,
 		authenticator,
 		appAuthorizer,
