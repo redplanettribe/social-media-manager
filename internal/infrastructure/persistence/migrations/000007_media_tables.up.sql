@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS media (
     id UUID PRIMARY KEY,
     post_id UUID NOT NULL,
-    file_name VARCHAR(255) NOT NULL UNIQUE,
+    file_name VARCHAR(255) NOT NULL,
     media_type VARCHAR(20) NOT NULL,
     format VARCHAR(10) NOT NULL,
     width INT,
