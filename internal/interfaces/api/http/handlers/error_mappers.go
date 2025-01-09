@@ -62,15 +62,33 @@ func mapPostErrorToAPIError(err error) *e.APIError {
 	}
 }
 
-func mapPlatformErrorToAPIError(err error) *e.APIError {
+func mapPublisherErrorToAPIError(err error) *e.APIError {
 	switch {
-	case e.MatchError(err, publisher.ErrSocialPlatformNotFound):
+	case e.MatchError(err,
+		publisher.ErrSocialPlatformNotFound,
+		post.ErrPostNotFound,
+	):
 		return &e.APIError{
 			Status:  http.StatusGone,
 			Code:    e.ErrCodeNotFound,
 			Message: err.Error(),
 		}
-
+	case e.MatchError(err,
+		publisher.ErrSecretsNotSet,
+	):
+		return &e.APIError{
+			Status:  http.StatusUnprocessableEntity,
+			Code:    e.ErrCodeValidation,
+			Message: "Platform secrets not configured. Please set them before publishing.",
+		}
+	case e.MatchError(err,
+		publisher.ErrSocialPlatformNotEnabledForProject,
+	):
+		return &e.APIError{
+			Status:  http.StatusForbidden,
+			Code:    e.ErrCodeForbidden,
+			Message: err.Error(),
+		}
 	default:
 		return &e.APIError{
 			Status:  http.StatusInternalServerError,
@@ -177,4 +195,3 @@ func mapMediaErrorToAPIError(err error) *e.APIError {
 		}
 	}
 }
-

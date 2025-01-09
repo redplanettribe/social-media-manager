@@ -113,10 +113,10 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 
 func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
 	var (
-		isEnabled bool
-		publishPost         *post.PublishPost
-		media 		   []*media.Media
-		g         errgroup.Group
+		isEnabled   bool
+		publishPost *post.PublishPost
+		media       []*media.Media
+		g           errgroup.Group
 	)
 
 	g.Go(func() error {
@@ -149,6 +149,10 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return post.ErrPostNotFound
 	}
 
+	if publishPost.Secrets == "empty" {
+		return ErrSecretsNotSet
+	}
+	
 	publisher, err := s.publisherFactory.Create(platformID, publishPost.Secrets)
 	if err != nil {
 		return err

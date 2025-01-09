@@ -394,7 +394,6 @@ func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post
 		INNER JOIN %s plat ON popl.platform_id = plat.id
 		INNER JOIN %s prpl ON plat.id = prpl.platform_id
 		WHERE p.id = $1
-		AND prpl.secrets IS NOT NULL
 	`, Posts, PostPlatforms, Platforms, ProjectPlatforms), id)
 
 	p := &post.PublishPost{}

@@ -44,10 +44,6 @@ func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost, media []
 }
 
 func (l *Linkedin) ValidateSecrets(secrets string) error {
-	if secrets == "" {
-		return nil
-	}
-
 	var s Secrets
 	err := l.encrypter.DecryptJSON(secrets, &s)
 	if err != nil {
