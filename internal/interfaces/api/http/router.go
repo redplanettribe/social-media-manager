@@ -61,7 +61,7 @@ func NewRouter(
 	r.setupUserRoutes(userHandler)
 	r.setupProjectRoutes(projectHandler)
 	r.setupPostRoutes(postHandler)
-	r.setupPlatformRoutes(platformHandler)
+	r.setupPublisherRoutes(platformHandler)
 	r.setupMediaRoutes(mediaHandler)
 
 	return r
@@ -182,8 +182,11 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	))
 }
 
-/*PLATFORM ROUTES*/
-func (r *Router) setupPlatformRoutes(h *handlers.PlatformHandler) {
+/*PUBLISHER ROUTES*/
+func (r *Router) setupPublisherRoutes(h *handlers.PlatformHandler) {
+	r.Handle("POST /publishers/{project_id}/{post_id}/{social_network_id}", r.projectPermissions("write:publishers").Chain(
+		http.HandlerFunc(h.PublishPostToSocialNetwork),
+	))
 	r.Handle("GET /publishers", r.appPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.GetAvailableSocialNetworks),
 	))

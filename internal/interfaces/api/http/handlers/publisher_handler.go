@@ -79,3 +79,36 @@ func (h *PlatformHandler) AddSecret(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+// PublishPostToSocialNetwork godoc
+// @Summary Publish post to social network
+// @Description Publish post to social network
+// @Tags publishers
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param social_network_id path string true "Social Network ID"
+// @Success 200
+// @Failure 400 {object} errors.APIError "Bad request"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /publishers/{project_id}/{post_id}/{social_network_id} [post]
+func (h *PlatformHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	socialNetworkID := r.PathValue("social_network_id")
+	projectID := r.PathValue("project_id")
+
+	if postID == "" || socialNetworkID == "" || projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+		return
+	}
+
+	err := h.Service.PublishPostToSocialNetwork(r.Context(),projectID, postID, socialNetworkID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPlatformErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

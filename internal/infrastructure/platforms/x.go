@@ -25,7 +25,7 @@ func (t *X) AddSecret(key, secret string) (string, error) {
 	return "", nil
 }
 
-func (t *X) Publish(ctx context.Context, post *post.QPost) error {
+func (t *X) Publish(ctx context.Context, post *post.PublishPost) error {
     // Publish to Twitter
     fmt.Println("Publishing to X")
 	time.Sleep(1 * time.Second)

@@ -13,12 +13,13 @@ type Repository interface {
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
-	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*QPost, error)
+	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*PublishPost, error)
 	SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error
 	IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error)
 	GetProjectPostQueue(ctx context.Context, projectID string) (*Queue, error)
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string, postIDs []string) ([]*Post, error)
 	UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error
-	GetPostsForPlatformPublishQueue(ctx context.Context, postID string) ([]*QPost, error)
+	GetPostsForPublishQueue(ctx context.Context, postID string) ([]*PublishPost, error)
+	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
 }

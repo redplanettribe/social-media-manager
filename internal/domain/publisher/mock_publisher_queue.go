@@ -33,7 +33,7 @@ func (_m *MockPublisherQueue) CountRunning() int {
 }
 
 // Enqueue provides a mock function with given fields: ctx, p
-func (_m *MockPublisherQueue) Enqueue(ctx context.Context, p *post.QPost) {
+func (_m *MockPublisherQueue) Enqueue(ctx context.Context, p *post.PublishPost) {
 	_m.Called(ctx, p)
 }
 

@@ -25,7 +25,7 @@ func TestPostScheduler_Start(t *testing.T) {
 			name:     "starts scheduler with correct interval",
 			interval: 100 * time.Millisecond,
 			setup: func(mps *post.MockService, mpjs *project.MockService, mpq *pq.MockPublisherQueue) {
-				mps.On("FindScheduledReadyPosts", mock.Anything, 0, 100).Return([]*post.QPost{}, nil)
+				mps.On("FindScheduledReadyPosts", mock.Anything, 0, 100).Return([]*post.PublishPost{}, nil)
 				mpjs.On("FindActiveProjectsChunk", mock.Anything, 0, 100).Return([]*project.Project{}, nil)
 			},
 		},
@@ -63,15 +63,15 @@ func TestPostScheduler_Start(t *testing.T) {
 func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 	tests := []struct {
 		name            string
-		scheduledPosts  []*post.QPost
+		scheduledPosts  []*post.PublishPost
 		projects        []*project.Project
-		projectPosts    map[string]*post.QPost // projectID -> post
+		projectPosts    map[string]*post.PublishPost // projectID -> post
 		expectedErrors  bool
 		expectedEnqueue int
 	}{
 		{
 			name: "successful scan with both scheduled and project posts",
-			scheduledPosts: []*post.QPost{
+			scheduledPosts: []*post.PublishPost{
 				{ID: "scheduled1", Platform: "platform1"},
 				{ID: "scheduled2", Platform: "platform2"},
 			},
@@ -79,7 +79,7 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 				{ID: "proj1"},
 				{ID: "proj2"},
 			},
-			projectPosts: map[string]*post.QPost{
+			projectPosts: map[string]*post.PublishPost{
 				"proj1": {ID: "proj1-post", Platform: "platform1"},
 				"proj2": {ID: "proj2-post", Platform: "platform2"},
 			},
@@ -88,14 +88,14 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 		},
 		{
 			name: "deduplication of posts",
-			scheduledPosts: []*post.QPost{
+			scheduledPosts: []*post.PublishPost{
 				{ID: "post1", Platform: "platform1"},
 				{ID: "post1", Platform: "platform1"}, // duplicate
 			},
 			projects: []*project.Project{
 				{ID: "proj1"},
 			},
-			projectPosts: map[string]*post.QPost{
+			projectPosts: map[string]*post.PublishPost{
 				"proj1": {ID: "post1", Platform: "platform1"}, // duplicate
 			},
 			expectedErrors:  false,
@@ -115,7 +115,7 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 			mockPostSvc.On("FindScheduledReadyPosts", mock.Anything, 0, 100).
 				Return(tt.scheduledPosts, nil)
 			mockPostSvc.On("FindScheduledReadyPosts", mock.Anything, 100, 100).
-				Return([]*post.QPost{}, nil)
+				Return([]*post.PublishPost{}, nil)
 
 			// Setup projects
 			mockProjectSvc.On("FindActiveProjectsChunk", mock.Anything, 0, 100).
@@ -159,14 +159,14 @@ func TestPostScheduler_ScanAndEnqueue(t *testing.T) {
 func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 	tests := []struct {
 		name          string
-		chunks        [][]*post.QPost
+		chunks        [][]*post.PublishPost
 		expectedError error
 		expectedPosts int
 		contextCancel bool
 	}{
 		{
 			name: "successful scan multiple chunks",
-			chunks: [][]*post.QPost{
+			chunks: [][]*post.PublishPost{
 				{{ID: "1"}, {ID: "2"}},
 				{{ID: "3"}},
 				{},
@@ -177,7 +177,7 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 		},
 		{
 			name: "error during scan",
-			chunks: [][]*post.QPost{
+			chunks: [][]*post.PublishPost{
 				{{ID: "1"}},
 			},
 			expectedError: fmt.Errorf("scan error"),
@@ -186,7 +186,7 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 		},
 		{
 			name: "context cancellation",
-			chunks: [][]*post.QPost{
+			chunks: [][]*post.PublishPost{
 				{{ID: "1"}},
 			},
 			contextCancel: true,
@@ -226,7 +226,7 @@ func TestPostScheduler_ScanScheduledPosts(t *testing.T) {
 			scheduler := NewPostScheduler(mockPostSvc, mockProjectSvc, mockPubQueue, cfg)
 
 			// Create channel to collect posts
-			posts := make(chan *post.QPost, 100)
+			posts := make(chan *post.PublishPost, 100)
 
 			if tt.contextCancel {
 				cancel()
@@ -261,7 +261,7 @@ func TestPostScheduler_ScanProjectQueues(t *testing.T) {
 	tests := []struct {
 		name          string
 		projects      [][]*project.Project
-		projectPosts  map[string]*post.QPost
+		projectPosts  map[string]*post.PublishPost
 		expectedError error
 		expectedPosts int
 	}{
@@ -271,7 +271,7 @@ func TestPostScheduler_ScanProjectQueues(t *testing.T) {
 				{{ID: "proj1"}, {ID: "proj2"}},
 				{},
 			},
-			projectPosts: map[string]*post.QPost{
+			projectPosts: map[string]*post.PublishPost{
 				"proj1": {ID: "post1"},
 				"proj2": {ID: "post2"},
 			},
@@ -323,7 +323,7 @@ func TestPostScheduler_ScanProjectQueues(t *testing.T) {
 			scheduler := NewPostScheduler(mockPostSvc, mockProjectSvc, mockPubQueue, cfg)
 
 			// Create channel to collect posts
-			posts := make(chan *post.QPost, 100)
+			posts := make(chan *post.PublishPost, 100)
 
 			err := scheduler.scanProjectQueues(ctx, posts)
 

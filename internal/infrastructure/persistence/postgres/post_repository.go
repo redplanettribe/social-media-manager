@@ -120,7 +120,7 @@ func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, pu
 	return nil
 }
 
-func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.QPost, error) {
+func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.PublishPost, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT
 		p.id,
@@ -152,9 +152,9 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 	}
 	defer rows.Close()
 
-	var posts []*post.QPost
+	var posts []*post.PublishPost
 	for rows.Next() {
-		p := &post.QPost{}
+		p := &post.PublishPost{}
 
 		err = rows.Scan(
 			&p.ID,
@@ -167,7 +167,7 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 			&p.CreatedBy,
 			&p.CreatedAt,
 			&p.UpdatedAt,
-			&p.ApiKey,
+			&p.Secrets,
 			&p.Platform,
 			&p.PublishStatus,
 		)
@@ -294,7 +294,7 @@ func (r *PostRepository) UpdateProjectPostQueue(ctx context.Context, projectID s
 	return nil
 }
 
-func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, postID string) ([]*post.QPost, error) {
+func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID string) ([]*post.PublishPost, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT
 			p.id,
@@ -322,9 +322,9 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 	}
 	defer rows.Close()
 
-	var posts []*post.QPost
+	var posts []*post.PublishPost
 	for rows.Next() {
-		p := &post.QPost{}
+		p := &post.PublishPost{}
 		err = rows.Scan(
 			&p.ID,
 			&p.ProjectID,
@@ -336,7 +336,7 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 			&p.CreatedBy,
 			&p.CreatedAt,
 			&p.UpdatedAt,
-			&p.ApiKey,
+			&p.Secrets,
 			&p.Platform,
 			&p.PublishStatus,
 		)
@@ -347,4 +347,53 @@ func (r *PostRepository) GetPostsForPlatformPublishQueue(ctx context.Context, po
 	}
 
 	return posts, nil
+}
+
+func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post.PublishPost, error){
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT
+			p.id,
+			p.project_id,
+			p.title,
+			p.text_content,
+			p.is_idea,
+			p.status,
+			p.scheduled_at,
+			p.created_by,
+			p.created_at,
+			p.updated_at,
+			prpl.secrets,
+			plat.id,
+			popl.status publish_status
+		FROM %s p
+		INNER JOIN %s popl ON p.id = popl.post_id
+		INNER JOIN %s plat ON popl.platform_id = plat.id
+		INNER JOIN %s prpl ON plat.id = prpl.platform_id
+		WHERE p.id = $1
+		AND prpl.secrets IS NOT NULL
+	`, Posts, PostPlatforms, Platforms, ProjectPlatforms), id)
+
+	p := &post.PublishPost{}
+	err := row.Scan(
+		&p.ID,
+		&p.ProjectID,
+		&p.Title,
+		&p.TextContent,
+		&p.IsIdea,
+		&p.Status,
+		&p.ScheduledAt,
+		&p.CreatedBy,
+		&p.CreatedAt,
+		&p.UpdatedAt,
+		&p.Secrets,
+		&p.Platform,
+		&p.PublishStatus,
+	)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return nil, err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
+	}
+
+	return p, nil
 }

@@ -64,7 +64,7 @@ func (s *PostScheduler) Stop() {
 // It combines posts into a single channel, deduplicates them, then enqueues each.
 func (s *PostScheduler) scanAndEnqueue(ctx context.Context) error {
 	// Channel to collect QPost from multiple scanners
-	qPosts := make(chan *post.QPost, s.cfg.ChannelBuffer)
+	qPosts := make(chan *post.PublishPost, s.cfg.ChannelBuffer)
 
 	// Use errgroup for concurrency & combined error handling
 	g, gCtx := errgroup.WithContext(ctx)
@@ -107,7 +107,7 @@ func (s *PostScheduler) scanAndEnqueue(ctx context.Context) error {
 
 // scanScheduledPosts queries posts that are directly scheduled (e.g., with a scheduled_at).
 // It pages through results in chunks to avoid huge queries all at once.
-func (s *PostScheduler) scanScheduledPosts(ctx context.Context, out chan<- *post.QPost) error {
+func (s *PostScheduler) scanScheduledPosts(ctx context.Context, out chan<- *post.PublishPost) error {
 	const chunkSize = 100
 	offset := 0
 
@@ -143,7 +143,7 @@ func (s *PostScheduler) scanScheduledPosts(ctx context.Context, out chan<- *post
 
 // scanProjectQueues queries for posts in each project's custom queue that are due to be published.
 // Also pages through results in chunks to avoid big loads.
-func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.QPost) error {
+func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.PublishPost) error {
 	// chunkSize for projects
 	const chunkSize = 20
 	offset := 0

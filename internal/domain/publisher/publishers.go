@@ -12,7 +12,7 @@ import (
 //go:generate mockery --name=Publisher --case=underscore --inpackage
 type Publisher interface {
     // Publish a post
-	Publish(ctx context.Context, post *post.QPost) error
+	Publish(ctx context.Context, post *post.PublishPost) error
     // Check if the secrets are valid
     ValidateSecrets(Secrets string) error
     // Add a new secret and return the encrypted secrets string. If the key already exists, it will be updated. If the key is not valid for this platform, an error will be returned

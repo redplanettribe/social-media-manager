@@ -14,7 +14,7 @@ func NewUnknownPublisher() *UnknownPublisher {
 	return &UnknownPublisher{}
 }
 
-func (p *UnknownPublisher) Publish(ctx context.Context, post *post.QPost) error {
+func (p *UnknownPublisher) Publish(ctx context.Context, post *post.PublishPost) error {
 	return errors.New("unknown platform")
 }
 

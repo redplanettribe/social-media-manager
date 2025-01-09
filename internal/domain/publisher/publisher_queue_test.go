@@ -101,17 +101,17 @@ func TestPublisherQueue_Enqueue(t *testing.T) {
 	mockPublisherFactory.On("Create", mock.Anything, mock.Anything).Return(mockPublisher)
 
 	pq := &publisherQueue{
-		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
-		failedCh:          make(chan *post.QPost, cfg.RetryBuffer),
+		publishCh:        make(chan *post.PublishPost, cfg.PublishBuffer),
+		failedCh:          make(chan *post.PublishPost, cfg.RetryBuffer),
 		publisherFactory: mockPublisherFactory,
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
 	}
 
-	testPost := &post.QPost{
+	testPost := &post.PublishPost{
 		ID: "test-1",
 		Platform: "test-platform",
-		ApiKey:   "test-key",
+		Secrets:    "test-key",
 	}
 
 	pq.Start(ctx)
@@ -129,7 +129,7 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 	tests := []struct {
 		name            string
 		cfg             *config.PublisherConfig
-		posts           []*post.QPost
+		posts           []*post.PublishPost
 		publishError    error
 		expectedRetries int
 	}{
@@ -141,8 +141,8 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				PublishBuffer: 2,
 				RetryBuffer:   2,
 			},
-			posts: []*post.QPost{
-				{ID: "1", Platform: "x", ApiKey: "key1"},
+			posts: []*post.PublishPost{
+				{ID: "1", Platform: "x", Secrets:  "key1"},
 			},
 			publishError:    nil,
 			expectedRetries: 0,
@@ -155,8 +155,8 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				PublishBuffer: 2,
 				RetryBuffer:   2,
 			},
-			posts: []*post.QPost{
-				{ID: "2", Platform: "x", ApiKey: "key2"},
+			posts: []*post.PublishPost{
+				{ID: "2", Platform: "x", Secrets:  "key2"},
 			},
 			publishError:    fmt.Errorf("publish error"),
 			expectedRetries: 1,
@@ -169,9 +169,9 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				PublishBuffer: 3,
 				RetryBuffer:   3,
 			},
-			posts: []*post.QPost{
-				{ID: "3", Platform: "x", ApiKey: "key3"},
-				{ID: "4", Platform: "x", ApiKey: "key4"},
+			posts: []*post.PublishPost{
+				{ID: "3", Platform: "x", Secrets:  "key3"},
+				{ID: "4", Platform: "x", Secrets:  "key4"},
 			},
 			publishError:    fmt.Errorf("publish error"),
 			expectedRetries: 2,
@@ -190,8 +190,8 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 			publisherFactory.On("Create", mock.Anything, mock.Anything).Return(mockPublisher)
 
 			pq := &publisherQueue{
-				publishCh:        make(chan *post.QPost, tt.cfg.PublishBuffer),
-				failedCh:          make(chan *post.QPost, tt.cfg.RetryBuffer),
+				publishCh:        make(chan *post.PublishPost, tt.cfg.PublishBuffer),
+				failedCh:          make(chan *post.PublishPost, tt.cfg.RetryBuffer),
 				publisherFactory: publisherFactory,
 				cfg:              tt.cfg,
 				wg:               &sync.WaitGroup{},
@@ -223,7 +223,7 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 	tests := []struct {
 		name                 string
 		cfg                  *config.PublisherConfig
-		posts                []*post.QPost
+		posts                []*post.PublishPost
 		publishError         error
 		expectedPublishCalls int
 	}{
@@ -235,8 +235,8 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 				PublishBuffer: 1,
 				RetryBuffer:   2,
 			},
-			posts: []*post.QPost{
-				{ID: "retry-1", Platform: "x", ApiKey: "key1"},
+			posts: []*post.PublishPost{
+				{ID: "retry-1", Platform: "x", Secrets:  "key1"},
 			},
 			publishError:         nil,
 			expectedPublishCalls: 1,
@@ -249,8 +249,8 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 				PublishBuffer: 1,
 				RetryBuffer:   2,
 			},
-			posts: []*post.QPost{
-				{ID: "retry-2", Platform: "x", ApiKey: "key2"},
+			posts: []*post.PublishPost{
+				{ID: "retry-2", Platform: "x", Secrets:  "key2"},
 			},
 			publishError:         fmt.Errorf("permanent error"),
 			expectedPublishCalls: 1,
@@ -263,10 +263,10 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 				PublishBuffer: 1,
 				RetryBuffer:   3,
 			},
-			posts: []*post.QPost{
-				{ID: "retry-3", Platform: "x", ApiKey: "key3"},
-				{ID: "retry-4", Platform: "x", ApiKey: "key4"},
-				{ID: "retry-5", Platform: "x", ApiKey: "key5"},
+			posts: []*post.PublishPost{
+				{ID: "retry-3", Platform: "x", Secrets:  "key3"},
+				{ID: "retry-4", Platform: "x", Secrets:  "key4"},
+				{ID: "retry-5", Platform: "x", Secrets:  "key5"},
 			},
 			publishError:         fmt.Errorf("permanent error"),
 			expectedPublishCalls: 3, 
@@ -285,8 +285,8 @@ func TestPublisherQueue_runRetryWorker(t *testing.T) {
 			publisherFactory.On("Create", mock.Anything, mock.Anything).Return(mockPublisher)
 
 			pq := &publisherQueue{
-				publishCh:        make(chan *post.QPost, tt.cfg.PublishBuffer),
-				failedCh:          make(chan *post.QPost, tt.cfg.RetryBuffer),
+				publishCh:        make(chan *post.PublishPost, tt.cfg.PublishBuffer),
+				failedCh:          make(chan *post.PublishPost, tt.cfg.RetryBuffer),
 				publisherFactory: publisherFactory,
 				cfg:              tt.cfg,
 				wg:               &sync.WaitGroup{},

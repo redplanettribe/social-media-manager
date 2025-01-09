@@ -21,7 +21,7 @@ func NewInstagram(apikey string) *Instagram {
 }
 
 
-func (f *Instagram) Publish(ctx context.Context, post *post.QPost) error {
+func (f *Instagram) Publish(ctx context.Context, post *post.PublishPost) error {
 	// Publish to Facebook
 	fmt.Println("Publishing to Instagram")
 	time.Sleep(1 * time.Second)

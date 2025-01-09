@@ -14,14 +14,14 @@ import (
 type PublisherQueue interface {
 	Start(ctx context.Context)
 	Stop()
-	Enqueue(ctx context.Context, p *post.QPost)
+	Enqueue(ctx context.Context, p *post.PublishPost)
 	CountRunning() int
 }
 
 // PublisherQueue manages the channels and workers for publishing
 type publisherQueue struct {
-	publishCh        chan *post.QPost
-	failedCh         chan *post.QPost
+	publishCh        chan *post.PublishPost
+	failedCh         chan *post.PublishPost
 	publisherFactory PublisherFactory
 	cfg              *config.PublisherConfig
 	wg               *sync.WaitGroup
@@ -31,8 +31,8 @@ type publisherQueue struct {
 // NewPublisherQueue initializes the queue with desired worker counts
 func NewPublisherQueue(cfg *config.PublisherConfig, pf PublisherFactory) PublisherQueue {
 	return &publisherQueue{
-		publishCh:        make(chan *post.QPost, cfg.PublishBuffer),
-		failedCh:         make(chan *post.QPost, cfg.RetryBuffer),
+		publishCh:        make(chan *post.PublishPost, cfg.PublishBuffer),
+		failedCh:         make(chan *post.PublishPost, cfg.RetryBuffer),
 		publisherFactory: pf,
 		cfg:              cfg,
 		wg:               &sync.WaitGroup{},
@@ -58,7 +58,7 @@ func (pq *publisherQueue) Stop() {
 }
 
 // Enqueue adds a post to the publishCh
-func (pq *publisherQueue) Enqueue(ctx context.Context, p *post.QPost) {
+func (pq *publisherQueue) Enqueue(ctx context.Context, p *post.PublishPost) {
 	pq.publishCh <- p
 }
 
@@ -120,8 +120,8 @@ func (pq *publisherQueue) CountRunning() int {
 }
 
 // publishPost sends a post to the correct publisher
-func (pq *publisherQueue) publishPost(ctx context.Context, p *post.QPost) error {
-	pub, err := pq.publisherFactory.Create(p.Platform, p.ApiKey)
+func (pq *publisherQueue) publishPost(ctx context.Context, p *post.PublishPost) error {
+	pub, err := pq.publisherFactory.Create(p.Platform, p.Secrets)
 	if err != nil {
 		return err
 	}

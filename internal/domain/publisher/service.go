@@ -12,6 +12,8 @@ import (
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
 	AddSecret(ctx context.Context, projectID, socialNetworkID, key, secret string) error
+	PublishPost(ctx context.Context, postID string) error
+	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, socialNetworkID string) error
 }
 
 type service struct {
@@ -87,4 +89,51 @@ func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, ke
 	}
 
 	return s.repo.SetSecrets(ctx, projectID, socialPlatformID, newSecrets)
+}
+
+func (s *service) PublishPost(ctx context.Context, postID string) error {
+	return nil
+}
+
+func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, socialNetworkID string) error {
+	var (
+		isEnabled bool
+		p         *post.PublishPost
+		g         errgroup.Group
+	)
+
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(ctx, projectID, socialNetworkID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		p, err = s.postService.GetPostToPublish(ctx, postID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if !isEnabled {
+		return ErrSocialPlatformNotEnabledForProject
+	}
+
+	if p == nil {
+		return post.ErrPostNotFound
+	}
+
+	publisher, err := s.publisherFactory.Create(socialNetworkID, p.Secrets)
+	if err != nil {
+		return err
+	}
+
+	if err := publisher.Publish(ctx, p); err != nil {
+		return err
+	}
+
+	return nil
 }

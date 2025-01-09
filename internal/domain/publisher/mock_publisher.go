@@ -43,7 +43,7 @@ func (_m *MockPublisher) AddSecret(key string, secret string) (string, error) {
 }
 
 // Publish provides a mock function with given fields: ctx, _a1
-func (_m *MockPublisher) Publish(ctx context.Context, _a1 *post.QPost) error {
+func (_m *MockPublisher) Publish(ctx context.Context, _a1 *post.PublishPost) error {
 	ret := _m.Called(ctx, _a1)
 
 	if len(ret) == 0 {
@@ -51,7 +51,7 @@ func (_m *MockPublisher) Publish(ctx context.Context, _a1 *post.QPost) error {
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *post.QPost) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *post.PublishPost) error); ok {
 		r0 = rf(ctx, _a1)
 	} else {
 		r0 = ret.Error(0)

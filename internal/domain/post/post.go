@@ -52,7 +52,7 @@ type Post struct {
 	UpdatedAt   time.Time     `json:"updated_at"`
 }
 
-type QPost struct {
+type PublishPost struct {
 	// Post fields
 	ID          string        `json:"id"`
 	ProjectID   string        `json:"project_id"`
@@ -65,7 +65,7 @@ type QPost struct {
 	CreatedAt   time.Time     `json:"created_at"`
 	UpdatedAt   time.Time     `json:"updated_at"`
 	// Additional fields
-	ApiKey        string
+	Secrets       string `json:"secrets"`
 	Platform      string `json:"platform"`
 	PublishStatus string `json:"publish_status"`
 }

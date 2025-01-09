@@ -21,13 +21,13 @@ type Service interface {
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error
-	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error)
-	GetQueuePost(ctx context.Context, id string) (*QPost, error)
+	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error)
+	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
 	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
-	DequeuePostsToPublish(ctx context.Context, projectID string) ([]*QPost, error)
+	DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error)
 }
 
 type service struct {
@@ -118,13 +118,12 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID
 	return s.repo.AddSocialMediaPublisher(ctx, postID, publisherID)
 }
 
-func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*QPost, error) {
+func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error) {
 	return s.repo.FindScheduledReadyPosts(ctx, offset, chunkSize)
 }
 
-func (s *service) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
-	// TODO: Implement this
-	return &QPost{}, nil
+func (s *service) GetPostToPublish(ctx context.Context, postID string) (*PublishPost, error) {
+	return s.repo.GetPostToPublish(ctx, postID)
 }
 
 func (s *service) SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error {
@@ -224,7 +223,7 @@ func (s *service) MovePostInQueue(ctx context.Context, projectID string, current
 	return s.repo.UpdateProjectPostQueue(ctx, projectID, q.Arr())
 }
 
-func (s *service) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*QPost, error) {
+func (s *service) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error) {
 	q, err := s.repo.GetProjectPostQueue(ctx, projectID)
 	if err != nil {
 		return nil, err
@@ -237,5 +236,5 @@ func (s *service) DequeuePostsToPublish(ctx context.Context, projectID string) (
 	if err != nil {
 		return nil, err
 	}
-	return s.repo.GetPostsForPlatformPublishQueue(ctx, postID)
+	return s.repo.GetPostsForPublishQueue(ctx, postID)
 }

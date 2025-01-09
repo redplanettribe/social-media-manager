@@ -33,10 +33,11 @@ func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	}
 }
 
-func (l *Linkedin) Publish(ctx context.Context, post *post.QPost) error {
+func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost) error {
 	// Publish to Linkedin
-	fmt.Println("Publishing to Linkedin")
+	fmt.Println("Publishing to Linkedin: ", post.Title, post.ID)
 	time.Sleep(1 * time.Second)
+	fmt.Println("Published to Linkedin")
 	return nil
 }
 

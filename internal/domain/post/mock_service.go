@@ -117,23 +117,23 @@ func (_m *MockService) DeletePost(ctx context.Context, id string) error {
 }
 
 // DequeuePostsToPublish provides a mock function with given fields: ctx, projectID
-func (_m *MockService) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*QPost, error) {
+func (_m *MockService) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error) {
 	ret := _m.Called(ctx, projectID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for DequeuePostsToPublish")
 	}
 
-	var r0 []*QPost
+	var r0 []*PublishPost
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*QPost, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*PublishPost, error)); ok {
 		return rf(ctx, projectID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*QPost); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) []*PublishPost); ok {
 		r0 = rf(ctx, projectID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*QPost)
+			r0 = ret.Get(0).([]*PublishPost)
 		}
 	}
 
@@ -147,23 +147,23 @@ func (_m *MockService) DequeuePostsToPublish(ctx context.Context, projectID stri
 }
 
 // FindScheduledReadyPosts provides a mock function with given fields: ctx, offset, chunkSize
-func (_m *MockService) FindScheduledReadyPosts(ctx context.Context, offset int, chunkSize int) ([]*QPost, error) {
+func (_m *MockService) FindScheduledReadyPosts(ctx context.Context, offset int, chunkSize int) ([]*PublishPost, error) {
 	ret := _m.Called(ctx, offset, chunkSize)
 
 	if len(ret) == 0 {
 		panic("no return value specified for FindScheduledReadyPosts")
 	}
 
-	var r0 []*QPost
+	var r0 []*PublishPost
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, int, int) ([]*QPost, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) ([]*PublishPost, error)); ok {
 		return rf(ctx, offset, chunkSize)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, int, int) []*QPost); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, int, int) []*PublishPost); ok {
 		r0 = rf(ctx, offset, chunkSize)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*QPost)
+			r0 = ret.Get(0).([]*PublishPost)
 		}
 	}
 
@@ -206,6 +206,36 @@ func (_m *MockService) GetPost(ctx context.Context, id string) (*Post, error) {
 	return r0, r1
 }
 
+// GetPostToPublish provides a mock function with given fields: ctx, id
+func (_m *MockService) GetPostToPublish(ctx context.Context, id string) (*PublishPost, error) {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetPostToPublish")
+	}
+
+	var r0 *PublishPost
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*PublishPost, error)); ok {
+		return rf(ctx, id)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *PublishPost); ok {
+		r0 = rf(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*PublishPost)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetProjectQueuedPosts provides a mock function with given fields: ctx, projectID
 func (_m *MockService) GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error) {
 	ret := _m.Called(ctx, projectID)
@@ -229,36 +259,6 @@ func (_m *MockService) GetProjectQueuedPosts(ctx context.Context, projectID stri
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
 		r1 = rf(ctx, projectID)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// GetQueuePost provides a mock function with given fields: ctx, id
-func (_m *MockService) GetQueuePost(ctx context.Context, id string) (*QPost, error) {
-	ret := _m.Called(ctx, id)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetQueuePost")
-	}
-
-	var r0 *QPost
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*QPost, error)); ok {
-		return rf(ctx, id)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *QPost); ok {
-		r0 = rf(ctx, id)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*QPost)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, id)
 	} else {
 		r1 = ret.Error(1)
 	}
