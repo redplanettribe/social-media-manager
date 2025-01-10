@@ -20,6 +20,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	minioS3 "github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/miniIO"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/persistence/postgres"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/server"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
 	api "github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http"
@@ -77,7 +78,7 @@ func main() {
 	}
 
 	authenticator := authentication.NewAuthenticator(session.NewManager(postgres.NewSessionRepository(dbPool)))
-	publisherFactory := publisher.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
+	publisherFactory := platforms.NewPublisherFactory(encrypting.NewAESEncrypter(&cfg.Encryption))
 	encrypter := encrypting.NewAESEncrypter(&cfg.Encryption)
 	passworHasher := encrypting.NewHasher()
 
