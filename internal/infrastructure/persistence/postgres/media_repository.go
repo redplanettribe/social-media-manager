@@ -134,3 +134,18 @@ func (r *MediaRepository) IsThePostEnabledToPlatform(ctx context.Context, postID
 	}
 	return count > 0, nil
 }
+
+func (r *MediaRepository) IsMediaLinkedToPublishPost(ctx context.Context, postID, mediaID, platformID string) (bool, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT COUNT(*)
+		FROM %s
+		WHERE post_id = $1 AND media_id = $2 AND platform_id = $3
+	`, PostPlatformMedia), postID, mediaID, platformID)
+
+	var count int
+	err := row.Scan(&count)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}

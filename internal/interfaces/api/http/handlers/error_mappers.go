@@ -191,6 +191,7 @@ func mapMediaErrorToAPIError(err error) *e.APIError {
 		media.ErrMediaDoesNotBelongToPost,
 		media.ErrPlatformNotEnabledForProject,
 		media.ErrPostNotLinkedToPlatform,
+		media.ErrMediaAlreadyLinkedToPost,
 	):
 		return &e.APIError{
 			Status:  http.StatusForbidden,

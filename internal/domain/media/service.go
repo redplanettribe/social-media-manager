@@ -114,6 +114,7 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 		doesMediaBelongToPost     bool
 		isThePostLinkedToPlatform bool
 		isPlatformEnabled         bool
+		isAlreadyLinked           bool
 	)
 	
 	g, gCtx := errgroup.WithContext(ctx)
@@ -141,6 +142,12 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 		isThePostLinkedToPlatform, err = s.repo.IsThePostEnabledToPlatform(gCtx, postID, platformID)
 		return err
 	})
+
+	g.Go(func() error {
+		var err error
+		isAlreadyLinked, err = s.repo.IsMediaLinkedToPublishPost(gCtx, postID, mediaID, platformID)
+		return err
+	})
 	
 	if err := g.Wait(); err != nil {
 		return err
@@ -157,6 +164,9 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 	}
 	if !isThePostLinkedToPlatform {
 		return ErrPostNotLinkedToPlatform
+	}
+	if isAlreadyLinked {
+		return ErrMediaAlreadyLinkedToPost
 	}
 
 	return s.repo.LinkMediaToPublishPost(ctx, postID, mediaID, platformID)

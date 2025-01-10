@@ -11,4 +11,5 @@ type Repository interface {
 	DoesMediaBelongToPost(ctx context.Context, postID, mediaID string) (bool, error)
 	IsPlatformEnabledForProject(ctx context.Context, projectID, platformID string) (bool, error)
 	IsThePostEnabledToPlatform(ctx context.Context, postID, platformID string) (bool, error)
+	IsMediaLinkedToPublishPost(ctx context.Context, postID, mediaID, platformID string) (bool, error)
 }
