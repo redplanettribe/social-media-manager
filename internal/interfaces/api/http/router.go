@@ -193,8 +193,11 @@ func (r *Router) setupPublisherRoutes(h *handlers.PlatformHandler) {
 	r.Handle("GET /publishers", r.appPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.GetAvailableSocialNetworks),
 	))
-	r.Handle("PATCH /publishers/{project_id}/secrets", r.projectPermissions("write:publishers").Chain(
-		http.HandlerFunc(h.AddSecret),
+	r.Handle("PATCH /publishers/{project_id}/platform-secrets", r.projectPermissions("write:publishers").Chain(
+		http.HandlerFunc(h.AddPlatformSecret),
+	))
+	r.Handle("PATCH /publishers/{project_id}/user-secrets", r.projectPermissions("write:publishers").Chain(
+		http.HandlerFunc(h.AddUserPlatformSecret),
 	))
 }
 

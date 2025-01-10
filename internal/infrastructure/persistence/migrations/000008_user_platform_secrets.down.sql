@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS user_platform_secrets;
+DROP TABLE IF EXISTS user_platforms;

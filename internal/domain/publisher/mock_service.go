@@ -13,12 +13,12 @@ type MockService struct {
 	mock.Mock
 }
 
-// AddSecret provides a mock function with given fields: ctx, projectID, platformID, key, secret
-func (_m *MockService) AddSecret(ctx context.Context, projectID string, platformID string, key string, secret string) error {
+// AddPlatformSecret provides a mock function with given fields: ctx, projectID, platformID, key, secret
+func (_m *MockService) AddPlatformSecret(ctx context.Context, projectID string, platformID string, key string, secret string) error {
 	ret := _m.Called(ctx, projectID, platformID, key, secret)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AddSecret")
+		panic("no return value specified for AddPlatformSecret")
 	}
 
 	var r0 error
@@ -31,12 +31,12 @@ func (_m *MockService) AddSecret(ctx context.Context, projectID string, platform
 	return r0
 }
 
-// AddUserPlatformSecrets provides a mock function with given fields: ctx, projectID, platformID, key, secret
-func (_m *MockService) AddUserPlatformSecrets(ctx context.Context, projectID string, platformID string, key string, secret string) error {
+// AddUserPlatformSecret provides a mock function with given fields: ctx, projectID, platformID, key, secret
+func (_m *MockService) AddUserPlatformSecret(ctx context.Context, projectID string, platformID string, key string, secret string) error {
 	ret := _m.Called(ctx, projectID, platformID, key, secret)
 
 	if len(ret) == 0 {
-		panic("no return value specified for AddUserPlatformSecrets")
+		panic("no return value specified for AddUserPlatformSecret")
 	}
 
 	var r0 error

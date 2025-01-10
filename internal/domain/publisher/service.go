@@ -6,16 +6,17 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	post "github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
+	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 	"golang.org/x/sync/errgroup"
 )
 
 //go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
-	AddSecret(ctx context.Context, projectID, platformID, key, secret string) error
+	AddPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error
 	PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
 	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
-	AddUserPlatformSecrets(ctx context.Context, projectID, platformID, key, secret string) error
+	AddUserPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error
 }
 
 type service struct {
@@ -40,7 +41,7 @@ func (s *service) GetAvailableSocialNetworks(ctx context.Context) ([]Platform, e
 	return s.repo.FindAll(ctx)
 }
 
-func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, key, secret string) error {
+func (s *service) AddPlatformSecret(ctx context.Context, projectID, socialPlatformID, key, secret string) error {
 	var (
 		sp               *Platform
 		encryptedSecrets *string
@@ -62,7 +63,7 @@ func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, ke
 
 	g.Go(func() error {
 		var err error
-		encryptedSecrets, err = s.repo.GetSecrets(ctx, projectID, socialPlatformID)
+		encryptedSecrets, err = s.repo.GetPlatformSecrets(ctx, projectID, socialPlatformID)
 		if encryptedSecrets == nil {
 			encryptedSecrets = new(string)
 		}
@@ -80,17 +81,17 @@ func (s *service) AddSecret(ctx context.Context, projectID, socialPlatformID, ke
 		return ErrSocialPlatformNotEnabledForProject
 	}
 
-	publisher, err := s.publisherFactory.Create(socialPlatformID, *encryptedSecrets)
+	publisher, err := s.publisherFactory.Create(socialPlatformID, *encryptedSecrets, "")
 	if err != nil {
 		return err
 	}
 
-	newSecrets, err := publisher.AddSecret(key, secret)
+	newSecrets, err := publisher.AddPlatformSecret(key, secret)
 	if err != nil {
 		return err
 	}
 
-	return s.repo.SetSecrets(ctx, projectID, socialPlatformID, newSecrets)
+	return s.repo.SetPlatformSecrets(ctx, projectID, socialPlatformID, newSecrets)
 }
 
 func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error {
@@ -113,10 +114,12 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 }
 
 func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
+	userID := ctx.Value(middlewares.UserIDKey).(string)
 	var (
 		isEnabled   bool
 		publishPost *post.PublishPost
 		media       []*media.Media
+		userSecrets string
 		g           errgroup.Group
 	)
 
@@ -138,6 +141,12 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return err
 	})
 
+	g.Go(func() error {
+		var err error
+		userSecrets, err = s.repo.GetUserPlatformSecrets(ctx, platformID, userID)
+		return err
+	})
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
@@ -150,11 +159,15 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return post.ErrPostNotFound
 	}
 
-	if publishPost.Secrets == "empty" {
-		return ErrSecretsNotSet
+	if publishPost.Secrets == "" {
+		return ErrPlatformSecretsNotSet
 	}
-	
-	publisher, err := s.publisherFactory.Create(platformID, publishPost.Secrets)
+
+	if  userSecrets == "" {
+		return ErrUserSecretsNotSet
+	}
+
+	publisher, err := s.publisherFactory.Create(platformID, publishPost.Secrets, userSecrets)
 	if err != nil {
 		return err
 	}
@@ -166,7 +179,46 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	return nil
 }
 
-func (s *service) AddUserPlatformSecrets(ctx context.Context, projectID, platformID, key, secret string) error {
-	//TODO: Implement
-	return nil
+func (s *service) AddUserPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error {
+	userID := ctx.Value(middlewares.UserIDKey).(string)
+	
+	var (
+		isEnabled   bool
+		userSecrets string
+	)
+	
+	g, gCtx := errgroup.WithContext(ctx)
+	
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(gCtx, projectID, platformID)
+		return err
+	})
+	
+	g.Go(func() error {
+		var err error
+		userSecrets, err = s.repo.GetUserPlatformSecrets(gCtx, platformID, userID)
+		return err
+	})
+	
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	
+	if !isEnabled {
+		return ErrSocialPlatformNotEnabledForProject
+	}
+
+
+	publisher, err := s.publisherFactory.Create(platformID, "", userSecrets)
+	if err != nil {
+		return err
+	}
+
+	newSecrets, err := publisher.AddUserSecret(key, secret)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.SetUserPlatformSecrets(ctx, platformID, userID, newSecrets)
 }

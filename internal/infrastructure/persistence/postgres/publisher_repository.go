@@ -72,7 +72,7 @@ func (r *PublisherRepository) IsSocialNetworkEnabledForProject(ctx context.Conte
 	return count > 0, nil
 }
 
-func (r *PublisherRepository) GetSecrets(ctx context.Context, projectID, socialPlatformID string) (*string, error) {
+func (r *PublisherRepository) GetPlatformSecrets(ctx context.Context, projectID, socialPlatformID string) (*string, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT secrets
 		FROM %s
@@ -90,7 +90,7 @@ func (r *PublisherRepository) GetSecrets(ctx context.Context, projectID, socialP
 	return secrets, nil
 }
 
-func (r *PublisherRepository) SetSecrets(ctx context.Context, projectID, socialPlatformID, secrets string) error {
+func (r *PublisherRepository) SetPlatformSecrets(ctx context.Context, projectID, socialPlatformID, secrets string) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		UPDATE %s
 		SET secrets = $3
@@ -100,5 +100,34 @@ func (r *PublisherRepository) SetSecrets(ctx context.Context, projectID, socialP
 		return err
 	}
 
+	return nil
+}
+
+func (r *PublisherRepository) GetUserPlatformSecrets(ctx context.Context, platformID, userID string) (string, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT secrets
+		FROM %s
+		WHERE platform_id = $1 AND user_id = $2
+	`, UserPlatforms), platformID, userID)
+
+	var secrets string
+	err := row.Scan(&secrets)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return "", err
+	}
+
+	return secrets, nil
+}
+
+func (r *PublisherRepository) SetUserPlatformSecrets(ctx context.Context, platformID, userID, secrets string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (platform_id, user_id, secrets)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (platform_id, user_id)
+		DO UPDATE SET secrets = $3
+	`, UserPlatforms), platformID, userID, secrets)
+	if err != nil {
+		return err
+	}
 	return nil
 }

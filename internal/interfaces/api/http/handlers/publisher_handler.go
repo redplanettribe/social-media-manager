@@ -41,13 +41,13 @@ func (h *PlatformHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *h
 	}
 }
 
-type addAPIKeyRequest struct {
+type addSecretKeyRequest struct {
 	SocialPlatformID string `json:"social_platform_id"`
 	SecretKey        string `json:"secret_key"`
 	SecretValue      string `json:"secret_value"`
 }
 
-// AddSecret godoc
+// AddPlatformSecret godoc
 // @Summary Add a secret to a social network
 // @Description Add a secret to a social network
 // @Tags publishers
@@ -59,9 +59,9 @@ type addAPIKeyRequest struct {
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /publishers/{project_id}/secrets [post]
-func (h *PlatformHandler) AddSecret(w http.ResponseWriter, r *http.Request) {
-	var req addAPIKeyRequest
+// @Router /publishers/{project_id}/platform-secrets [post]
+func (h *PlatformHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Request) {
+	var req addSecretKeyRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		e.WriteHttpError(w, e.NewValidationError("Invalid request body", nil))
@@ -71,7 +71,39 @@ func (h *PlatformHandler) AddSecret(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 
 
-	err = h.Service.AddSecret(r.Context(), projectID, req.SocialPlatformID, req.SecretKey, req.SecretValue)
+	err = h.Service.AddPlatformSecret(r.Context(), projectID, req.SocialPlatformID, req.SecretKey, req.SecretValue)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// AddUserPlatformSecret godoc
+// @Summary Add a secret to a social network
+// @Description Add a secret to a social network
+// @Tags publishers
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param request body addAPIKeyRequest true "Request body"
+// @Success 201 {object} string
+// @Failure 400 {object} errors.APIError "Bad request"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /publishers/{project_id}/users-secrets [post]
+func (h *PlatformHandler) AddUserPlatformSecret(w http.ResponseWriter, r *http.Request) {
+	var req addSecretKeyRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request body", nil))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+
+	err = h.Service.AddUserPlatformSecret(r.Context(), projectID, req.SocialPlatformID, req.SecretKey, req.SecretValue)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
 		return

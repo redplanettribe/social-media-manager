@@ -12,19 +12,21 @@ import (
 )
 
 // placeholder fields for secrets
-type Secrets struct {
+type PlatformSecrets struct {
 	AccessToken string `json:"access_token"`
-	UserUrn     string `json:"user_urn"`
+}
+
+type UserSecrets struct {
+	UserUrn string `json:"user_urn"`
 }
 
 type Linkedin struct {
-	ID        string
-	SecretStr string
-	secrets   Secrets
-	encrypter encrypting.Encrypter
+	ID              string
+	SecretStr       string
+	platformSecrets PlatformSecrets
+	userSecrets     UserSecrets
+	encrypter       encrypting.Encrypter
 }
-
-
 
 func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	return &Linkedin{
@@ -34,7 +36,6 @@ func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	}
 }
 
-
 func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost, media []*media.Media) error {
 	// Publish to Linkedin
 	fmt.Println("Publishing to Linkedin: ", post.Title, post.ID)
@@ -43,29 +44,27 @@ func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost, media []
 	return nil
 }
 
-func (l *Linkedin) ValidateSecrets(secrets string) error {
-	var s Secrets
+func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
+	if secrets == "" || secrets == "empty"{
+		return nil
+	}
+	var s PlatformSecrets
 	err := l.encrypter.DecryptJSON(secrets, &s)
 	if err != nil {
 		return err
 	}
-
-	l.secrets = s
-
 	return nil
 }
 
-func (l *Linkedin) AddSecret(key, secret string) (string, error) {
+func (l *Linkedin) AddPlatformSecret(key, secret string) (string, error) {
 	switch key {
 	case "access_token":
-		l.secrets.AccessToken = secret
-	case "user_urn":
-		l.secrets.UserUrn = secret
+		l.platformSecrets.AccessToken = secret
 	default:
 		return "", errors.New("invalid key")
 	}
 
-	newSecretStr, err := l.encrypter.EncryptJSON(l.secrets)
+	newSecretStr, err := l.encrypter.EncryptJSON(l.platformSecrets)
 	if err != nil {
 		return "", err
 	}
@@ -73,3 +72,30 @@ func (l *Linkedin) AddSecret(key, secret string) (string, error) {
 	return newSecretStr, nil
 }
 
+func (l *Linkedin) ValidateUserSecrets(secrets string) error {
+	if secrets == "" || secrets == "empty"{
+		return nil
+	}
+	var s UserSecrets
+	err := l.encrypter.DecryptJSON(secrets, &s)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (l *Linkedin) AddUserSecret(key, secret string) (string, error) {
+	switch key {
+	case "user_urn":
+		l.userSecrets.UserUrn = secret
+	default:
+		return "", errors.New("invalid key")
+	}
+
+	newSecretStr, err := l.encrypter.EncryptJSON(l.userSecrets)
+	if err != nil {
+		return "", err
+	}
+
+	return newSecretStr, nil
+}

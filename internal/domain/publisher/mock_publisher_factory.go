@@ -9,9 +9,9 @@ type MockPublisherFactory struct {
 	mock.Mock
 }
 
-// Create provides a mock function with given fields: platform, secrets
-func (_m *MockPublisherFactory) Create(platform string, secrets string) (Publisher, error) {
-	ret := _m.Called(platform, secrets)
+// Create provides a mock function with given fields: platform, platformSecrets, userSecrets
+func (_m *MockPublisherFactory) Create(platform string, platformSecrets string, userSecrets string) (Publisher, error) {
+	ret := _m.Called(platform, platformSecrets, userSecrets)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Create")
@@ -19,19 +19,19 @@ func (_m *MockPublisherFactory) Create(platform string, secrets string) (Publish
 
 	var r0 Publisher
 	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string) (Publisher, error)); ok {
-		return rf(platform, secrets)
+	if rf, ok := ret.Get(0).(func(string, string, string) (Publisher, error)); ok {
+		return rf(platform, platformSecrets, userSecrets)
 	}
-	if rf, ok := ret.Get(0).(func(string, string) Publisher); ok {
-		r0 = rf(platform, secrets)
+	if rf, ok := ret.Get(0).(func(string, string, string) Publisher); ok {
+		r0 = rf(platform, platformSecrets, userSecrets)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(Publisher)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(platform, secrets)
+	if rf, ok := ret.Get(1).(func(string, string, string) error); ok {
+		r1 = rf(platform, platformSecrets, userSecrets)
 	} else {
 		r1 = ret.Error(1)
 	}

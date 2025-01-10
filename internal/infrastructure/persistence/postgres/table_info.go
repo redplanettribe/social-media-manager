@@ -16,4 +16,5 @@ const (
 	ProjectPlatforms  TableNames = "project_platforms"
 	Comments          TableNames = "comments"
 	ProjectSettings   TableNames = "project_settings"
+	UserPlatforms     TableNames = "user_platforms"
 )

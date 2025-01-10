@@ -5,7 +5,8 @@ import "errors"
 var (
 	ErrSocialPlatformNotFound             = errors.New("social network not found")
 	ErrSocialPlatformNotEnabledForProject = errors.New("social network not enabled for project")
-	ErrSecretsNotSet                      = errors.New("secrets not set")
+	ErrPlatformSecretsNotSet              = errors.New("platform secrets not set")
+	ErrUserSecretsNotSet                  = errors.New("user secrets not set")
 )
 
 // up to 10 characters
