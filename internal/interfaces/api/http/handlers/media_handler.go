@@ -34,11 +34,11 @@ type uploadMediaResponse struct {
 // @Param post_id path string true "Post ID"
 // @Param file formData file true "File to upload"
 // @Success 201 {object} uploadMediaResponse
-// @Failure 400 {object} errorResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 500 {object} errorResponse
+// @Failure 400 {object} errors.APIError
+// @Failure 401 {object} errors.APIError
+// @Failure 403 {object} errors.APIError
+// @Failure 404 {object} errors.APIError
+// @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id} [post]
 func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
@@ -94,11 +94,11 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 // @Param post_id path string true "Post ID"
 // @Param file_name path string true "File name"
 // @Success 200 {string} string
-// @Failure 400 {object} errorResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 500 {object} errorResponse
+// @Failure 400 {object} errors.APIError
+// @Failure 401 {object} errors.APIError
+// @Failure 403 {object} errors.APIError
+// @Failure 404 {object} errors.APIError
+// @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id}/{file_name} [get]
 func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
@@ -156,11 +156,11 @@ type linkMediaToPublishPostRequest struct {
 // @Param platform_id path string true "Platform ID"
 // @Param media_id body linkMediaToPublishPostRequest true "Media ID"
 // @Success 204
-// @Failure 400 {object} errorResponse
-// @Failure 401 {object} errorResponse
-// @Failure 403 {object} errorResponse
-// @Failure 404 {object} errorResponse
-// @Failure 500 {object} errorResponse
+// @Failure 400 {object} errors.APIError
+// @Failure 401 {object} errors.APIError
+// @Failure 403 {object} errors.APIError
+// @Failure 404 {object} errors.APIError
+// @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/link-to-post [post]
 func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")

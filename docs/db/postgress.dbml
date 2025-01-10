@@ -8,6 +8,19 @@ Table users {
   updated_at     timestamp     [default: `NOW()`]
 }
 
+Table user_project_platforms{
+  user_id       uuid         [ref: > users.id, not null]
+  project_id    uuid         [ref: > projects.id, not null]
+  platform_id   varchar(10)  [ref: > platforms.id, not null]
+  secrets       text
+  created_at    timestamp    [default: `NOW()`]
+  updated_at    timestamp    [default: `NOW()`]
+
+  Indexes {
+    (user_id, project_id, platform_id) [pk]
+  }
+}
+
 Table roles {
   id    serial        [pk]
   role  varchar(255)  [not null]

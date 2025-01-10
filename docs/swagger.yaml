@@ -55,6 +55,15 @@ definitions:
       username:
         type: string
     type: object
+  handlers.linkMediaToPublishPostRequest:
+    properties:
+      media_id:
+        type: string
+      platform_id:
+        type: string
+      post_id:
+        type: string
+    type: object
   handlers.loginRequest:
     properties:
       email:
@@ -79,6 +88,39 @@ definitions:
       time_zone:
         type: string
     type: object
+  handlers.uploadMediaResponse:
+    properties:
+      added_by:
+        type: string
+      created_at:
+        type: string
+      filename:
+        type: string
+      format:
+        type: string
+      height:
+        type: integer
+      id:
+        type: string
+      length:
+        type: integer
+      media_type:
+        $ref: '#/definitions/media.MediaType'
+      post_id:
+        type: string
+      width:
+        type: integer
+    type: object
+  media.MediaType:
+    enum:
+    - image
+    - video
+    - short_video
+    type: string
+    x-enum-varnames:
+    - MediaTypeImage
+    - MediaTypeVideo
+    - MediaTypeShortVideo
   post.Post:
     properties:
       created_at:
@@ -211,6 +253,160 @@ info:
   title: OpenCM API
   version: "1.0"
 paths:
+  /media/{project_id}/{post_id}:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload media file
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: File to upload
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handlers.uploadMediaResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Upload media file
+      tags:
+      - media
+  /media/{project_id}/{post_id}/{file_name}:
+    get:
+      description: Get media file. This endpoint shouldn't be used. Use the frontend
+        to get the media file directly from the bucket.
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: File name
+        in: path
+        name: file_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Get media file
+      tags:
+      - media
+  /media/{project_id}/link-to-post:
+    post:
+      consumes:
+      - application/json
+      description: Link media to publish post
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Platform ID
+        in: path
+        name: platform_id
+        required: true
+        type: string
+      - description: Media ID
+        in: body
+        name: media_id
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.linkMediaToPublishPostRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Link media to publish post
+      tags:
+      - media
   /posts/{project_id}:
     get:
       consumes:

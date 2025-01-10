@@ -13,9 +13,9 @@ type MockService struct {
 	mock.Mock
 }
 
-// AddSecret provides a mock function with given fields: ctx, projectID, socialNetworkID, key, secret
-func (_m *MockService) AddSecret(ctx context.Context, projectID string, socialNetworkID string, key string, secret string) error {
-	ret := _m.Called(ctx, projectID, socialNetworkID, key, secret)
+// AddSecret provides a mock function with given fields: ctx, projectID, platformID, key, secret
+func (_m *MockService) AddSecret(ctx context.Context, projectID string, platformID string, key string, secret string) error {
+	ret := _m.Called(ctx, projectID, platformID, key, secret)
 
 	if len(ret) == 0 {
 		panic("no return value specified for AddSecret")
@@ -23,7 +23,25 @@ func (_m *MockService) AddSecret(ctx context.Context, projectID string, socialNe
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
-		r0 = rf(ctx, projectID, socialNetworkID, key, secret)
+		r0 = rf(ctx, projectID, platformID, key, secret)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// AddUserPlatformSecrets provides a mock function with given fields: ctx, projectID, platformID, key, secret
+func (_m *MockService) AddUserPlatformSecrets(ctx context.Context, projectID string, platformID string, key string, secret string) error {
+	ret := _m.Called(ctx, projectID, platformID, key, secret)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddUserPlatformSecrets")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
+		r0 = rf(ctx, projectID, platformID, key, secret)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -79,9 +97,9 @@ func (_m *MockService) PublishPostToAssignedSocialNetworks(ctx context.Context, 
 	return r0
 }
 
-// PublishPostToSocialNetwork provides a mock function with given fields: ctx, projectID, postID, socialNetworkID
-func (_m *MockService) PublishPostToSocialNetwork(ctx context.Context, projectID string, postID string, socialNetworkID string) error {
-	ret := _m.Called(ctx, projectID, postID, socialNetworkID)
+// PublishPostToSocialNetwork provides a mock function with given fields: ctx, projectID, postID, platformID
+func (_m *MockService) PublishPostToSocialNetwork(ctx context.Context, projectID string, postID string, platformID string) error {
+	ret := _m.Called(ctx, projectID, postID, platformID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for PublishPostToSocialNetwork")
@@ -89,7 +107,7 @@ func (_m *MockService) PublishPostToSocialNetwork(ctx context.Context, projectID
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
-		r0 = rf(ctx, projectID, postID, socialNetworkID)
+		r0 = rf(ctx, projectID, postID, platformID)
 	} else {
 		r0 = ret.Error(0)
 	}

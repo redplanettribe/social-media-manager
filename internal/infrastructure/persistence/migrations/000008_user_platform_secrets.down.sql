@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS user_platform_secrets;

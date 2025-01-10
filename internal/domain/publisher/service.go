@@ -12,9 +12,10 @@ import (
 //go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
-	AddSecret(ctx context.Context, projectID, socialNetworkID, key, secret string) error
+	AddSecret(ctx context.Context, projectID, platformID, key, secret string) error
 	PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
-	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, socialNetworkID string) error
+	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
+	AddUserPlatformSecrets(ctx context.Context, projectID, platformID, key, secret string) error
 }
 
 type service struct {
@@ -162,5 +163,10 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return err
 	}
 
+	return nil
+}
+
+func (s *service) AddUserPlatformSecrets(ctx context.Context, projectID, platformID, key, secret string) error {
+	//TODO: Implement
 	return nil
 }
