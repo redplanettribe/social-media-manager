@@ -1464,7 +1464,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/publishers/{project_id}/secrets": {
+        "/publishers/{project_id}/platform-secrets": {
             "post": {
                 "security": [
                     {
@@ -1496,7 +1496,65 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handlers.addAPIKeyRequest"
+                            "$ref": "#/definitions/handlers.addSecretKeyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/publishers/{project_id}/users-secrets": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add a secret to a social network",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "publishers"
+                ],
+                "summary": "Add a secret to a social network",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.addSecretKeyRequest"
                         }
                     }
                 ],
@@ -1897,7 +1955,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.addAPIKeyRequest": {
+        "handlers.addSecretKeyRequest": {
             "type": "object",
             "properties": {
                 "secret_key": {
@@ -1938,6 +1996,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "string"
                 }
             }
@@ -2097,10 +2158,30 @@ const docTemplate = `{
                 "title": {
                     "type": "string"
                 },
+                "type": {
+                    "$ref": "#/definitions/post.PostType"
+                },
                 "updated_at": {
                     "type": "string"
                 }
             }
+        },
+        "post.PostType": {
+            "type": "string",
+            "enum": [
+                "undefined",
+                "text",
+                "media",
+                "poll",
+                "short_video"
+            ],
+            "x-enum-varnames": [
+                "PostTypeUndefined",
+                "PostTypeText",
+                "PostTypeMedia",
+                "PostTypePoll",
+                "PostTypeShortVideo"
+            ]
         },
         "project.Project": {
             "type": "object",

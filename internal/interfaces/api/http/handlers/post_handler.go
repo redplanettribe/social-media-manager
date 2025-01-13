@@ -19,6 +19,7 @@ func NewPostHandler(service post.Service) *PostHandler {
 
 type createPostRequest struct {
 	Title       string    `json:"title"`
+	Type        string    `json:"type"`
 	TextContent string    `json:"text_content"`
 	IsIdea      bool      `json:"is_idea"`
 	ScheduledAt time.Time `json:"scheduled_at"`
@@ -65,6 +66,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		r.Context(),
 		projectID,
 		req.Title,
+		req.Type,
 		req.TextContent,
 		req.IsIdea,
 		req.ScheduledAt,
@@ -285,7 +287,7 @@ type schedulePostRequest struct {
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/schedule [patch]
-func (h* PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 	var req schedulePostRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
@@ -332,7 +334,7 @@ func (h* PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/enqueue [patch]
-func (h * PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
 	if postID == "" {
 		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
@@ -373,7 +375,7 @@ func (h * PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Requ
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/queue [get]
-func (h * PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
 		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{

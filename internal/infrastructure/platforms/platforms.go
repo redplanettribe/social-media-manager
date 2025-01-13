@@ -8,6 +8,11 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms/linkedin"
 )
 
+var (
+	ErrUnknownPlatform = errors.New("unknown platform")
+	ErrNotImplemented  = errors.New("not implemented")
+)
+
 // NewPublisherFactory creates a new PublisherFactory
 func NewPublisherFactory(e encrypting.Encrypter) *publisherFactory {
 	return &publisherFactory{

@@ -54,7 +54,7 @@ type addSecretKeyRequest struct {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param request body addAPIKeyRequest true "Request body"
+// @Param request body addSecretKeyRequest true "Request body"
 // @Success 201 {object} string
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
@@ -87,7 +87,7 @@ func (h *PlatformHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Reque
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param request body addAPIKeyRequest true "Request body"
+// @Param request body addSecretKeyRequest true "Request body"
 // @Success 201 {object} string
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"

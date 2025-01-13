@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS posts (
     id uuid PRIMARY KEY,
     project_id uuid NOT NULL,
     title TEXT NOT NULL,
+    type VARCHAR(20) NOT NULL DEFAULT 'undefined',
     text_content TEXT NOT NULL,
     is_idea BOOLEAN NOT NULL,
     status VARCHAR(20) NOT NULL,

@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 )
 
-// placeholder fields for secrets
+var (
+	ErrNotImplemented = errors.New("not implemented")
+)
 type PlatformSecrets struct {
 	PlaceHolderKey string `json:"placeholder_key"`
 }
@@ -36,19 +37,6 @@ func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	}
 }
 
-func (l *Linkedin) Publish(ctx context.Context, post *post.PublishPost, media []*media.Media) error {
-	fmt.Println("access_token", l.userSecrets.AccessToken)
-	fmt.Println("platform secrets", l.platformSecrets)
-
-
-	fmt.Println("Publishing to Linkedin: ", post.Title, post.ID)
-	time.Sleep(1 * time.Second)
-	fmt.Println("Published to Linkedin")
-	return nil
-}
-
-
-
 func (l *Linkedin) AddPlatformSecret(key, secret string) (string, error) {
 	switch key {
 	case "placeholder_key":
@@ -64,8 +52,6 @@ func (l *Linkedin) AddPlatformSecret(key, secret string) (string, error) {
 
 	return newSecretStr, nil
 }
-
-
 
 func (l *Linkedin) AddUserSecret(key, secret string) (string, error) {
 	switch key {
@@ -84,7 +70,7 @@ func (l *Linkedin) AddUserSecret(key, secret string) (string, error) {
 }
 
 func (l *Linkedin) ValidateUserSecrets(secrets string) error {
-	if secrets == "" || secrets == "empty"{
+	if secrets == "" || secrets == "empty" {
 		return nil
 	}
 	var s UserSecrets
@@ -97,7 +83,7 @@ func (l *Linkedin) ValidateUserSecrets(secrets string) error {
 }
 
 func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
-	if secrets == "" || secrets == "empty"{
+	if secrets == "" || secrets == "empty" {
 		return nil
 	}
 	var s PlatformSecrets
@@ -107,4 +93,46 @@ func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
 	}
 	l.platformSecrets = s
 	return nil
+}
+
+func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
+	if pp.Type == post.PostTypeUndefined{
+		t, err := l.AttemptToClassifyPostType(pp, media)
+		if err != nil {
+			return err
+		}
+		pp.Type = post.PostType(t)
+	}
+	switch pp.Type {
+	case post.PostTypeText:
+		return l.publishTextPost(ctx, pp)
+	case post.PostTypeMedia:
+		return l.publishMediaPost(ctx, pp, media)
+	case post.PostTypePoll:
+		return l.publishPollPost(ctx, pp)
+	case post.PostTypeUndefined:
+		return fmt.Errorf("post type is undefined")
+	default:
+		return fmt.Errorf("unsupported post type: %s", pp.Type)
+	}
+}
+
+func (l *Linkedin) AttemptToClassifyPostType(pp *post.PublishPost, media []*media.Media) (post.PostType, error) {
+	//TODO: Implement this, for now it always returns PostTypeUndefined
+	return post.PostTypeUndefined, nil
+}
+
+func (l *Linkedin) publishTextPost(ctx context.Context, pp *post.PublishPost) error {
+	//TODO: Implement this
+	return ErrNotImplemented
+}
+
+func (l *Linkedin) publishMediaPost(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
+	//TODO: Implement this
+	return ErrNotImplemented
+}
+
+func (l *Linkedin) publishPollPost(ctx context.Context, pp *post.PublishPost) error {
+	//TODO: Implement this
+	return ErrNotImplemented
 }

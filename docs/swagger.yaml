@@ -10,7 +10,7 @@ definitions:
       status:
         type: integer
     type: object
-  handlers.addAPIKeyRequest:
+  handlers.addSecretKeyRequest:
     properties:
       secret_key:
         type: string
@@ -37,6 +37,8 @@ definitions:
       text_content:
         type: string
       title:
+        type: string
+      type:
         type: string
     type: object
   handlers.createProjectRequest:
@@ -141,9 +143,25 @@ definitions:
         type: string
       title:
         type: string
+      type:
+        $ref: '#/definitions/post.PostType'
       updated_at:
         type: string
     type: object
+  post.PostType:
+    enum:
+    - undefined
+    - text
+    - media
+    - poll
+    - short_video
+    type: string
+    x-enum-varnames:
+    - PostTypeUndefined
+    - PostTypeText
+    - PostTypeMedia
+    - PostTypePoll
+    - PostTypeShortVideo
   project.Project:
     properties:
       created_at:
@@ -1227,7 +1245,7 @@ paths:
       summary: Publish post to social network
       tags:
       - publishers
-  /publishers/{project_id}/secrets:
+  /publishers/{project_id}/platform-secrets:
     post:
       consumes:
       - application/json
@@ -1243,7 +1261,44 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/handlers.addAPIKeyRequest'
+          $ref: '#/definitions/handlers.addSecretKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: string
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a secret to a social network
+      tags:
+      - publishers
+  /publishers/{project_id}/users-secrets:
+    post:
+      consumes:
+      - application/json
+      description: Add a secret to a social network
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.addSecretKeyRequest'
       produces:
       - application/json
       responses:

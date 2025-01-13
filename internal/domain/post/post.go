@@ -10,6 +10,7 @@ import (
 // Represents the status of a post
 type PostStatus string
 
+// Possible statuses of a parent high level post
 const (
 	PostStatusDraft     PostStatus = "draft"
 	PostStatusQueued    PostStatus = "queued"
@@ -21,11 +22,24 @@ const (
 
 type PublisherPostStatus string
 
+// Status of a post in the publisher
 const (
 	PublisherPostStatusReady      PublisherPostStatus = "ready"
 	PublisherPostStatusProcessing PublisherPostStatus = "processing"
 	PublisherPostStatusPublished  PublisherPostStatus = "published"
 	PublisherPostStatusFailed     PublisherPostStatus = "failed"
+)
+
+type PostType string
+
+// Possible types of a post
+const (
+	PostTypeUndefined  PostType = "undefined"
+	PostTypeText       PostType = "text"
+	PostTypeMedia      PostType = "media"
+	PostTypePoll       PostType = "poll"
+	PostTypeShortVideo PostType = "short_video"
+	// ... add other types as necessary
 )
 
 // Error messages
@@ -40,30 +54,22 @@ var (
 )
 
 type Post struct {
-	ID          string        `json:"id"`
-	ProjectID   string        `json:"project_id"`
-	Title       string        `json:"title"`
-	TextContent string        `json:"text_content"`
-	IsIdea      bool          `json:"is_idea"`
-	Status      string        `json:"status"`
-	CreatedBy   string        `json:"created_by"`
-	ScheduledAt time.Time     `json:"scheduled_at"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
+	ID          string    `json:"id"`
+	ProjectID   string    `json:"project_id"`
+	Title       string    `json:"title"`
+	Type        PostType  `json:"type"`
+	TextContent string    `json:"text_content"`
+	IsIdea      bool      `json:"is_idea"`
+	Status      string    `json:"status"`
+	CreatedBy   string    `json:"created_by"`
+	ScheduledAt time.Time `json:"scheduled_at"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type PublishPost struct {
 	// Post fields
-	ID          string        `json:"id"`
-	ProjectID   string        `json:"project_id"`
-	Title       string        `json:"title"`
-	TextContent string        `json:"text_content"`
-	IsIdea      bool          `json:"is_idea"`
-	Status      string        `json:"status"`
-	CreatedBy   string        `json:"created_by"`
-	ScheduledAt time.Time     `json:"scheduled_at"`
-	CreatedAt   time.Time     `json:"created_at"`
-	UpdatedAt   time.Time     `json:"updated_at"`
+	*Post
 	// Additional fields
 	Secrets       string `json:"secrets"`
 	Platform      string `json:"platform"`
@@ -72,7 +78,7 @@ type PublishPost struct {
 
 func NewPost(
 	projectID, userID string,
-	title, content string,
+	title, postType, content string,
 	isIdea bool,
 	scheduledAt time.Time,
 ) (*Post, error) {
@@ -93,6 +99,7 @@ func NewPost(
 		ID:          uuid.New().String(),
 		ProjectID:   projectID,
 		Title:       title,
+		Type:        PostType(postType),
 		TextContent: content,
 		IsIdea:      isIdea,
 		Status:      string(PostStatusDraft),

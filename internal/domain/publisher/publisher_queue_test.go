@@ -96,27 +96,26 @@ func TestPublisherQueue_Enqueue(t *testing.T) {
 	defer cancel()
 
 	mockService := NewMockService(t)
-	mockService.On("PublishPostToSocialNetwork", 
-		mock.Anything, 
-		mock.Anything, 
+	mockService.On("PublishPostToSocialNetwork",
+		mock.Anything,
+		mock.Anything,
 		mock.Anything,
 		mock.Anything,
 	).Return(nil)
 
 	pq := &publisherQueue{
 		publishCh:        make(chan *post.PublishPost, cfg.PublishBuffer),
-		failedCh:        make(chan *post.PublishPost, cfg.RetryBuffer),
+		failedCh:         make(chan *post.PublishPost, cfg.RetryBuffer),
 		publisherFactory: NewMockPublisherFactory(t),
-		service:         mockService,
-		cfg:            cfg,
-		wg:             &sync.WaitGroup{},
+		service:          mockService,
+		cfg:              cfg,
+		wg:               &sync.WaitGroup{},
 	}
 
 	testPost := &post.PublishPost{
-		ID:        "test-1",
-		ProjectID: "project-1",
-		Platform:  "test-platform",
-		Secrets:   "test-key",
+		Post:     &post.Post{ID: "test-1", ProjectID: "project-1"},
+		Platform: "test-platform",
+		Secrets:  "test-key",
 	}
 
 	pq.Start(ctx)
@@ -146,7 +145,9 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.PublishPost{
-				{ID: "1", ProjectID: "proj-1", Platform: "x", Secrets: "key1"},
+				{Post: &post.Post{
+					ID: "1", ProjectID: "proj-1",
+				}, Platform: "x", Secrets: "key1"},
 			},
 			publishError:    nil,
 			expectedRetries: 0,
@@ -160,7 +161,9 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.PublishPost{
-				{ID: "2", ProjectID: "proj-2", Platform: "x", Secrets: "key2"},
+				{Post: &post.Post{
+					ID: "2", ProjectID: "proj-2",
+				}, Platform: "x", Secrets: "key2"},
 			},
 			publishError:    assert.AnError,
 			expectedRetries: 1,
@@ -174,8 +177,12 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 				RetryBuffer:   3,
 			},
 			posts: []*post.PublishPost{
-				{ID: "3", ProjectID: "proj-3", Platform: "x", Secrets: "key3"},
-				{ID: "4", ProjectID: "proj-4", Platform: "x", Secrets: "key4"},
+				{Post: &post.Post{
+					ID: "3", ProjectID: "proj-3",
+				}, Platform: "x", Secrets: "key3"},
+				{Post: &post.Post{
+					ID: "4", ProjectID: "proj-4",
+				}, Platform: "x", Secrets: "key4"},
 			},
 			publishError:    assert.AnError,
 			expectedRetries: 2,
@@ -188,20 +195,20 @@ func TestPublisherQueue_runPublishWorker(t *testing.T) {
 			defer cancel()
 
 			mockService := NewMockService(t)
-			mockService.On("PublishPostToSocialNetwork", 
-				mock.Anything, 
-				mock.Anything, 
+			mockService.On("PublishPostToSocialNetwork",
+				mock.Anything,
+				mock.Anything,
 				mock.Anything,
 				mock.Anything,
 			).Return(tt.publishError)
 
 			pq := &publisherQueue{
 				publishCh:        make(chan *post.PublishPost, tt.cfg.PublishBuffer),
-				failedCh:        make(chan *post.PublishPost, tt.cfg.RetryBuffer),
+				failedCh:         make(chan *post.PublishPost, tt.cfg.RetryBuffer),
 				publisherFactory: NewMockPublisherFactory(t),
-				service:         mockService,
-				cfg:            tt.cfg,
-				wg:             &sync.WaitGroup{},
+				service:          mockService,
+				cfg:              tt.cfg,
+				wg:               &sync.WaitGroup{},
 			}
 
 			// Start the worker
@@ -242,7 +249,7 @@ func TestPublisherQueue_runFailedHandlerWorker(t *testing.T) {
 				RetryBuffer:   2,
 			},
 			posts: []*post.PublishPost{
-				{ID: "failed-1", ProjectID: "proj-1", Platform: "x", Secrets: "key1"},
+				{Post: &post.Post{ID: "failed-1", ProjectID: "proj-1"}, Platform: "x", Secrets: "key1"},
 			},
 			expectedLogs: 1,
 		},
@@ -255,9 +262,9 @@ func TestPublisherQueue_runFailedHandlerWorker(t *testing.T) {
 				RetryBuffer:   3,
 			},
 			posts: []*post.PublishPost{
-				{ID: "failed-2", ProjectID: "proj-2", Platform: "x", Secrets: "key2"},
-				{ID: "failed-3", ProjectID: "proj-3", Platform: "x", Secrets: "key3"},
-				{ID: "failed-4", ProjectID: "proj-4", Platform: "x", Secrets: "key4"},
+				{Post: &post.Post{ID: "failed-1", ProjectID: "proj-1"}, Platform: "x", Secrets: "key2"},
+				{Post: &post.Post{ID: "failed-1", ProjectID: "proj-1"}, Platform: "x", Secrets: "key3"},
+				{Post: &post.Post{ID: "failed-1", ProjectID: "proj-1"}, Platform: "x", Secrets: "key4"},
 			},
 			expectedLogs: 3,
 		},
@@ -270,11 +277,11 @@ func TestPublisherQueue_runFailedHandlerWorker(t *testing.T) {
 
 			pq := &publisherQueue{
 				publishCh:        make(chan *post.PublishPost, tt.cfg.PublishBuffer),
-				failedCh:        make(chan *post.PublishPost, tt.cfg.RetryBuffer),
+				failedCh:         make(chan *post.PublishPost, tt.cfg.RetryBuffer),
 				publisherFactory: NewMockPublisherFactory(t),
-				service:         NewMockService(t),
-				cfg:            tt.cfg,
-				wg:             &sync.WaitGroup{},
+				service:          NewMockService(t),
+				cfg:              tt.cfg,
+				wg:               &sync.WaitGroup{},
 			}
 
 			// Start the failed handler worker

@@ -13,7 +13,7 @@ import (
 type Service interface {
 	CreatePost(
 		ctx context.Context,
-		projectID, title, textContent string,
+		projectID, title, postType, textContent string,
 		isIdea bool,
 		scheduledAt time.Time) (*Post, error)
 	GetPost(ctx context.Context, id string) (*Post, error)
@@ -41,7 +41,7 @@ func NewService(repo Repository) Service {
 
 func (s *service) CreatePost(
 	ctx context.Context,
-	projectID, title, textContent string,
+	projectID, title, postType, textContent string,
 	isIdea bool,
 	scheduledAt time.Time,
 ) (*Post, error) {
@@ -51,6 +51,7 @@ func (s *service) CreatePost(
 		projectID,
 		userID,
 		title,
+		postType,
 		textContent,
 		isIdea,
 		scheduledAt)
