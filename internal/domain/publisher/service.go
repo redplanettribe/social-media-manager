@@ -94,37 +94,35 @@ func (s *service) AddPlatformSecret(ctx context.Context, projectID, socialPlatfo
 	return s.repo.SetPlatformSecrets(ctx, projectID, socialPlatformID, newSecrets)
 }
 
-
 func (s *service) AddUserPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error {
 	userID := ctx.Value(middlewares.UserIDKey).(string)
-	
+
 	var (
 		isEnabled   bool
 		userSecrets string
 	)
-	
+
 	g, gCtx := errgroup.WithContext(ctx)
-	
+
 	g.Go(func() error {
 		var err error
 		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(gCtx, projectID, platformID)
 		return err
 	})
-	
+
 	g.Go(func() error {
 		var err error
 		userSecrets, err = s.repo.GetUserPlatformSecrets(gCtx, platformID, userID)
 		return err
 	})
-	
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	
+
 	if !isEnabled {
 		return ErrSocialPlatformNotEnabledForProject
 	}
-
 
 	publisher, err := s.publisherFactory.Create(platformID, "", userSecrets)
 	if err != nil {
@@ -146,8 +144,11 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 		return err
 	}
 
-	g, gCtx := errgroup.WithContext(ctx)
+	if len(publishers) == 0 {
+		return ErrNoPublishersAssigned
+	}
 
+	g, gCtx := errgroup.WithContext(ctx)
 	for _, publisherID := range publishers {
 		pid := publisherID
 		g.Go(func() error {
@@ -204,11 +205,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return post.ErrPostNotFound
 	}
 
-	if publishPost.Secrets == "" {
-		return ErrPlatformSecretsNotSet
-	}
-
-	if  userSecrets == "" {
+	if userSecrets == "" {
 		return ErrUserSecretsNotSet
 	}
 

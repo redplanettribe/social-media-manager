@@ -12,12 +12,13 @@ type PostStatus string
 
 // Possible statuses of a parent high level post
 const (
-	PostStatusDraft     PostStatus = "draft"
-	PostStatusQueued    PostStatus = "queued"
-	PostStatusScheduled PostStatus = "scheduled"
-	PostStatusPublished PostStatus = "published"
-	PostStatusFailed    PostStatus = "failed"
-	PostStatusArchived  PostStatus = "archived"
+	PostStatusDraft             PostStatus = "draft"
+	PostStatusQueued            PostStatus = "queued"
+	PostStatusScheduled         PostStatus = "scheduled"
+	PostStatusPublished         PostStatus = "published"
+	PostStatusPartialyPublished PostStatus = "partially_published" // This happens when a post is published in some platforms but not in others
+	PostStatusFailed            PostStatus = "failed"
+	PostStatusArchived          PostStatus = "archived"
 )
 
 type PublisherPostStatus string

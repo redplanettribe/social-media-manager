@@ -96,6 +96,8 @@ func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
 }
 
 func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
+	fmt.Println("Publishing to Linkedin")
+	fmt.Println("Post ID:", pp.ID)
 	if pp.Type == post.PostTypeUndefined{
 		t, err := l.AttemptToClassifyPostType(pp, media)
 		if err != nil {
