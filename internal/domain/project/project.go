@@ -11,6 +11,7 @@ var (
 	ErrProjectNotFound              = errors.New("project not found")
 	ErrNoUserIDInContext            = errors.New("no user id in context")
 	ErrUserAlreadyInProject         = errors.New("user is already in project")
+	ErrUserNotInProject             = errors.New("user is not in project")
 	ErrUserNotFound                 = errors.New("user not found")
 	ErrProjectExists                = errors.New("project already exists")
 	ErrSocialPlatformNotFound       = errors.New("social network not found")

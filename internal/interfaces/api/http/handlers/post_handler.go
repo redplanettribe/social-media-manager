@@ -72,7 +72,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		req.ScheduledAt,
 	)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 
 	post, err := h.Service.GetPost(r.Context(), postID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -145,7 +145,7 @@ func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
 
 	posts, err := h.Service.ListProjectPosts(r.Context(), projectID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -181,7 +181,7 @@ func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.ArchivePost(r.Context(), postID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -214,7 +214,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.DeletePost(r.Context(), postID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -259,7 +259,7 @@ func (h *PostHandler) AddSocialMediaPublisherPlatform(w http.ResponseWriter, r *
 
 	err := h.Service.AddSocialMediaPublisher(r.Context(), projectID, postID, platformID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -311,7 +311,7 @@ func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.SchedulePost(r.Context(), postID, req.ScheduledAt)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -353,7 +353,7 @@ func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Reque
 
 	err := h.Service.AddToProjectQueue(r.Context(), projectID, postID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -386,7 +386,7 @@ func (h *PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Reque
 
 	posts, err := h.Service.GetProjectQueuedPosts(r.Context(), projectID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -435,7 +435,7 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.MovePostInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPostErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 

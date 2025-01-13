@@ -56,7 +56,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	u, err := h.Service.CreateUser(ctx, req.Username, req.Password, req.Email)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
+		e.WriteBusinessError(w, err,mapErrorToAPIError)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u, err := h.Service.GetUser(ctx)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
+		e.WriteBusinessError(w, err,mapErrorToAPIError)
 		return
 	}
 
@@ -161,7 +161,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	err = h.Service.Logout(ctx, sessionID.Value)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
+		e.WriteBusinessError(w, err,mapErrorToAPIError)
 		return
 	}
 
@@ -190,7 +190,7 @@ func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	roles, err := h.Service.GetAllAppRoles(ctx)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
+		e.WriteBusinessError(w, err,mapErrorToAPIError)
 		return
 	}
 
@@ -233,7 +233,7 @@ func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.AssignAppRoleToUser(ctx, req.UserID, req.RoleID)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
+		e.WriteBusinessError(w, err,mapErrorToAPIError)
 		return
 	}
 
@@ -267,7 +267,7 @@ func (h *UserHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request)
 
 	err := h.Service.RemoveAppRoleFromUser(ctx, userID, roleID)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapUserErrorToAPIError)
+		e.WriteBusinessError(w, err,mapErrorToAPIError)
 		return
 	}
 

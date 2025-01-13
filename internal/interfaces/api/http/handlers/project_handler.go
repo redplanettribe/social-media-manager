@@ -52,7 +52,7 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 
 	p, err := h.Service.CreateProject(r.Context(), req.Name, req.Description)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -79,7 +79,7 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projects, err := h.Service.ListProjects(ctx)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -116,7 +116,7 @@ func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 
 	p, err := h.Service.GetProject(ctx, projectID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -171,7 +171,7 @@ func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request
 
 	err := h.Service.AddUserToProject(ctx, projectID, req.Email)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -214,7 +214,7 @@ func (h *ProjectHandler) EnableSocialPlatform(w http.ResponseWriter, r *http.Req
 
 	err := h.Service.EnableSocialPlatform(ctx, projectID, socialPlatformID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -247,7 +247,7 @@ func (h *ProjectHandler) GetEnabledSocialPlatforms(w http.ResponseWriter, r *htt
 
 	platforms, err := h.Service.GetEnabledSocialPlatforms(ctx, projectID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -301,7 +301,7 @@ func (h *ProjectHandler) SetTimeZone(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.SetTimeZone(ctx, projectID, req.TimeZone)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -347,7 +347,49 @@ func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
 
 	err := h.Service.AddTimeSlot(ctx, projectID, req.DayOfWeek, req.Hour, req.Minute)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapProjectErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// SetDefaultUser godoc
+// @Summary Set the default user for a project
+// @Description Set the default user for a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/default-user/{user_id} [patch]
+func (h *ProjectHandler) SetDefaultUser (w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		e.WriteHttpError(w, e.NewValidationError("User id is required", map[string]string{
+			"user_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.SetDefaultUser(ctx, projectID, userID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 

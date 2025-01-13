@@ -11,206 +11,83 @@ import (
 	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
-func mapPostErrorToAPIError(err error) *e.APIError {
-	switch {
+func mapErrorToAPIError(err error) *e.APIError {
+    switch {
+        // Status 400 Bad Request
+        case e.MatchError(err, post.ErrPostScheduledTime, media.ErrUnsupportedMediaType):
+            return &e.APIError{
+                Status:  http.StatusBadRequest,
+                Code:    e.ErrCodeBadRequest,
+                Message: err.Error(),
+            }
 
-	case e.MatchError(
-		err,
-		post.ErrPostNotFound,
-		post.ErrProjectNotFound,
-	):
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		post.ErrPostScheduledTime,
-	):
-		return &e.APIError{
-			Status:  http.StatusBadRequest,
-			Code:    e.ErrCodeBadRequest,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		post.ErrPublisherNotInProject,
-	):
-		return &e.APIError{
-			Status:  http.StatusForbidden,
-			Code:    e.ErrCodeForbidden,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		post.ErrPostAlreadyInQueue,
-		post.ErrPostAlreadyPublished,
-	):
-		return &e.APIError{
-			Status:  http.StatusConflict,
-			Code:    e.ErrCodeConflict,
-			Message: err.Error(),
-		}
+        // Status 403 Forbidden
+        case e.MatchError(err,
+            post.ErrPublisherNotInProject,
+            publisher.ErrSocialPlatformNotEnabledForProject,
+            media.ErrPostDoesNotBelongToProject,
+            media.ErrMediaDoesNotBelongToPost,
+            media.ErrPlatformNotEnabledForProject,
+            media.ErrPostNotLinkedToPlatform,
+            media.ErrMediaAlreadyLinkedToPost,
+        ):
+            return &e.APIError{
+                Status:  http.StatusForbidden,
+                Code:    e.ErrCodeForbidden,
+                Message: err.Error(),
+            }
+        
+        // Status 409 Conflict
+        case e.MatchError(err,
+            post.ErrPostAlreadyInQueue,
+            post.ErrPostAlreadyPublished,
+            project.ErrProjectExists,
+            project.ErrSocialPlatformAlreadyEnabled,
+            project.ErrUserAlreadyInProject,
+            user.ErrExistingUser,
+            media.ErrFileAlreadyExists,
+        ):
+            return &e.APIError{
+                Status:  http.StatusConflict,
+                Code:    e.ErrCodeConflict,
+                Message: err.Error(),
+            }
 
-	default:
-		return &e.APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    e.ErrCodeInternal,
-			Message: err.Error(),
-		}
-	}
-}
+        // Status 422 Unprocessable Entity
+        case e.MatchError(err, publisher.ErrPlatformSecretsNotSet):
+            return &e.APIError{
+                Status:  http.StatusUnprocessableEntity,
+                Code:    e.ErrCodeValidation,
+                Message: "Platform secrets not configured. Please set them before publishing.",
+            }
+        
+        // Status 404 Gone
+        case e.MatchError(err,
+            post.ErrPostNotFound,
+            post.ErrProjectNotFound,
+            publisher.ErrSocialPlatformNotFound,
+            user.ErrUserNotFound,
+        ):
+            return &e.APIError{
+                Status:  http.StatusGone,
+                Code:    e.ErrCodeNotFound,
+                Message: err.Error(),
+            }
 
-func mapPublisherErrorToAPIError(err error) *e.APIError {
-	switch {
-	case e.MatchError(err,
-		publisher.ErrSocialPlatformNotFound,
-		post.ErrPostNotFound,
-	):
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-	case e.MatchError(err,
-		publisher.ErrPlatformSecretsNotSet,
-	):
-		return &e.APIError{
-			Status:  http.StatusUnprocessableEntity,
-			Code:    e.ErrCodeValidation,
-			Message: "Platform secrets not configured. Please set them before publishing.",
-		}
-	case e.MatchError(err,
-		publisher.ErrSocialPlatformNotEnabledForProject,
-	):
-		return &e.APIError{
-			Status:  http.StatusForbidden,
-			Code:    e.ErrCodeForbidden,
-			Message: err.Error(),
-		}
-	default:
-		return &e.APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    e.ErrCodeInternal,
-			Message: err.Error(),
-		}
-	}
-}
+        // Status 403 Forbidden with custom message
+        case e.MatchError(err, user.ErrInvalidPassword):
+            return &e.APIError{
+                Status:  http.StatusForbidden,
+                Code:    e.ErrCodeForbidden,
+                Message: "Invalid password",
+            }
 
-func mapProjectErrorToAPIError(err error) *e.APIError {
-	switch {
-	case e.MatchError(
-		err,
-		project.ErrProjectExists,
-		project.ErrSocialPlatformAlreadyEnabled,
-	):
-		return &e.APIError{
-			Status:  http.StatusConflict,
-			Code:    e.ErrCodeConflict,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		project.ErrProjectNotFound,
-	):
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		project.ErrUserAlreadyInProject,
-	):
-		return &e.APIError{
-			Status:  http.StatusConflict,
-			Code:    e.ErrCodeConflict,
-			Message: err.Error(),
-		}
-	default:
-		return &e.APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    e.ErrCodeInternal,
-			Message: "Internal server error",
-		}
-	}
-}
-
-func mapUserErrorToAPIError(err error) *e.APIError {
-	switch {
-	case e.MatchError(
-		err,
-		user.ErrExistingUser,
-	):
-		return &e.APIError{
-			Status:  http.StatusConflict,
-			Code:    e.ErrCodeConflict,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		user.ErrUserNotFound,
-	):
-		return &e.APIError{
-			Status:  http.StatusGone,
-			Code:    e.ErrCodeNotFound,
-			Message: err.Error(),
-		}
-	case e.MatchError(
-		err,
-		user.ErrInvalidPassword,
-	):
-		return &e.APIError{
-			Status:  http.StatusForbidden,
-			Code:    e.ErrCodeForbidden,
-			Message: "Invalid password",
-		}
-	default:
-		return &e.APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    e.ErrCodeInternal,
-			Message: "Internal server error",
-		}
-	}
-}
-
-func mapMediaErrorToAPIError(err error) *e.APIError {
-	switch {
-	case e.MatchError(
-		err,
-		media.ErrUnsupportedMediaType,
-	):
-		return &e.APIError{
-			Status:  http.StatusBadRequest,
-			Code:    e.ErrCodeBadRequest,
-			Message: err.Error(),
-		}
-	case e.MatchError(err,
-		media.ErrPostDoesNotBelongToProject,
-		media.ErrMediaDoesNotBelongToPost,
-		media.ErrPlatformNotEnabledForProject,
-		media.ErrPostNotLinkedToPlatform,
-		media.ErrMediaAlreadyLinkedToPost,
-	):
-		return &e.APIError{
-			Status:  http.StatusForbidden,
-			Code:    e.ErrCodeForbidden,
-			Message: err.Error(),
-		}
-	case e.MatchError(err,
-		media.ErrFileAlreadyExists,
-	):
-		return &e.APIError{
-			Status:  http.StatusConflict,
-			Code:    e.ErrCodeConflict,
-			Message: err.Error(),
-		}
-	default:
-		return &e.APIError{
-			Status:  http.StatusInternalServerError,
-			Code:    e.ErrCodeInternal,
-			Message: err.Error(),
-		}
-	}
+        // Default: Status 500 Internal Server Error
+        default:
+            return &e.APIError{
+                Status:  http.StatusInternalServerError,
+                Code:    e.ErrCodeInternal,
+                Message: "Internal server error",
+            }
+    }
 }

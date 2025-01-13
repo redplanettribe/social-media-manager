@@ -73,7 +73,7 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 
 	media, err := h.Service.UploadMedia(r.Context(), projectID, postID, header.Filename, data)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapMediaErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -126,7 +126,7 @@ func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 
 	m, err := h.Service.GetMediaFile(r.Context(), projectID, postID, filename)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapMediaErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -190,7 +190,7 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 
 	err = h.Service.LinkMediaToPublishPost(r.Context(), projectID, postID, mediaID, platformID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapMediaErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 

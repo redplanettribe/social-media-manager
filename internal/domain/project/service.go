@@ -20,9 +20,9 @@ type Service interface {
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error)
 	SetTimeZone(ctx context.Context, projectID, timeZone string) error
 	AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
-	// TODO: implement
 	IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error)
 	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
+	SetDefaultUser(ctx context.Context, projectID, userID string) error
 }
 
 type service struct {
@@ -221,4 +221,15 @@ func (s *service) IsProjectTimeToPublish(ctx context.Context, projectID string) 
 
 func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error) {
 	return s.repo.FindActiveProjectsChunk(ctx, offset, chunkSize)
+}
+
+func (s *service) SetDefaultUser(ctx context.Context, projectID, userID string) error {
+	ok, err := s.repo.IsUserInProject(ctx, projectID, userID)
+	if err != nil {
+		return err 
+	}
+	if !ok {
+		return ErrUserNotInProject
+	}
+	return s.repo.SetDefaultUser(ctx, projectID, userID)
 }

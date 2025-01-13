@@ -29,7 +29,7 @@ func NewPlatformHandler(service publisher.Service) *PlatformHandler {
 func (h *PlatformHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *http.Request) {
 	publishers, err := h.Service.GetAvailableSocialNetworks(r.Context())
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *PlatformHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Reque
 
 	err = h.Service.AddPlatformSecret(r.Context(), projectID, req.SocialPlatformID, req.SecretKey, req.SecretValue)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -105,7 +105,7 @@ func (h *PlatformHandler) AddUserPlatformSecret(w http.ResponseWriter, r *http.R
 
 	err = h.Service.AddUserPlatformSecret(r.Context(), projectID, req.SocialPlatformID, req.SecretKey, req.SecretValue)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -138,7 +138,7 @@ func (h *PlatformHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *h
 
 	err := h.Service.PublishPostToSocialNetwork(r.Context(),projectID, postID, socialNetworkID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -156,7 +156,7 @@ func (h *PlatformHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWri
 
 	err := h.Service.PublishPostToAssignedSocialNetworks(r.Context(), projectID, postID)
 	if err != nil {
-		e.WriteBusinessError(w, err, mapPublisherErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
