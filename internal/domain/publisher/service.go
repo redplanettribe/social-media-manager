@@ -94,6 +94,51 @@ func (s *service) AddPlatformSecret(ctx context.Context, projectID, socialPlatfo
 	return s.repo.SetPlatformSecrets(ctx, projectID, socialPlatformID, newSecrets)
 }
 
+
+func (s *service) AddUserPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error {
+	userID := ctx.Value(middlewares.UserIDKey).(string)
+	
+	var (
+		isEnabled   bool
+		userSecrets string
+	)
+	
+	g, gCtx := errgroup.WithContext(ctx)
+	
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(gCtx, projectID, platformID)
+		return err
+	})
+	
+	g.Go(func() error {
+		var err error
+		userSecrets, err = s.repo.GetUserPlatformSecrets(gCtx, platformID, userID)
+		return err
+	})
+	
+	if err := g.Wait(); err != nil {
+		return err
+	}
+	
+	if !isEnabled {
+		return ErrSocialPlatformNotEnabledForProject
+	}
+
+
+	publisher, err := s.publisherFactory.Create(platformID, "", userSecrets)
+	if err != nil {
+		return err
+	}
+
+	newSecrets, err := publisher.AddUserSecret(key, secret)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.SetUserPlatformSecrets(ctx, platformID, userID, newSecrets)
+}
+
 func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error {
 
 	publishers, err := s.postService.GetSocialMediaPublishers(ctx, postID)
@@ -177,48 +222,4 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	}
 
 	return nil
-}
-
-func (s *service) AddUserPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error {
-	userID := ctx.Value(middlewares.UserIDKey).(string)
-	
-	var (
-		isEnabled   bool
-		userSecrets string
-	)
-	
-	g, gCtx := errgroup.WithContext(ctx)
-	
-	g.Go(func() error {
-		var err error
-		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(gCtx, projectID, platformID)
-		return err
-	})
-	
-	g.Go(func() error {
-		var err error
-		userSecrets, err = s.repo.GetUserPlatformSecrets(gCtx, platformID, userID)
-		return err
-	})
-	
-	if err := g.Wait(); err != nil {
-		return err
-	}
-	
-	if !isEnabled {
-		return ErrSocialPlatformNotEnabledForProject
-	}
-
-
-	publisher, err := s.publisherFactory.Create(platformID, "", userSecrets)
-	if err != nil {
-		return err
-	}
-
-	newSecrets, err := publisher.AddUserSecret(key, secret)
-	if err != nil {
-		return err
-	}
-
-	return s.repo.SetUserPlatformSecrets(ctx, platformID, userID, newSecrets)
 }
