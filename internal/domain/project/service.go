@@ -59,13 +59,18 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 		return nil, err
 	}
 
-	shc := NewWeeklyPostSchedule("America/New_York", []TimeSlot{})
+	shc := NewWeeklyPostSchedule("America/New_York", []TimeSlot{}) // TODO: get timezone from request
 	err = s.repo.CreateProjectSettings(ctx, project.ID, shc)
 	if err != nil {
 		return nil, err
 	}
 
 	err = s.repo.AssignProjectOwner(ctx, project.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.repo.SetDefaultUser(ctx, project.ID, userID)
 	if err != nil {
 		return nil, err
 	}

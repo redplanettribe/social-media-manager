@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS team_members (
   project_id uuid NOT NULL,
   user_id uuid  NOT NULL,
   added_at timestamp DEFAULT NOW(),
+  default_user boolean DEFAULT FALSE,
   PRIMARY KEY (project_id, user_id)
 );
 

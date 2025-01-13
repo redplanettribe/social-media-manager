@@ -142,7 +142,7 @@ func (r *ProjectRepository) FindProjectByID(ctx context.Context, projectID strin
 
 func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID string) ([]*project.TeamMember, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT u.id, u.username, u.email, tm.added_at, tmr.team_role_id
+		SELECT u.id, u.username, u.email, tm.default_user, tm.added_at, tmr.team_role_id
 		FROM %s tm
 		INNER JOIN %s u ON tm.user_id = u.id
 		INNER JOIN %s tmr ON tm.user_id = tmr.user_id
@@ -161,7 +161,7 @@ func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID strin
 	var users []*project.TeamMember
 	for rows.Next() {
 		tm := &project.TeamMember{}
-		err = rows.Scan(&tm.ID, &tm.Name, &tm.Email, &tm.AddedAt, &tm.MaxRole)
+		err = rows.Scan(&tm.ID, &tm.Name, &tm.Email, &tm.DefaultUser, &tm.AddedAt, &tm.MaxRole)
 		if err != nil {
 			return nil, err
 		}
@@ -430,3 +430,38 @@ func (r *ProjectRepository) FindActiveProjectsChunk(ctx context.Context, limit, 
 
 	return projects, nil
 }
+
+func (r *ProjectRepository) SetDefaultUser(ctx context.Context, projectID, userID string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		} else {
+			err = tx.Commit(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET default_user = false
+		WHERE project_id = $1
+	`, TeamMembers), projectID)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET default_user = true
+		WHERE project_id = $1 AND user_id = $2
+	`, TeamMembers), projectID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+ 

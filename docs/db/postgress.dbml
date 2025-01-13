@@ -67,9 +67,10 @@ Table project_settings {
 }
 
 Table team_members {
-  project_id  uuid      [ref: > projects.id, not null]
-  user_id     uuid      [ref: > users.id, not null]
-  added_at    timestamp [default: `NOW()`]
+  project_id       uuid      [ref: > projects.id, not null]
+  user_id          uuid      [ref: > users.id, not null]
+  added_at         timestamp [default: `NOW()`]
+  default_user     boolean   [not null, default: false]
 
   Indexes {
     (project_id, user_id) [pk]

@@ -60,11 +60,12 @@ type TeamRole struct {
 }
 
 type TeamMember struct {
-	ID      string    `json:"id"`
-	Name    string    `json:"name"`
-	Email   string    `json:"email"`
-	AddedAt time.Time `json:"added_at"`
-	MaxRole int       `json:"max_role"`
+	ID          string    `json:"id"`
+	Name        string    `json:"name"`
+	Email       string    `json:"email"`
+	DefaultUser bool      `json:"default_user"`
+	AddedAt     time.Time `json:"added_at"`
+	MaxRole     int       `json:"max_role"`
 }
 
 func NewProject(name, description, createdBy string) (*Project, error) {

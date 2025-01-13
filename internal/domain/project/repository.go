@@ -20,4 +20,5 @@ type Repository interface {
 	SaveSchedule(ctx context.Context, projectID string, schedule *WeeklyPostSchedule) error
 	CreateProjectSettings(ctx context.Context, projectID string, schedule *WeeklyPostSchedule) error
 	FindActiveProjectsChunk(ctx context.Context, limit, offset int) ([]*Project, error)
+	SetDefaultUser(ctx context.Context, projectID, userID string) error
 }
