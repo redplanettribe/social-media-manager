@@ -13,12 +13,14 @@ import (
 var (
 	ErrNotImplemented = errors.New("not implemented")
 )
+
 type PlatformSecrets struct {
 	PlaceHolderKey string `json:"placeholder_key"`
 }
 
 type UserSecrets struct {
 	AccessToken string `json:"access_token"`
+	URN         string `json:"urn"`
 }
 
 type Linkedin struct {
@@ -57,6 +59,8 @@ func (l *Linkedin) AddUserSecret(key, secret string) (string, error) {
 	switch key {
 	case "access_token":
 		l.userSecrets.AccessToken = secret
+	case "urn":
+		l.userSecrets.URN = secret
 	default:
 		return "", errors.New("invalid key")
 	}
@@ -98,43 +102,10 @@ func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
 func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
 	fmt.Println("Publishing to Linkedin")
 	fmt.Println("Post ID:", pp.ID)
-	if pp.Type == post.PostTypeUndefined{
-		t, err := l.AttemptToClassifyPostType(pp, media)
-		if err != nil {
-			return err
-		}
-		pp.Type = post.PostType(t)
+	posterFactory := NewPosterFactory()
+	poster, err := posterFactory.NewPoster(pp, l.userSecrets , l.platformSecrets)
+	if err != nil {
+		return err
 	}
-	switch pp.Type {
-	case post.PostTypeText:
-		return l.publishTextPost(ctx, pp)
-	case post.PostTypeMedia:
-		return l.publishMediaPost(ctx, pp, media)
-	case post.PostTypePoll:
-		return l.publishPollPost(ctx, pp)
-	case post.PostTypeUndefined:
-		return fmt.Errorf("post type is undefined")
-	default:
-		return fmt.Errorf("unsupported post type: %s", pp.Type)
-	}
-}
-
-func (l *Linkedin) AttemptToClassifyPostType(pp *post.PublishPost, media []*media.Media) (post.PostType, error) {
-	//TODO: Implement this, for now it always returns PostTypeUndefined
-	return post.PostTypeUndefined, nil
-}
-
-func (l *Linkedin) publishTextPost(ctx context.Context, pp *post.PublishPost) error {
-	//TODO: Implement this
-	return ErrNotImplemented
-}
-
-func (l *Linkedin) publishMediaPost(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
-	//TODO: Implement this
-	return ErrNotImplemented
-}
-
-func (l *Linkedin) publishPollPost(ctx context.Context, pp *post.PublishPost) error {
-	//TODO: Implement this
-	return ErrNotImplemented
+	return poster.Post(ctx, pp, media)
 }
