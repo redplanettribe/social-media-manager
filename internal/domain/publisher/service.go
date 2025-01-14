@@ -175,7 +175,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	}
 
 	if defaultUserID == "" {
-		return ErrDefaultUserNotSet		
+		return ErrDefaultUserNotSet
 	}
 
 	g.Go(func() error {

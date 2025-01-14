@@ -102,6 +102,9 @@ func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
 func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
 	fmt.Println("Publishing to Linkedin")
 	fmt.Println("Post ID:", pp.ID)
+	for _, m := range media {
+		fmt.Println("Media Name:", m.Filename)
+	}
 	posterFactory := NewPosterFactory()
 	poster, err := posterFactory.NewPoster(pp, l.userSecrets , l.platformSecrets)
 	if err != nil {

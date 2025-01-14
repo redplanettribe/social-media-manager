@@ -12,19 +12,20 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 )
+
 type TextPoster struct {
-	uSecrets UserSecrets
-	pSecrets PlatformSecrets
+    uSecrets UserSecrets
+    pSecrets PlatformSecrets
 }
 
-func NewTextPoster(userSecrets UserSecrets, platformSecrets PlatformSecrets ) *TextPoster {
-	return &TextPoster{
-		uSecrets: userSecrets,
-		pSecrets: platformSecrets,
-	}
+func NewTextPoster(userSecrets UserSecrets, platformSecrets PlatformSecrets) *TextPoster {
+    return &TextPoster{
+        uSecrets: userSecrets,
+        pSecrets: platformSecrets,
+    }
 }
 
-func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
+func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, _ []*media.Media) error {
     // Validate input
     if pp == nil {
         return errors.New("publish post is nil")
@@ -32,24 +33,21 @@ func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, media []*m
     if tp.uSecrets.AccessToken == "" {
         return errors.New("user access token is not set")
     }
-    if tp.uSecrets.URN == "" {
-        return errors.New("user URN is not set")
-    }
 
-    linkedinPost := LinkedInPost{
-        Author:     tp.uSecrets.URN,
-        Commentary: pp.TextContent,
-        Visibility: "PUBLIC",
-        Distribution: Distribution{
-            FeedDistribution:               "MAIN_FEED",
-            TargetEntities:                 []string{},
-            ThirdPartyDistributionChannels: []string{},
+    body := map[string]interface{}{
+        "author":     tp.uSecrets.URN,
+        "commentary":  pp.TextContent,
+        "visibility":  "PUBLIC",
+        "distribution": map[string]interface{}{
+            "feedDistribution":               "MAIN_FEED",
+            "targetEntities":                 []string{},
+            "thirdPartyDistributionChannels": []string{},
         },
-        LifecycleState:            "PUBLISHED",
-        IsReshareDisabledByAuthor: false,
+        "lifecycleState":             "PUBLISHED",
+        "isReshareDisabledByAuthor":  false,
     }
 
-    jsonData, err := json.Marshal(linkedinPost)
+    jsonData, err := json.Marshal(body)
     if err != nil {
         return fmt.Errorf("failed to marshal LinkedIn post body: %w", err)
     }
@@ -59,12 +57,10 @@ func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, media []*m
         return fmt.Errorf("failed to create LinkedIn post request: %w", err)
     }
 
-	setHeaders(req, tp.uSecrets.AccessToken)
+    setHeaders(req, tp.uSecrets.AccessToken)
 
-    // Initialize the HTTP client with a timeout
-    client := &http.Client{
-        Timeout: 10 * time.Second,
-    }
+    // Initialize an HTTP client with a timeout
+    client := &http.Client{Timeout: 10 * time.Second}
 
     // Send the HTTP request
     resp, err := client.Do(req)
@@ -76,8 +72,7 @@ func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, media []*m
     // Handle the response
     if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
         var respBody map[string]interface{}
-        err := json.NewDecoder(resp.Body).Decode(&respBody)
-        if err != nil {
+        if decodeErr := json.NewDecoder(resp.Body).Decode(&respBody); decodeErr != nil {
             return fmt.Errorf("LinkedIn API responded with status %d", resp.StatusCode)
         }
         return fmt.Errorf("LinkedIn API responded with status %d: %v", resp.StatusCode, respBody)

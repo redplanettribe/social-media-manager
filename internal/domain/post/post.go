@@ -37,7 +37,9 @@ type PostType string
 const (
 	PostTypeUndefined  PostType = "undefined"
 	PostTypeText       PostType = "text"
-	PostTypeMedia      PostType = "media"
+	PostTypeMixMedia      PostType = "mix_media"
+	PostTypeImage      PostType = "image"
+	PostTypeVideo      PostType = "video"
 	PostTypePoll       PostType = "poll"
 	PostTypeShortVideo PostType = "short_video"
 	// ... add other types as necessary

@@ -32,6 +32,10 @@ func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets UserSecrets,
 	switch p.Type {
 	case post.PostTypeText:
 		return NewTextPoster(userSecrets, platformSecrets), nil
+	case post.PostTypeImage:
+		return NewImagePoster(userSecrets, platformSecrets), nil
+	case post.PostTypeMixMedia:
+		return nil, errors.New("mix media not supported on linkedin")
 	default:
 		return nil, errors.New("invalid post type")
 	}
@@ -56,7 +60,14 @@ type Distribution struct {
 
 func setHeaders(req *http.Request, accessToken string) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	req.Header.Set("Content-Type", "application/json")
     req.Header.Set("X-Restli-Protocol-Version", "2.0.0")
 	req.Header.Set("LinkedIn-Version", "202411")
+	req.Header.Set("Content-Type", "application/json")
+}
+
+func setBinaryHeaders(req *http.Request, accessToken string) {
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	req.Header.Set("X-Restli-Protocol-Version", "2.0.0")
+	req.Header.Set("LinkedIn-Version", "202411")
+	req.Header.Set("Content-Type", "application/octet-stream")
 }
