@@ -160,14 +160,23 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 }
 
 func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
-	userID := ctx.Value(middlewares.UserIDKey).(string)
 	var (
-		isEnabled   bool
-		publishPost *post.PublishPost
-		media       []*media.Media
-		userSecrets string
-		g           errgroup.Group
+		isEnabled     bool
+		publishPost   *post.PublishPost
+		media         []*media.Media
+		userSecrets   string
+		defaultUserID string
+		g             errgroup.Group
 	)
+
+	defaultUserID, err := s.repo.GetDefaultUserID(ctx, projectID)
+	if err != nil {
+		return err
+	}
+
+	if defaultUserID == "" {
+		return ErrDefaultUserNotSet		
+	}
 
 	g.Go(func() error {
 		var err error
@@ -189,7 +198,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 
 	g.Go(func() error {
 		var err error
-		userSecrets, err = s.repo.GetUserPlatformSecrets(ctx, platformID, userID)
+		userSecrets, err = s.repo.GetUserPlatformSecrets(ctx, platformID, defaultUserID)
 		return err
 	})
 

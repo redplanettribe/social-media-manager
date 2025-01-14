@@ -276,6 +276,24 @@ func (_m *MockService) ListProjects(ctx context.Context) ([]*Project, error) {
 	return r0, r1
 }
 
+// SetDefaultUser provides a mock function with given fields: ctx, projectID, userID
+func (_m *MockService) SetDefaultUser(ctx context.Context, projectID string, userID string) error {
+	ret := _m.Called(ctx, projectID, userID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetDefaultUser")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projectID, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SetTimeZone provides a mock function with given fields: ctx, projectID, timeZone
 func (_m *MockService) SetTimeZone(ctx context.Context, projectID string, timeZone string) error {
 	ret := _m.Called(ctx, projectID, timeZone)

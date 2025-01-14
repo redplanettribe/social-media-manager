@@ -1004,6 +1004,50 @@ paths:
       summary: Add a user to a project
       tags:
       - projects
+  /projects/{project_id}/default-user/{user_id}:
+    patch:
+      consumes:
+      - application/json
+      description: Set the default user for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Set the default user for a project
+      tags:
+      - projects
   /projects/{project_id}/enable-social-platform/{social_platform_id}:
     post:
       consumes:

@@ -10,4 +10,5 @@ type Repository interface {
 	IsSocialNetworkEnabledForProject(ctx context.Context, projectID, socialPlatformID string) (bool, error)
 	GetUserPlatformSecrets(ctx context.Context, platformID, userID string) (string, error)
 	SetUserPlatformSecrets(ctx context.Context, platformID, userID, secrets string) error
+	GetDefaultUserID(ctx context.Context, platformID string) (string, error)
 }

@@ -131,3 +131,19 @@ func (r *PublisherRepository) SetUserPlatformSecrets(ctx context.Context, platfo
 	}
 	return nil
 }
+
+func (r *PublisherRepository) GetDefaultUserID(ctx context.Context, projectID string) (string, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT user_id
+		FROM %s
+		WHERE project_id = $1 AND default_user = true
+	`, TeamMembers), projectID)
+
+	var userID string
+	err := row.Scan(&userID)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return "", err
+	}
+
+	return userID, nil
+}
