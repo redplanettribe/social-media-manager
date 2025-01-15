@@ -1,163 +1,173 @@
 Table users {
-  id             uuid          [pk]
-  username       varchar(50)   [unique, not null]
-  email          varchar(255)  [unique, not null]
-  password_hash  varchar(255)  [not null]
-  salt           char(32)      [not null]
-  created_at     timestamp     [default: `NOW()`]
-  updated_at     timestamp     [default: `NOW()`]
+  id uuid [pk]
+  username varchar(50) [unique, not null]
+  email varchar(255) [unique, not null]
+  password_hash varchar(255) [not null]
+  salt char(32) [not null]
+  created_at timestamp [default: `NOW()`]
+  updated_at timestamp [default: `NOW()`]
 }
 
-Table user_project_platforms{
-  user_id       uuid         [ref: > users.id, not null]
-  project_id    uuid         [ref: > projects.id, not null]
-  platform_id   varchar(10)  [ref: > platforms.id, not null]
-  secrets       text
-  created_at    timestamp    [default: `NOW()`]
-  updated_at    timestamp    [default: `NOW()`]
+Table user_project_platforms {
+  user_id uuid [ref: > users.id, not null]
+  project_id uuid [ref: > projects.id, not null]
+  platform_id varchar(10) [ref: > platforms.id, not null]
+  secrets text
+  created_at timestamp [default: `NOW()`]
+  updated_at timestamp [default: `NOW()`]
 
   Indexes {
     (user_id, project_id, platform_id) [pk]
   }
+
 }
 
 Table roles {
-  id    serial        [pk]
-  role  varchar(255)  [not null]
+  id serial [pk]
+  role varchar(255) [not null]
 }
 
 Table user_roles {
-  user_id  uuid    [ref: > users.id, not null]
-  role_id  serial  [ref: > roles.id, not null]
+  user_id uuid [ref: > users.id, not null]
+  role_id serial [ref: > roles.id, not null]
 
   Indexes {
     (user_id, role_id) [pk]
   }
+
 }
 
 Table sessions {
-  id          uuid         [pk]
-  user_id     uuid         [ref: > users.id, not null]
-  fingerprint varchar(64)  [not null]
-  expires_at  timestamp    [not null]
-  created_at  timestamp    [default: `CURRENT_TIMESTAMP`, not null]
-  updated_at  timestamp    [default: `CURRENT_TIMESTAMP`, not null]
+  id uuid [pk]
+  user_id uuid [ref: > users.id, not null]
+  fingerprint varchar(64) [not null]
+  expires_at timestamp [not null]
+  created_at timestamp [default: `CURRENT_TIMESTAMP`, not null]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`, not null]
 
   Indexes {
     user_id
   }
+
 }
 
 Table projects {
-  id          uuid          [pk]
-  name        varchar(100)  [not null]
-  description text          [not null]
-  post_queue  uuid[]        [not null]
-  idea_queue  uuid[]        [not null]
-  created_by  uuid          [ref: > users.id, not null]
-  created_at  timestamp     [default: `NOW()`]
-  updated_at  timestamp     [default: `NOW()`]
+  id uuid [pk]
+  name varchar(100) [not null]
+  description text [not null]
+  post_queue uuid[] [not null]
+  idea_queue uuid[] [not null]
+  created_by uuid [ref: > users.id, not null]
+  created_at timestamp [default: `NOW()`]
+  updated_at timestamp [default: `NOW()`]
 }
 
 Table project_settings {
-  project_id  uuid      [pk, ref: > projects.id]
-  schedule    text      [not null, default: '{}']
-  updated_at  timestamp [not null, default: `CURRENT_TIMESTAMP`]
-  created_at  timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  project_id uuid [pk, ref: > projects.id]
+  schedule text [not null, default: ' {}']
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 }
 
 Table team_members {
-  project_id       uuid      [ref: > projects.id, not null]
-  user_id          uuid      [ref: > users.id, not null]
-  added_at         timestamp [default: `NOW()`]
-  default_user     boolean   [not null, default: false]
+  project_id uuid [ref: > projects.id, not null]
+  user_id uuid [ref: > users.id, not null]
+  added_at timestamp [default: `NOW()`]
+  default_user boolean [not null, default: false]
 
   Indexes {
     (project_id, user_id) [pk]
   }
+
 }
 
 Table team_members_roles {
-  project_id    uuid    [ref: > projects.id ,not null]
-  user_id       uuid    [ref: > users.id, not null]
-  team_role_id  integer [ref: > team_roles.id, not null]
+  project_id uuid [ref: > projects.id ,not null]
+  user_id uuid [ref: > users.id, not null]
+  team_role_id integer [ref: > team_roles.id, not null]
 
   Indexes {
     (project_id, user_id, team_role_id) [pk]
   }
+
 }
 
 Table team_roles {
-  id    serial       [pk]
-  role  varchar(20)  [unique, not null]
+  id serial [pk]
+  role varchar(20) [unique, not null]
 }
 
 Table posts {
-  id            uuid          [pk]
-  project_id    uuid          [ref: > projects.id, not null]
-  title         text          [not null]
-  text_content  text          [not null]
-  is_idea       boolean       [not null]
-  status        varchar(20)   [not null]
-  scheduled_at  timestamp
-  created_by    uuid          [ref: > users.id, not null]
-  created_at    timestamp     [not null, default: `CURRENT_TIMESTAMP`]
-  updated_at    timestamp     [default: `CURRENT_TIMESTAMP`]
+  id uuid [pk]
+  project_id uuid [ref: > projects.id, not null]
+  title text [not null]
+  text_content text [not null]
+  is_idea boolean [not null]
+  status varchar(20) [not null]
+  scheduled_at timestamp
+  created_by uuid [ref: > users.id, not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
 }
 
 Table platforms {
-  id    varchar(10)   [pk]
-  name  varchar(50)   [not null]
+  id varchar(10) [pk]
+  name varchar(50) [not null]
 }
 
 Table post_platforms {
-  post_id      uuid         [ref: > posts.id, not null]
-  platform_id  varchar(10)  [ref: > platforms.id, not null]
-  status       varchar(20)  [not null]
+  post_id uuid [ref: > posts.id, not null]
+  platform_id varchar(10) [ref: > platforms.id, not null]
+  status varchar(20) [not null]
 
   Indexes {
     (post_id, platform_id) [pk]
   }
+
 }
 
 Table project_platforms {
-  project_id   uuid         [ref: > projects.id, not null]
-  platform_id  varchar(10)  [ref: > platforms.id, not null]
-  secrets      text
+  project_id uuid [ref: > projects.id, not null]
+  platform_id varchar(10) [ref: > platforms.id, not null]
+  secrets text
 
   Indexes {
     (project_id, platform_id) [pk]
   }
+
 }
 
 Table comments {
-  id          uuid      [pk]
-  post_id     uuid      [ref: > posts.id, not null]
-  user_id     uuid      [ref: > users.id, not null]
-  content     text      [not null]
-  created_at  timestamp [not null, default: `CURRENT_TIMESTAMP`]
-  updated_at  timestamp [default: `CURRENT_TIMESTAMP`]
+  id uuid [pk]
+  post_id uuid [ref: > posts.id, not null]
+  user_id uuid [ref: > users.id, not null]
+  content text [not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
 }
 
 Table media {
-  id          uuid           [pk]
-  post_id     uuid           [ref: > posts.id, not null]
-  file_name   varchar(255)   [unique, not null]
-  media_type  varchar(20)    [not null]
-  format      varchar(10)    [not null]
-  width       int
-  height      int
-  length      int
-  added_by    uuid           [ref: > users.id, not null]
-  created_at  timestamp      [not null, default: `CURRENT_TIMESTAMP`]
+  id uuid [pk]
+  post_id uuid [ref: > posts.id, not null]
+  file_name varchar(255) [unique, not null]
+  media_type varchar(20) [not null]
+  format varchar(10) [not null]
+  width int
+  height int
+  length int
+  size int
+  alt_text text
+  added_by uuid [ref: > users.id, not null]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
 }
 
 Table post_platform_media {
-  media_id     uuid         [ref: > media.id, not null]
-  post_id      uuid         [ref: > posts.id, not null]
-  platform_id  varchar(10)  [ref: > platforms.id, not null]
+  media_id uuid [ref: > media.id, not null]
+  post_id uuid [ref: > posts.id, not null]
+  platform_id varchar(10) [ref: > platforms.id, not null]
 
   Indexes {
     (media_id, post_id, platform_id) [pk]
   }
+
 }

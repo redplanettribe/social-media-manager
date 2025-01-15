@@ -135,7 +135,7 @@ func (mp *MultiImagePoster) Post(ctx context.Context, pp *post.PublishPost, medi
             mu.Lock()
             images = append(images, map[string]string{
                 "id":      initResp.Value.Image,
-                "altText": fmt.Sprintf("testing for alt tags%d", idx+1), // TODO: Add alt text property to media metadata
+                "altText": m.AltText,
             })
             mu.Unlock()
         }(i, m)

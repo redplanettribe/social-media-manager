@@ -134,7 +134,7 @@ func (ip *ImagePoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
         },
         "content": map[string]interface{}{
             "media": map[string]interface{}{
-                "altText": "testing for alt tags",
+                "altText": m.AltText,
                 "id":      imageURN,
             },
         },

@@ -30,6 +30,7 @@ type MediaInfo struct {
 	Width  int
 	Height int
 	Length int // for videos
+	Size   int // in bytes
 }
 
 func GetAnalyzer(filename string) (MediaAnalyzer, error) {
@@ -70,10 +71,11 @@ func (a *ImageAnalyzer) Analyze(data []byte) (*MediaInfo, error) {
 		Format: format,
 		Width:  img.Width,
 		Height: img.Height,
+		Size:   len(data),
 	}, nil
 }
 
-type VideoAnalyzer struct{
+type VideoAnalyzer struct {
 	ext string
 }
 
@@ -94,7 +96,7 @@ func (a *VideoAnalyzer) Analyze(data []byte) (*MediaInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
 	}
-	defer os.Remove(tmpFile.Name()) 
+	defer os.Remove(tmpFile.Name())
 
 	// Write video data to temp file
 	if _, err := tmpFile.Write(data); err != nil {
@@ -150,5 +152,6 @@ func (a *VideoAnalyzer) Analyze(data []byte) (*MediaInfo, error) {
 		Width:  width,
 		Height: height,
 		Length: int(length),
+		Size:   len(data),
 	}, nil
 }

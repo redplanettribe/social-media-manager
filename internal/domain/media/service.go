@@ -8,7 +8,7 @@ import (
 )
 
 type Service interface {
-	UploadMedia(ctx context.Context, projectID, postID, fileName string, data []byte) (*MetaData, error)
+	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (*MetaData, error)
 	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
 	GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
 	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
@@ -26,7 +26,7 @@ func NewService(repo Repository, objectRepo ObjectRepository) Service {
 	}
 }
 
-func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName string, data []byte) (*MetaData, error) {
+func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (*MetaData, error) {
 	userID := ctx.Value(middlewares.UserIDKey).(string)
 
 	existingMetadata, err := s.repo.GetMetadata(ctx, postID, fileName)
@@ -34,7 +34,7 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName s
 		return nil, ErrFileAlreadyExists
 	}
 
-	md, err := NewMetadata(postID, userID, fileName, data)
+	md, err := NewMetadata(postID, userID, fileName, altText, data)
 	if err != nil {
 		return nil, err
 	}
@@ -110,27 +110,27 @@ func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platfo
 func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error {
 
 	var (
-		doesPostBelongToProject    bool
+		doesPostBelongToProject   bool
 		doesMediaBelongToPost     bool
 		isThePostLinkedToPlatform bool
 		isPlatformEnabled         bool
 		isAlreadyLinked           bool
 	)
-	
+
 	g, gCtx := errgroup.WithContext(ctx)
-	
+
 	g.Go(func() error {
 		var err error
 		doesPostBelongToProject, err = s.repo.DoesPostBelongToProject(gCtx, projectID, postID)
 		return err
 	})
-	
+
 	g.Go(func() error {
 		var err error
 		doesMediaBelongToPost, err = s.repo.DoesMediaBelongToPost(gCtx, postID, mediaID)
 		return err
 	})
-	
+
 	g.Go(func() error {
 		var err error
 		isPlatformEnabled, err = s.repo.IsPlatformEnabledForProject(gCtx, projectID, platformID)
@@ -148,11 +148,11 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 		isAlreadyLinked, err = s.repo.IsMediaLinkedToPublishPost(gCtx, postID, mediaID, platformID)
 		return err
 	})
-	
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
-	
+
 	if !doesPostBelongToProject {
 		return ErrPostDoesNotBelongToProject
 	}

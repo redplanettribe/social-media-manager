@@ -24,6 +24,10 @@ type uploadMediaResponse struct {
 	*media.MetaData
 }
 
+type uploadMediaRequest struct {
+	AltText string `json:"alt_text"`
+}
+
 // UploadMedia godoc
 // @Summary Upload media file
 // @Description Upload media file
@@ -56,6 +60,8 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	altText := r.FormValue("alt_text")
+
 	file, header, err := r.FormFile("file")
 	if err != nil {
 		e.WriteHttpError(w, e.NewValidationError("Invalid file", map[string]string{
@@ -71,7 +77,7 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	media, err := h.Service.UploadMedia(r.Context(), projectID, postID, header.Filename, data)
+	media, err := h.Service.UploadMedia(r.Context(), projectID, postID, header.Filename, altText, data)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

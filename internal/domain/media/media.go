@@ -39,11 +39,13 @@ type MetaData struct {
 	Width     int       `json:"width"`
 	Height    int       `json:"height"`
 	Length    int       `json:"length"`
+	Size      int       `json:"size"` // in bytes
+	AltText   string    `json:"alt_text"`
 	AddedBy   string    `json:"added_by"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func NewMetadata(postID, userID, fileName string, data []byte) (*MetaData, error) {
+func NewMetadata(postID, userID, fileName, altText string, data []byte) (*MetaData, error) {
 	analyzer, err := GetAnalyzer(fileName)
 	if err != nil {
 		return nil, err
@@ -62,6 +64,8 @@ func NewMetadata(postID, userID, fileName string, data []byte) (*MetaData, error
 		Height:    mediaInfo.Height,
 		Length:    mediaInfo.Length,
 		Format:    mediaInfo.Format,
+		Size:      mediaInfo.Size,
+		AltText:   altText,
 		AddedBy:   userID,
 		CreatedAt: time.Now(),
 	}, nil

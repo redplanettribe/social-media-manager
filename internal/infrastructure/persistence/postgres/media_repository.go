@@ -19,10 +19,10 @@ func NewMediaRepository(db *pgxpool.Pool) *MediaRepository {
 func (r *MediaRepository) SaveMetadata(ctx context.Context, m *media.MetaData) (*media.MetaData, error) {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
         INSERT INTO %s (
-            id, post_id, file_name, media_type, format, width, height, length, added_by, created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            id, post_id, file_name, media_type, format, width, height, length, size, alt_text, added_by, created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     `, Media),
-		m.ID, m.PostID, m.Filename, m.Type, m.Format, m.Width, m.Height, m.Length, m.AddedBy, m.CreatedAt)
+		m.ID, m.PostID, m.Filename, m.Type, m.Format, m.Width, m.Height, m.Length, m.Size, m.AltText, m.AddedBy, m.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -32,11 +32,11 @@ func (r *MediaRepository) SaveMetadata(ctx context.Context, m *media.MetaData) (
 func (r *MediaRepository) GetMetadata(ctx context.Context, postID, fileName string) (*media.MetaData, error) {
 	var m media.MetaData
 	err := r.db.QueryRow(ctx, fmt.Sprintf(`
-		SELECT id, post_id, file_name, media_type, format, width, height, length, added_by, created_at
+		SELECT id, post_id, file_name, media_type, format, width, height, length, size, alt_text, added_by, created_at
 		FROM %s
 		WHERE post_id = $1 AND file_name = $2
 	`, Media), postID, fileName).Scan(
-		&m.ID, &m.PostID, &m.Filename, &m.Type, &m.Format, &m.Width, &m.Height, &m.Length, &m.AddedBy, &m.CreatedAt,
+		&m.ID, &m.PostID, &m.Filename, &m.Type, &m.Format, &m.Width, &m.Height, &m.Length, &m.Size, &m.AltText, &m.AddedBy, &m.CreatedAt,
 	)
 	if err != nil {
 		return nil, err
