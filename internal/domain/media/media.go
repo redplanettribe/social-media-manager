@@ -7,6 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	thumbnailPrefix = "thumbnail_"
+)
+
 var (
 	ErrInvalidMedia                 = errors.New("invalid media")
 	ErrPostDoesNotBelongToProject   = errors.New("post does not belong to project")
@@ -15,6 +19,7 @@ var (
 	ErrPostNotLinkedToPlatform      = errors.New("post not linked to platform")
 	ErrMediaAlreadyLinkedToPost     = errors.New("media already linked to post")
 	ErrFileAlreadyExists            = errors.New("file already exists")
+	ErrFailedToAnalyzeMedia         = errors.New("failed to analyze media")
 )
 
 type Media struct {
@@ -45,16 +50,7 @@ type MetaData struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func NewMetadata(postID, userID, fileName, altText string, data []byte) (*MetaData, error) {
-	analyzer, err := GetAnalyzer(fileName)
-	if err != nil {
-		return nil, err
-	}
-	mediaInfo, err := analyzer.Analyze(data)
-	if err != nil {
-		return nil, err
-	}
-
+func NewMetadata(postID, userID, fileName, altText string, data []byte, mediaInfo *MediaInfo) (*MetaData, error) {
 	return &MetaData{
 		ID:        uuid.New().String(),
 		PostID:    postID,

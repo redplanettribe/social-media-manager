@@ -2,6 +2,8 @@ package media
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
 	"golang.org/x/sync/errgroup"
@@ -34,19 +36,82 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 		return nil, ErrFileAlreadyExists
 	}
 
-	md, err := NewMetadata(postID, userID, fileName, altText, data)
-	if err != nil {
-		return nil, err
-	}
-	err = s.objectRepo.UploadFile(ctx, projectID, postID, fileName, data, md)
+	processor, err := GetProcessor(fileName)
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO:
-	// we should process the file and save the thumbnail also
+	var (
+		g          errgroup.Group
+		mediaInfo  *MediaInfo
+		tMediaInfo *MediaInfo
+		thumnail   *[]byte
+		md         *MetaData
+		tmd        *MetaData
+	)
 
-	return s.repo.SaveMetadata(ctx, md)
+	// Analyze the media and get the thumbnail with its info
+	g.Go(func() error {
+		var err error
+		mediaInfo, err = processor.Analyze(data)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		thumnail, err = processor.GetThumbnail(data)
+		if err != nil {
+			return err
+		}
+
+		tMediaInfo, err = processor.Analyze(*thumnail)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return nil, errors.Join(errors.New("failed to analyze media"), err)
+	}
+
+	// Upload the media and thumbnail, save the metadata
+	g.Go(func() error {
+		var err error
+		fmt.Println("fileName", fileName)
+		md, err = NewMetadata(postID, userID, fileName, altText, data, mediaInfo)
+		if err != nil {
+			return err
+		}
+		err = s.objectRepo.UploadFile(ctx, projectID, postID, fileName, data, md)
+		if err != nil {
+			return err
+		}
+		_, err = s.repo.SaveMetadata(ctx, md)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		fileNameWithoutExt := fileName[:len(fileName)-len(mediaInfo.Format)-1]
+		thumbnailFileName := thumbnailPrefix + fileNameWithoutExt + "." + ThumbnailFormat
+		tmd, err = NewMetadata(postID, userID, thumbnailFileName, altText, *thumnail, tMediaInfo)
+		if err != nil {
+			return err
+		}
+		err = s.objectRepo.UploadFile(ctx, projectID, postID, thumbnailFileName, *thumnail, tmd)
+		if err != nil {
+			return err
+		}
+		_, err = s.repo.SaveMetadata(ctx, tmd)
+		fmt.Println("thumbnail metadata", tmd)
+		return err
+	})
+
+	if err = g.Wait(); err != nil {
+		return nil, err
+	}
+
+	fmt.Println("metadata", md)
+	fmt.Println("thumbnail metadata", tmd)
+	// return only the main file metadata
+	return md, nil
 }
 
 func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error) {

@@ -173,7 +173,6 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	if err != nil {
 		return err
 	}
-
 	if defaultUserID == "" {
 		return ErrDefaultUserNotSet
 	}
@@ -217,6 +216,8 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	if userSecrets == "" {
 		return ErrUserSecretsNotSet
 	}
+	 
+	// TODO: if media is video also grab the thumbnail
 
 	publisher, err := s.publisherFactory.Create(platformID, publishPost.Secrets, userSecrets)
 	if err != nil {
