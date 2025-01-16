@@ -74,7 +74,6 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 	// Upload the media and thumbnail, save the metadata
 	g.Go(func() error {
 		var err error
-		fmt.Println("fileName", fileName)
 		md, err = NewMetadata(postID, userID, fileName, altText, data, mediaInfo)
 		if err != nil {
 			return err
@@ -89,8 +88,7 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 
 	g.Go(func() error {
 		var err error
-		fileNameWithoutExt := fileName[:len(fileName)-len(mediaInfo.Format)-1]
-		thumbnailFileName := thumbnailPrefix + fileNameWithoutExt + "." + ThumbnailFormat
+		thumbnailFileName := getThumbnailName(fileName)
 		tmd, err = NewMetadata(postID, userID, thumbnailFileName, altText, *thumnail, tMediaInfo)
 		if err != nil {
 			return err
@@ -100,7 +98,6 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 			return err
 		}
 		_, err = s.repo.SaveMetadata(ctx, tmd)
-		fmt.Println("thumbnail metadata", tmd)
 		return err
 	})
 
@@ -108,9 +105,6 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 		return nil, err
 	}
 
-	fmt.Println("metadata", md)
-	fmt.Println("thumbnail metadata", tmd)
-	// return only the main file metadata
 	return md, nil
 }
 
@@ -148,6 +142,7 @@ func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platfo
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("mediaNames", mediaNames)
 	var (
 		medias  = make([]*Media, len(mediaNames))
 		g, gCtx = errgroup.WithContext(ctx)
@@ -159,6 +154,14 @@ func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platfo
 			media, err := s.GetMediaFile(gCtx, projectID, postID, name)
 			if err != nil {
 				return err
+			}
+			if media.MetaData.IsVideo() {
+				thumbnailName := getThumbnailName(name)
+				thumbnail, err := s.GetMediaFile(gCtx, projectID, postID, thumbnailName)
+				if err != nil {
+					return err
+				}
+				media.Thumbnail = thumbnail
 			}
 			medias[i] = media
 			return nil

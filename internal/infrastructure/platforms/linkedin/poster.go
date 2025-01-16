@@ -36,6 +36,8 @@ func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets UserSecrets,
 		return NewImagePoster(userSecrets, platformSecrets), nil
 	case post.PostTypeMultiImage:
 		return NewMultiImagePoster(userSecrets, platformSecrets), nil
+	case post.PostTypeVideo:
+		return NewVideoPoster(userSecrets, platformSecrets), nil
 	case post.PostTypeMixMedia:
 		return nil, errors.New("mix media not supported on linkedin")
 	default:

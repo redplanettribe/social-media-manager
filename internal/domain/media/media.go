@@ -23,7 +23,8 @@ var (
 )
 
 type Media struct {
-	Data []byte
+	Data      []byte
+	Thumbnail *Media
 	*MetaData
 }
 
@@ -48,6 +49,18 @@ type MetaData struct {
 	AltText   string    `json:"alt_text"`
 	AddedBy   string    `json:"added_by"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+func (m *MetaData) IsImage() bool {
+	return m.Type == MediaTypeImage
+}
+
+func (m *MetaData) IsVideo() bool {
+	return m.Type == MediaTypeVideo
+}
+
+func getThumbnailName(name string) string {
+	return thumbnailPrefix + name + "." + ThumbnailFormat
 }
 
 func NewMetadata(postID, userID, fileName, altText string, data []byte, mediaInfo *MediaInfo) (*MetaData, error) {

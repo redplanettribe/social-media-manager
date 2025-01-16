@@ -26,7 +26,7 @@ func NewMultiImagePoster(userSecrets UserSecrets, platformSecrets PlatformSecret
     return &MultiImagePoster{
         uSecrets:   userSecrets,
         pSecrets:   platformSecrets,
-        httpClient: &http.Client{Timeout: 30 * time.Second},
+        httpClient: &http.Client{Timeout: 10 * time.Second},
         authorURN:  userSecrets.URN,
     }
 }
