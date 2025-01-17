@@ -94,6 +94,8 @@ definitions:
     properties:
       added_by:
         type: string
+      alt_text:
+        type: string
       created_at:
         type: string
       filename:
@@ -110,6 +112,9 @@ definitions:
         $ref: '#/definitions/media.MediaType'
       post_id:
         type: string
+      size:
+        description: in bytes
+        type: integer
       width:
         type: integer
     type: object
@@ -118,11 +123,13 @@ definitions:
     - image
     - video
     - short_video
+    - document
     type: string
     x-enum-varnames:
     - MediaTypeImage
     - MediaTypeVideo
     - MediaTypeShortVideo
+    - MediaTypeDocument
   post.Post:
     properties:
       created_at:
@@ -150,18 +157,26 @@ definitions:
     type: object
   post.PostType:
     enum:
-    - undefined
     - text
-    - media
+    - mix_media
+    - image
+    - multi_image
+    - video
     - poll
     - short_video
+    - document
+    - carousel
     type: string
     x-enum-varnames:
-    - PostTypeUndefined
     - PostTypeText
-    - PostTypeMedia
+    - PostTypeMixMedia
+    - PostTypeImage
+    - PostTypeMultiImage
+    - PostTypeVideo
     - PostTypePoll
     - PostTypeShortVideo
+    - PostTypeDocument
+    - PostTypeCarousel
   project.Project:
     properties:
       created_at:

@@ -26,9 +26,6 @@ func NewPosterFactory() PosterFactory {
 }
 
 func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets UserSecrets, platformSecrets PlatformSecrets) (Poster, error) {
-	if p.Type == post.PostTypeUndefined {
-		return nil, errors.New("post type is undefined")
-	}
 	switch p.Type {
 	case post.PostTypeText:
 		return NewTextPoster(userSecrets, platformSecrets), nil

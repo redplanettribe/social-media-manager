@@ -14,7 +14,11 @@ import (
 func mapErrorToAPIError(err error) *e.APIError {
 	switch {
 	// Status 400 Bad Request
-	case e.MatchError(err, post.ErrPostScheduledTime, media.ErrUnsupportedMediaType):
+	case e.MatchError(err,
+		post.ErrPostScheduledTime,
+		media.ErrUnsupportedMediaType,
+		post.ErrInvalidPostType,
+	):
 		return &e.APIError{
 			Status:  http.StatusBadRequest,
 			Code:    e.ErrCodeBadRequest,

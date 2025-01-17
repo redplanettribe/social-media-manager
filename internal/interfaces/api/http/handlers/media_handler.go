@@ -24,10 +24,6 @@ type uploadMediaResponse struct {
 	*media.MetaData
 }
 
-type uploadMediaRequest struct {
-	AltText string `json:"alt_text"`
-}
-
 // UploadMedia godoc
 // @Summary Upload media file
 // @Description Upload media file

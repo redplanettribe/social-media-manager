@@ -35,18 +35,26 @@ type PostType string
 
 // Possible types of a post
 const (
-	PostTypeUndefined  PostType = "undefined"
 	PostTypeText       PostType = "text"
 	PostTypeMixMedia   PostType = "mix_media"
 	PostTypeImage      PostType = "image"
 	PostTypeMultiImage PostType = "multi_image"
 	PostTypeVideo      PostType = "video"
-	PostTypePoll       PostType = "poll"
 	PostTypeShortVideo PostType = "short_video"
 	PostTypeDocument   PostType = "document"
 	PostTypeCarousel   PostType = "carousel"
 	// ... add other types as necessary
 )
+
+func (pt PostType) IsValid() bool {
+	switch pt {
+	case PostTypeText, PostTypeMixMedia, PostTypeImage, PostTypeMultiImage,
+		PostTypeVideo, PostTypeShortVideo, PostTypeDocument, PostTypeCarousel:
+		return true
+	default:
+		return false
+	}
+}
 
 // Error messages
 var (
@@ -57,6 +65,7 @@ var (
 	ErrPostAlreadyInQueue    = errors.New("post already in queue")
 	ErrPostAlreadyPublished  = errors.New("post already published")
 	ErrPostIsIdea            = errors.New("post is an idea")
+	ErrInvalidPostType       = errors.New("invalid post type")
 )
 
 type Post struct {

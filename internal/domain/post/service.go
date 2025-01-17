@@ -47,6 +47,10 @@ func (s *service) CreatePost(
 ) (*Post, error) {
 	userID := ctx.Value(middlewares.UserIDKey).(string)
 
+	if !PostType(postType).IsValid() {
+		return nil, ErrInvalidPostType
+	}
+	
 	p, err := NewPost(
 		projectID,
 		userID,

@@ -2154,6 +2154,9 @@ const docTemplate = `{
                 "added_by": {
                     "type": "string"
                 },
+                "alt_text": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -2178,6 +2181,10 @@ const docTemplate = `{
                 "post_id": {
                     "type": "string"
                 },
+                "size": {
+                    "description": "in bytes",
+                    "type": "integer"
+                },
                 "width": {
                     "type": "integer"
                 }
@@ -2188,12 +2195,14 @@ const docTemplate = `{
             "enum": [
                 "image",
                 "video",
-                "short_video"
+                "short_video",
+                "document"
             ],
             "x-enum-varnames": [
                 "MediaTypeImage",
                 "MediaTypeVideo",
-                "MediaTypeShortVideo"
+                "MediaTypeShortVideo",
+                "MediaTypeDocument"
             ]
         },
         "post.Post": {
@@ -2237,18 +2246,26 @@ const docTemplate = `{
         "post.PostType": {
             "type": "string",
             "enum": [
-                "undefined",
                 "text",
-                "media",
+                "mix_media",
+                "image",
+                "multi_image",
+                "video",
                 "poll",
-                "short_video"
+                "short_video",
+                "document",
+                "carousel"
             ],
             "x-enum-varnames": [
-                "PostTypeUndefined",
                 "PostTypeText",
-                "PostTypeMedia",
+                "PostTypeMixMedia",
+                "PostTypeImage",
+                "PostTypeMultiImage",
+                "PostTypeVideo",
                 "PostTypePoll",
-                "PostTypeShortVideo"
+                "PostTypeShortVideo",
+                "PostTypeDocument",
+                "PostTypeCarousel"
             ]
         },
         "project.Project": {
