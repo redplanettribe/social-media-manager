@@ -34,6 +34,7 @@ const (
 	MediaTypeImage      MediaType = "image"
 	MediaTypeVideo      MediaType = "video"
 	MediaTypeShortVideo MediaType = "short_video"
+	MediaTypeDocument   MediaType = "document"
 )
 
 type MetaData struct {

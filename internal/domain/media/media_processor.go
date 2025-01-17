@@ -20,12 +20,14 @@ var (
 	ErrUnsupportedMediaType = errors.New("unsupported media type")
 	allowedImageFormats     = map[string]bool{"jpg": true, "jpeg": true, "png": true}
 	allowedVideoFormats     = map[string]bool{"mp4": true, "mov": true}
+	allowedDocumentFormats  = map[string]bool{"pdf": true}
 	ThumbnailFormat         = "jpeg"
 )
 
 type MediaProcessor interface {
 	Analyze(data []byte) (*MediaInfo, error)
 	GetThumbnail(data []byte) (*[]byte, error)
+	GetMediaType() MediaType
 }
 
 type MediaInfo struct {
@@ -46,11 +48,15 @@ func GetProcessor(filename string) (MediaProcessor, error) {
 
 	switch {
 	case allowedImageFormats[ext]:
-		return &ImageAnalyzer{
+		return &ImageProcessor{
 			ext: ext,
 		}, nil
 	case allowedVideoFormats[ext]:
-		return &VideoAnalyzer{
+		return &VideoProcessor{
+			ext: ext,
+		}, nil
+	case allowedDocumentFormats[ext]:
+		return &DocumentProcessor{
 			ext: ext,
 		}, nil
 	default:
@@ -60,11 +66,15 @@ func GetProcessor(filename string) (MediaProcessor, error) {
 
 // IMPLEMENTATION
 
-type ImageAnalyzer struct {
+type ImageProcessor struct {
 	ext string
 }
 
-func (a *ImageAnalyzer) Analyze(data []byte) (*MediaInfo, error) {
+func (a *ImageProcessor) GetMediaType() MediaType {
+	return MediaTypeImage
+}
+
+func (a *ImageProcessor) Analyze(data []byte) (*MediaInfo, error) {
 	img, format, err := image.DecodeConfig(bytes.NewReader(data))
 	if err != nil {
 		return nil, err
@@ -79,54 +89,54 @@ func (a *ImageAnalyzer) Analyze(data []byte) (*MediaInfo, error) {
 	}, nil
 }
 
-func (a *ImageAnalyzer) GetThumbnail(imgData []byte) (*[]byte, error) {
-    // 1. Decode source image
-    src, format, err := image.Decode(bytes.NewReader(imgData))
-    if err != nil {
-        return nil, fmt.Errorf("failed to decode image: %w", err)
-    }
+func (a *ImageProcessor) GetThumbnail(imgData []byte) (*[]byte, error) {
+	// 1. Decode source image
+	src, format, err := image.Decode(bytes.NewReader(imgData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode image: %w", err)
+	}
 
-    // 2. Convert to RGBA to ensure JPEG compatibility
-    bounds := src.Bounds()
-    rgbaImg := image.NewRGBA(bounds)
-    draw.Draw(rgbaImg, bounds, src, bounds.Min, draw.Src)
+	// 2. Convert to RGBA to ensure JPEG compatibility
+	bounds := src.Bounds()
+	rgbaImg := image.NewRGBA(bounds)
+	draw.Draw(rgbaImg, bounds, src, bounds.Min, draw.Src)
 
-    // 3. Create thumbnail size RGBA
-    thumbSize := image.Rect(0, 0, 100, 100)
-    thumbnail := image.NewRGBA(thumbSize)
+	// 3. Create thumbnail size RGBA
+	thumbSize := image.Rect(0, 0, 100, 100)
+	thumbnail := image.NewRGBA(thumbSize)
 
-    // 4. Scale down preserving aspect ratio
-    srcAspect := float64(bounds.Dx()) / float64(bounds.Dy())
-    dstAspect := float64(thumbSize.Dx()) / float64(thumbSize.Dy())
+	// 4. Scale down preserving aspect ratio
+	srcAspect := float64(bounds.Dx()) / float64(bounds.Dy())
+	dstAspect := float64(thumbSize.Dx()) / float64(thumbSize.Dy())
 
-    var r image.Rectangle
-    if srcAspect > dstAspect {
-        // Source is wider
-        h := int(float64(thumbSize.Dx()) / srcAspect)
-        r = image.Rect(0, (100-h)/2, 100, (100+h)/2)
-    } else {
-        // Source is taller
-        w := int(float64(thumbSize.Dy()) * srcAspect)
-        r = image.Rect((100-w)/2, 0, (100+w)/2, 100)
-    }
+	var r image.Rectangle
+	if srcAspect > dstAspect {
+		// Source is wider
+		h := int(float64(thumbSize.Dx()) / srcAspect)
+		r = image.Rect(0, (100-h)/2, 100, (100+h)/2)
+	} else {
+		// Source is taller
+		w := int(float64(thumbSize.Dy()) * srcAspect)
+		r = image.Rect((100-w)/2, 0, (100+w)/2, 100)
+	}
 
-    // 5. Use high quality scaling
-    draw.CatmullRom.Scale(thumbnail, r, rgbaImg, bounds, draw.Over, nil)
+	// 5. Use high quality scaling
+	draw.CatmullRom.Scale(thumbnail, r, rgbaImg, bounds, draw.Over, nil)
 
-    // 6. Encode to JPEG with specific quality
-    var out bytes.Buffer
-    if err := jpeg.Encode(&out, thumbnail, &jpeg.Options{
-        Quality: 85,
-    }); err != nil {
-        return nil, fmt.Errorf("failed to encode JPEG thumbnail: %w", err)
-    }
+	// 6. Encode to JPEG with specific quality
+	var out bytes.Buffer
+	if err := jpeg.Encode(&out, thumbnail, &jpeg.Options{
+		Quality: 85,
+	}); err != nil {
+		return nil, fmt.Errorf("failed to encode JPEG thumbnail: %w", err)
+	}
 
-    result := out.Bytes()
-    fmt.Printf("Thumbnail created from %s image, size: %d bytes\n", format, len(result))
-    return &result, nil
+	result := out.Bytes()
+	fmt.Printf("Thumbnail created from %s image, size: %d bytes\n", format, len(result))
+	return &result, nil
 }
 
-type VideoAnalyzer struct {
+type VideoProcessor struct {
 	ext string
 }
 
@@ -141,7 +151,11 @@ type ffprobeOutput struct {
 	} `json:"format"`
 }
 
-func (a *VideoAnalyzer) Analyze(video []byte) (*MediaInfo, error) {
+func (v *VideoProcessor) GetMediaType() MediaType {
+	return MediaTypeVideo
+}
+
+func (a *VideoProcessor) Analyze(video []byte) (*MediaInfo, error) {
 	// Create a temporary file to store the video data
 	tmpFile, err := os.CreateTemp("", "video-*"+"."+a.ext)
 	if err != nil {
@@ -207,7 +221,7 @@ func (a *VideoAnalyzer) Analyze(video []byte) (*MediaInfo, error) {
 	}, nil
 }
 
-func (a *VideoAnalyzer) GetThumbnail(video []byte) (*[]byte, error) {
+func (a *VideoProcessor) GetThumbnail(video []byte) (*[]byte, error) {
 	tmpFile, err := os.CreateTemp("", "video-*"+"."+a.ext)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp file: %w", err)
@@ -239,4 +253,26 @@ func (a *VideoAnalyzer) GetThumbnail(video []byte) (*[]byte, error) {
 
 	result := output.Bytes()
 	return &result, nil
+}
+
+type DocumentProcessor struct {
+	ext string
+}
+
+func (d *DocumentProcessor) GetMediaType() MediaType {
+	return MediaTypeDocument
+}
+
+func (d *DocumentProcessor) Analyze(data []byte) (*MediaInfo, error) {
+	return &MediaInfo{
+		Type:   MediaTypeDocument,
+		Format: d.ext,     
+		Size:   len(data),
+		// Width, Height, and Length don’t apply to PDFs here
+	}, nil
+}
+
+func (d *DocumentProcessor) GetThumbnail(data []byte) (*[]byte, error) {
+	// Currently no thumbnail creation for PDFs
+	return nil, errors.New("no thumbnail for documents")
 }

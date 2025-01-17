@@ -43,6 +43,8 @@ const (
 	PostTypeVideo      PostType = "video"
 	PostTypePoll       PostType = "poll"
 	PostTypeShortVideo PostType = "short_video"
+	PostTypeDocument   PostType = "document"
+	PostTypeCarousel   PostType = "carousel"
 	// ... add other types as necessary
 )
 

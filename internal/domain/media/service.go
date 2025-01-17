@@ -58,6 +58,9 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 	})
 	g.Go(func() error {
 		var err error
+		if processor.GetMediaType() == MediaTypeDocument {
+			return nil
+		}
 		thumnail, err = processor.GetThumbnail(data)
 		if err != nil {
 			return err
@@ -88,6 +91,9 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 
 	g.Go(func() error {
 		var err error
+		if processor.GetMediaType() == MediaTypeDocument {
+			return nil
+		}
 		thumbnailFileName := getThumbnailName(fileName)
 		tmd, err = NewMetadata(postID, userID, thumbnailFileName, altText, *thumnail, tMediaInfo)
 		if err != nil {
