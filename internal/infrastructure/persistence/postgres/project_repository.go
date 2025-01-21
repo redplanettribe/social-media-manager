@@ -149,10 +149,10 @@ func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID strin
 		WHERE tm.project_id = $1
 		AND tmr.team_role_id = (
       	SELECT MAX(team_role_id)
-		FROM team_members_roles tmr_sub
-		WHERE tmr_sub.user_id = tmr.user_id
+		FROM %s tmr_sub
+		WHERE tmr_sub.user_id = tmr.user_id AND tmr.project_id = $1
   ); 
-	`, TeamMembers, Users, TeamMembersRoles), projectID)
+	`, TeamMembers, Users, TeamMembersRoles, TeamMembersRoles), projectID)
 	if err != nil {
 		return nil, err
 	}

@@ -34,6 +34,7 @@ func mapErrorToAPIError(err error) *e.APIError {
 		media.ErrPlatformNotEnabledForProject,
 		media.ErrPostNotLinkedToPlatform,
 		media.ErrMediaAlreadyLinkedToPost,
+		user.ErrInvalidPassword,
 	):
 		return &e.APIError{
 			Status:  http.StatusForbidden,
@@ -73,20 +74,13 @@ func mapErrorToAPIError(err error) *e.APIError {
 		post.ErrPostNotFound,
 		post.ErrProjectNotFound,
 		publisher.ErrSocialPlatformNotFound,
+		project.ErrUserNotFound,
 		user.ErrUserNotFound,
 	):
 		return &e.APIError{
 			Status:  http.StatusGone,
 			Code:    e.ErrCodeNotFound,
 			Message: err.Error(),
-		}
-
-	// Status 403 Forbidden with custom message
-	case e.MatchError(err, user.ErrInvalidPassword):
-		return &e.APIError{
-			Status:  http.StatusForbidden,
-			Code:    e.ErrCodeForbidden,
-			Message: "Invalid password",
 		}
 
 	// Default: Status 500 Internal Server Error
