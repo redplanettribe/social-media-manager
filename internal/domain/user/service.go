@@ -38,7 +38,7 @@ func NewService(repo Repository, session session.Manager, passwordHasher Passwor
 }
 
 func (s *service) CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error) {
-	existingUser, err := s.repo.FindByUsernameOrEmail(ctx, username, email)
+	existingUser, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return &UserResponse{}, err
 	}
