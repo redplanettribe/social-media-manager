@@ -21,15 +21,15 @@ func NewMediaHandler(service media.Service) *MediaHandler {
 }
 
 // UploadMedia godoc
-// @Summary Upload media file
-// @Description Upload media file
+// @Summary Upload media
+// @Description Upload media
 // @Tags media
-// @Accept multipart/form-data
-// @Produce json
+// @Accept mpfd
 // @Param project_id path string true "Project ID"
 // @Param post_id path string true "Post ID"
-// @Param file formData file true "File to upload"
-// @Success 201 {object} uploadMediaResponse
+// @Param file formData file true "File"
+// @Param alt_text formData string false "Alt text"
+// @Success 201 {object} media.DownloadMediaData
 // @Failure 400 {object} errors.APIError
 // @Failure 401 {object} errors.APIError
 // @Failure 403 {object} errors.APIError
@@ -193,4 +193,56 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetDownloadMetaData godoc
+// @Summary Get download metadata
+// @Description Get download metadata
+// @Tags media
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param file_name path string true "File name"
+// @Success 200 {object} media.DownloadMediaData
+// @Failure 400 {object} errors.APIError
+// @Failure 401 {object} errors.APIError
+// @Failure 403 {object} errors.APIError
+// @Failure 404 {object} errors.APIError
+// @Failure 500 {object} errors.APIError
+// @Router /media/{project_id}/{post_id}/{file_name}/meta [get]
+func (h *MediaHandler) GetDownloadMetaData(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+	filename := r.PathValue("file_name")
+	if filename == "" {
+		e.WriteHttpError(w, e.NewValidationError("Filename is required", map[string]string{
+			"file_name": "required",
+		}))
+		return
+	}
+
+	downloadMetadata, err := h.Service.GetDownloadMediaData(r.Context(), projectID, postID, filename)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(downloadMetadata)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
 }

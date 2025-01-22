@@ -90,7 +90,7 @@ definitions:
       time_zone:
         type: string
     type: object
-  handlers.uploadMediaResponse:
+  media.DownloadMediaData:
     properties:
       added_by:
         type: string
@@ -115,6 +115,10 @@ definitions:
       size:
         description: in bytes
         type: integer
+      url:
+        type: string
+      url_thumbnail:
+        type: string
       width:
         type: integer
     type: object
@@ -288,7 +292,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: Upload media file
+      description: Upload media
       parameters:
       - description: Project ID
         in: path
@@ -300,18 +304,20 @@ paths:
         name: post_id
         required: true
         type: string
-      - description: File to upload
+      - description: File
         in: formData
         name: file
         required: true
         type: file
-      produces:
-      - application/json
+      - description: Alt text
+        in: formData
+        name: alt_text
+        type: string
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/handlers.uploadMediaResponse'
+            $ref: '#/definitions/media.DownloadMediaData'
         "400":
           description: Bad Request
           schema:
@@ -332,7 +338,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errors.APIError'
-      summary: Upload media file
+      summary: Upload media
       tags:
       - media
   /media/{project_id}/{post_id}/{file_name}:

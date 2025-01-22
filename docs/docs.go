@@ -105,17 +105,14 @@ const docTemplate = `{
         },
         "/media/{project_id}/{post_id}": {
             "post": {
-                "description": "Upload media file",
+                "description": "Upload media",
                 "consumes": [
                     "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
                 ],
                 "tags": [
                     "media"
                 ],
-                "summary": "Upload media file",
+                "summary": "Upload media",
                 "parameters": [
                     {
                         "type": "string",
@@ -133,17 +130,23 @@ const docTemplate = `{
                     },
                     {
                         "type": "file",
-                        "description": "File to upload",
+                        "description": "File",
                         "name": "file",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Alt text",
+                        "name": "alt_text",
+                        "in": "formData"
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/handlers.uploadMediaResponse"
+                            "$ref": "#/definitions/media.DownloadMediaData"
                         }
                     },
                     "400": {
@@ -2185,7 +2188,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.uploadMediaResponse": {
+        "media.DownloadMediaData": {
             "type": "object",
             "properties": {
                 "added_by": {
@@ -2221,6 +2224,12 @@ const docTemplate = `{
                 "size": {
                     "description": "in bytes",
                     "type": "integer"
+                },
+                "url": {
+                    "type": "string"
+                },
+                "url_thumbnail": {
+                    "type": "string"
                 },
                 "width": {
                     "type": "integer"

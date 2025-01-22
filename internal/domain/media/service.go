@@ -11,6 +11,7 @@ import (
 
 type Service interface {
 	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMediaData, error)
+	GetDownloadMediaData(ctx context.Context, projectID, postID, fileName string) (DownloadMediaData, error)
 	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
 	GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
 	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
@@ -261,4 +262,46 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 	}
 
 	return s.repo.LinkMediaToPublishPost(ctx, postID, mediaID, platformID)
+}
+
+func (s *service) GetDownloadMediaData(ctx context.Context, projectID, postID, fileName string) (DownloadMediaData, error) {
+	var (
+		mediaUrl      string
+		thumbnailUrl  string
+		metadata      *MetaData
+		thumbnailName string
+		eg            errgroup.Group
+	)
+
+	eg.Go(func() error {
+		var err error
+		mediaUrl, err = s.objectRepo.GetSignedURL(ctx, projectID, postID, fileName)
+		return err
+	})
+
+	eg.Go(func() error {
+		var err error
+		metadata, err = s.repo.GetMetadata(ctx, postID, fileName)
+		return err
+	})
+
+	eg.Go(func() error {
+		var err error
+		thumbnailName = getThumbnailName(fileName)
+		thumbnailUrl, err = s.objectRepo.GetSignedURL(ctx, projectID, postID, thumbnailName)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	if err := eg.Wait(); err != nil {
+		return DownloadMediaData{}, err
+	}
+
+	return DownloadMediaData{
+		Url:          &mediaUrl,
+		UrlThumbnail: &thumbnailUrl,
+		MetaData:     metadata,
+	}, nil
 }
