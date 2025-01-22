@@ -46,6 +46,10 @@ const (
 	// ... add other types as necessary
 )
 
+func (pt PostType) String() string {
+	return string(pt)
+}
+
 func (pt PostType) IsValid() bool {
 	switch pt {
 	case PostTypeText, PostTypeMixMedia, PostTypeImage, PostTypeMultiImage,

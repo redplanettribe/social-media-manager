@@ -438,6 +438,29 @@ paths:
       summary: Link media to publish post
       tags:
       - media
+  /posts:
+    get:
+      consumes:
+      - application/json
+      description: Get available post types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get available post types
+      tags:
+      - posts
   /posts/{project_id}:
     get:
       consumes:

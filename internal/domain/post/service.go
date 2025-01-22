@@ -29,6 +29,7 @@ type Service interface {
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
 	DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error)
+	GetAvailablePostTypes() []string
 }
 
 type service struct {
@@ -50,7 +51,7 @@ func (s *service) CreatePost(
 	if !PostType(postType).IsValid() {
 		return nil, ErrInvalidPostType
 	}
-	
+
 	p, err := NewPost(
 		projectID,
 		userID,
@@ -247,4 +248,16 @@ func (s *service) DequeuePostsToPublish(ctx context.Context, projectID string) (
 		return nil, err
 	}
 	return s.repo.GetPostsForPublishQueue(ctx, postID)
+}
+
+func (s *service) GetAvailablePostTypes() []string {
+	return []string{
+		PostTypeCarousel.String(),
+		PostTypeImage.String(),
+		PostTypeMultiImage.String(),
+		PostTypeShortVideo.String(),
+		PostTypeText.String(),
+		PostTypeVideo.String(),
+		PostTypeDocument.String(),
+	}
 }

@@ -442,3 +442,22 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
+
+// GetAvailablePostTypes godoc
+// @Summary Get available post types
+// @Description Get available post types
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Success 200 {array} string
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts [get]
+func (h *PostHandler) GetAvailablePostTypes(w http.ResponseWriter, r *http.Request) {
+	types := h.Service.GetAvailablePostTypes()
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(types)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}

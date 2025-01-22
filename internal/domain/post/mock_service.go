@@ -176,6 +176,26 @@ func (_m *MockService) FindScheduledReadyPosts(ctx context.Context, offset int, 
 	return r0, r1
 }
 
+// GetAvailablePostTypes provides a mock function with given fields:
+func (_m *MockService) GetAvailablePostTypes() []string {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetAvailablePostTypes")
+	}
+
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	return r0
+}
+
 // GetPost provides a mock function with given fields: ctx, id
 func (_m *MockService) GetPost(ctx context.Context, id string) (*Post, error) {
 	ret := _m.Called(ctx, id)

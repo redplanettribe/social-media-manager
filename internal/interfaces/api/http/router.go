@@ -180,6 +180,9 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("GET /posts/{project_id}/queue", r.projectPermissions("read:posts").Chain(
 		http.HandlerFunc(h.GetProjectQueuedPosts),
 	))
+	r.Handle("GET /posts", r.appPermissions("read:posts").Chain(
+		http.HandlerFunc(h.GetAvailablePostTypes),
+	))
 	r.Handle("DELETE /posts/{project_id}/{post_id}", r.projectPermissions("delete:posts").Chain(
 		http.HandlerFunc(h.DeletePost),
 	))
