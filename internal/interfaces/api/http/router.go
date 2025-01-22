@@ -221,6 +221,9 @@ func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
 	r.Handle("GET /media/{project_id}/{post_id}/{file_name}/meta", r.projectPermissions("read:media").Chain(
 		http.HandlerFunc(h.GetDownloadMetaData),
 	))
+	r.Handle("GET /media/{project_id}/{post_id}/meta", r.projectPermissions("read:media").Chain(
+		http.HandlerFunc(h.GetDownloadMetadataDataForPost),
+	))
 }
 
 // appPermissions returns a middleware stack that checks if the user has the required permission for the desired action

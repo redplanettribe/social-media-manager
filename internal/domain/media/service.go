@@ -10,11 +10,12 @@ import (
 )
 
 type Service interface {
-	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMediaData, error)
-	GetDownloadMediaData(ctx context.Context, projectID, postID, fileName string) (DownloadMediaData, error)
+	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMetaData, error)
+	GetDownloadMetaData(ctx context.Context, projectID, postID, fileName string) (DownloadMetaData, error)
 	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
 	GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
 	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
+	GetDownloadMetadataDataForPost(ctx context.Context, projectID, postID string) ([]*DownloadMetaData, error)
 }
 
 type service struct {
@@ -29,17 +30,17 @@ func NewService(repo Repository, objectRepo ObjectRepository) Service {
 	}
 }
 
-func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMediaData, error) {
+func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMetaData, error) {
 	userID := ctx.Value(middlewares.UserIDKey).(string)
 
 	existingMetadata, err := s.repo.GetMetadata(ctx, postID, fileName)
 	if err == nil && existingMetadata != nil {
-		return DownloadMediaData{}, ErrFileAlreadyExists
+		return DownloadMetaData{}, ErrFileAlreadyExists
 	}
 
 	processor, err := GetProcessor(fileName)
 	if err != nil {
-		return DownloadMediaData{}, err
+		return DownloadMetaData{}, err
 	}
 
 	var (
@@ -72,7 +73,7 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 	})
 
 	if err := g.Wait(); err != nil {
-		return DownloadMediaData{}, errors.Join(errors.New("failed to analyze media"), err)
+		return DownloadMetaData{}, errors.Join(errors.New("failed to analyze media"), err)
 	}
 
 	// Upload the media and thumbnail, save the metadata
@@ -119,13 +120,13 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 	})
 
 	if err = g.Wait(); err != nil {
-		return DownloadMediaData{}, err
+		return DownloadMetaData{}, err
 	}
 
 	fmt.Println("mediaUrl", mediaUrl)
 	fmt.Println("thumbnailUrl", thumbnailUrl)
 
-	return DownloadMediaData{
+	return DownloadMetaData{
 		Url:          &mediaUrl,
 		UrlThumbnail: &thumbnailUrl,
 		MetaData:     md,
@@ -264,7 +265,7 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 	return s.repo.LinkMediaToPublishPost(ctx, postID, mediaID, platformID)
 }
 
-func (s *service) GetDownloadMediaData(ctx context.Context, projectID, postID, fileName string) (DownloadMediaData, error) {
+func (s *service) GetDownloadMetaData(ctx context.Context, projectID, postID, fileName string) (DownloadMetaData, error) {
 	var (
 		mediaUrl      string
 		thumbnailUrl  string
@@ -296,12 +297,42 @@ func (s *service) GetDownloadMediaData(ctx context.Context, projectID, postID, f
 	})
 
 	if err := eg.Wait(); err != nil {
-		return DownloadMediaData{}, err
+		return DownloadMetaData{}, err
 	}
 
-	return DownloadMediaData{
+	return DownloadMetaData{
 		Url:          &mediaUrl,
 		UrlThumbnail: &thumbnailUrl,
 		MetaData:     metadata,
 	}, nil
+}
+
+func (s *service) GetDownloadMetadataDataForPost(ctx context.Context, projectID string, postID string) ([]*DownloadMetaData, error) {
+	filenames, err := s.repo.ListMediaFilesForPost(ctx, postID)
+	if err != nil {
+		return nil, err
+	}
+
+	var (
+		downloadMetaDatas = make([]*DownloadMetaData, len(filenames))
+		g, gCtx           = errgroup.WithContext(ctx)
+	)
+
+	for i, filename := range filenames {
+		i, filename := i, filename
+		g.Go(func() error {
+			downloadMetaData, err := s.GetDownloadMetaData(gCtx, projectID, postID, filename)
+			if err != nil {
+				return err
+			}
+			downloadMetaDatas[i] = &downloadMetaData
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return downloadMetaDatas, nil
 }

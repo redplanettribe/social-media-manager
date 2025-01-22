@@ -233,7 +233,37 @@ func (h *MediaHandler) GetDownloadMetaData(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	downloadMetadata, err := h.Service.GetDownloadMediaData(r.Context(), projectID, postID, filename)
+	downloadMetadata, err := h.Service.GetDownloadMetaData(r.Context(), projectID, postID, filename)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(downloadMetadata)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
+func (h *MediaHandler) GetDownloadMetadataDataForPost(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	downloadMetadata, err := h.Service.GetDownloadMetadataDataForPost(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

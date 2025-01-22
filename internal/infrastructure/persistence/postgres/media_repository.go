@@ -149,3 +149,26 @@ func (r *MediaRepository) IsMediaLinkedToPublishPost(ctx context.Context, postID
 	}
 	return count > 0, nil
 }
+
+func (r *MediaRepository) ListMediaFilesForPost(ctx context.Context, postID string) ([]string, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT file_name
+		FROM %s
+		WHERE post_id = $1
+	`, Media), postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var fileNames []string
+	for rows.Next() {
+		var fileName string
+		err := rows.Scan(&fileName)
+		if err != nil {
+			return nil, err
+		}
+		fileNames = append(fileNames, fileName)
+	}
+	return fileNames, nil
+}
