@@ -18,7 +18,7 @@ func AppAuthorizationMiddleware(authorizer authorization.AppAuthorizer, required
 
 			err := authorizer.Authorize(r.Context(), userID.(string), requiredPermission)
 			if err != nil {
-				errors.WriteHttpError(w, errors.NewUnauthorizedError("Not authorized to perform this action"))
+				errors.WriteHttpError(w, errors.NewForbiddenError("Not authorized to perform this action"))
 				return
 			}
 			next.ServeHTTP(w, r)

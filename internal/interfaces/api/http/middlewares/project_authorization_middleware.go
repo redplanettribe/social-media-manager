@@ -24,7 +24,7 @@ func ProjectAuthorizationMiddleware(authorizer authorization.ProjectAuthorizer, 
 
 			err := authorizer.Authorize(r.Context(), userID.(string), projectID, requiredPermission)
 			if err != nil {
-				e.WriteHttpError(w, e.NewUnauthorizedError("Not authorized to perform this action"))
+				e.WriteHttpError(w, e.NewForbiddenError("Not authorized to perform this action"))
 				return
 			}
 			next.ServeHTTP(w, r)
