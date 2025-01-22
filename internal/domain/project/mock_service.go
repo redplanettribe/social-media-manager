@@ -129,23 +129,23 @@ func (_m *MockService) FindActiveProjectsChunk(ctx context.Context, offset int, 
 }
 
 // GetEnabledSocialPlatforms provides a mock function with given fields: ctx, projectID
-func (_m *MockService) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*SocialPlatform, error) {
+func (_m *MockService) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error) {
 	ret := _m.Called(ctx, projectID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetEnabledSocialPlatforms")
 	}
 
-	var r0 []*SocialPlatform
+	var r0 []SocialPlatform
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) ([]*SocialPlatform, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) ([]SocialPlatform, error)); ok {
 		return rf(ctx, projectID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) []*SocialPlatform); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) []SocialPlatform); ok {
 		r0 = rf(ctx, projectID)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]*SocialPlatform)
+			r0 = ret.Get(0).([]SocialPlatform)
 		}
 	}
 

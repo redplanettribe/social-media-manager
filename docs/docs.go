@@ -2251,7 +2251,6 @@ const docTemplate = `{
                 "image",
                 "multi_image",
                 "video",
-                "poll",
                 "short_video",
                 "document",
                 "carousel"
@@ -2262,7 +2261,6 @@ const docTemplate = `{
                 "PostTypeImage",
                 "PostTypeMultiImage",
                 "PostTypeVideo",
-                "PostTypePoll",
                 "PostTypeShortVideo",
                 "PostTypeDocument",
                 "PostTypeCarousel"

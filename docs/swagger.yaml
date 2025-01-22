@@ -162,7 +162,6 @@ definitions:
     - image
     - multi_image
     - video
-    - poll
     - short_video
     - document
     - carousel
@@ -173,7 +172,6 @@ definitions:
     - PostTypeImage
     - PostTypeMultiImage
     - PostTypeVideo
-    - PostTypePoll
     - PostTypeShortVideo
     - PostTypeDocument
     - PostTypeCarousel

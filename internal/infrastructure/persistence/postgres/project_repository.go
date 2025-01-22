@@ -282,7 +282,7 @@ func (r *ProjectRepository) IsProjectSocialPlatformEnabled(ctx context.Context, 
 	return exists, nil
 }
 
-func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]*project.SocialPlatform, error) {
+func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]project.SocialPlatform, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT p.id, p.name
 		FROM %s pp
@@ -294,15 +294,16 @@ func (r *ProjectRepository) GetEnabledSocialPlatforms(ctx context.Context, proje
 	}
 	defer rows.Close()
 
-	var sns []*project.SocialPlatform
+	sns := []project.SocialPlatform{}
 	for rows.Next() {
-		sn := &project.SocialPlatform{}
-		err := rows.Scan(&sn.ID, &sn.Name)
+		sn := project.SocialPlatform{}
+		err = rows.Scan(&sn.ID, &sn.Name)
 		if err != nil {
 			return nil, err
 		}
 		sns = append(sns, sn)
 	}
+
 	return sns, nil
 }
 
@@ -464,4 +465,3 @@ func (r *ProjectRepository) SetDefaultUser(ctx context.Context, projectID, userI
 
 	return nil
 }
- 
