@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
@@ -41,7 +42,7 @@ func NewS3Client(cfg *config.ObjectStoreConfig) (*S3Client, error) {
 	}, nil
 }
 
-func (c *S3Client) UploadFile(ctx context.Context, projectID, postID, fileName string, data []byte, metadata *media.MetaData)  error {
+func (c *S3Client) UploadFile(ctx context.Context, projectID, postID, fileName string, data []byte, metadata *media.MetaData) error {
 	key := c.getKey(projectID, postID, fileName)
 	_, err := c.client.PutObjectWithContext(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(c.cfg.Bucket),
@@ -49,9 +50,27 @@ func (c *S3Client) UploadFile(ctx context.Context, projectID, postID, fileName s
 		Body:   bytes.NewReader(data),
 	})
 	if err != nil {
-		return  err
+		return err
 	}
 	return nil
+}
+
+func (c *S3Client) GetSignedURL(ctx context.Context, projectID, postID, fileName string) (string, error) {
+	key := c.getKey(projectID, postID, fileName)
+
+	// Create a GetObject request
+	req, _ := c.client.GetObjectRequest(&s3.GetObjectInput{
+		Bucket: aws.String(c.cfg.Bucket),
+		Key:    aws.String(key),
+	})
+
+	// Generate signed URL valid for 15 minutes
+	url, err := req.Presign(15 * time.Minute)
+	if err != nil {
+		return "", fmt.Errorf("failed to sign url: %w", err)
+	}
+
+	return url, nil
 }
 
 func (c *S3Client) GetFile(ctx context.Context, projectID, postID, fileName string) ([]byte, error) {
@@ -64,7 +83,7 @@ func (c *S3Client) GetFile(ctx context.Context, projectID, postID, fileName stri
 		return nil, err
 	}
 	defer result.Body.Close()
-	
+
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(result.Body)
 	return buf.Bytes(), nil

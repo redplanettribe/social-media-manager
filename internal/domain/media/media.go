@@ -80,3 +80,9 @@ func NewMetadata(postID, userID, fileName, altText string, data []byte, mediaInf
 		CreatedAt: time.Now(),
 	}, nil
 }
+
+type DownloadMediaData struct {
+	Url          *string `json:"url"`
+	UrlThumbnail *string `json:"url_thumbnail"`
+	*MetaData
+}

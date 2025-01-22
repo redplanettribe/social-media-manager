@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (*MetaData, error)
+	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMediaData, error)
 	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
 	GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
 	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
@@ -28,17 +28,17 @@ func NewService(repo Repository, objectRepo ObjectRepository) Service {
 	}
 }
 
-func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (*MetaData, error) {
+func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMediaData, error) {
 	userID := ctx.Value(middlewares.UserIDKey).(string)
 
 	existingMetadata, err := s.repo.GetMetadata(ctx, postID, fileName)
 	if err == nil && existingMetadata != nil {
-		return nil, ErrFileAlreadyExists
+		return DownloadMediaData{}, ErrFileAlreadyExists
 	}
 
 	processor, err := GetProcessor(fileName)
 	if err != nil {
-		return nil, err
+		return DownloadMediaData{}, err
 	}
 
 	var (
@@ -71,10 +71,11 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 	})
 
 	if err := g.Wait(); err != nil {
-		return nil, errors.Join(errors.New("failed to analyze media"), err)
+		return DownloadMediaData{}, errors.Join(errors.New("failed to analyze media"), err)
 	}
 
 	// Upload the media and thumbnail, save the metadata
+	var mediaUrl string
 	g.Go(func() error {
 		var err error
 		md, err = NewMetadata(postID, userID, fileName, altText, data, mediaInfo)
@@ -85,10 +86,15 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 		if err != nil {
 			return err
 		}
+		mediaUrl, err = s.objectRepo.GetSignedURL(ctx, projectID, postID, fileName)
+		if err != nil {
+			return err
+		}
 		_, err = s.repo.SaveMetadata(ctx, md)
 		return err
 	})
 
+	var thumbnailUrl string
 	g.Go(func() error {
 		var err error
 		if processor.GetMediaType() == MediaTypeDocument {
@@ -103,15 +109,26 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 		if err != nil {
 			return err
 		}
+		thumbnailUrl, err = s.objectRepo.GetSignedURL(ctx, projectID, postID, thumbnailFileName)
+		if err != nil {
+			return err
+		}
 		_, err = s.repo.SaveMetadata(ctx, tmd)
 		return err
 	})
 
 	if err = g.Wait(); err != nil {
-		return nil, err
+		return DownloadMediaData{}, err
 	}
 
-	return md, nil
+	fmt.Println("mediaUrl", mediaUrl)
+	fmt.Println("thumbnailUrl", thumbnailUrl)
+
+	return DownloadMediaData{
+		Url:          &mediaUrl,
+		UrlThumbnail: &thumbnailUrl,
+		MetaData:     md,
+	}, nil
 }
 
 func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error) {

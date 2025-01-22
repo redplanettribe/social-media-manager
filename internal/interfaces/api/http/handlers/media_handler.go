@@ -20,10 +20,6 @@ func NewMediaHandler(service media.Service) *MediaHandler {
 	}
 }
 
-type uploadMediaResponse struct {
-	*media.MetaData
-}
-
 // UploadMedia godoc
 // @Summary Upload media file
 // @Description Upload media file
@@ -73,7 +69,7 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	media, err := h.Service.UploadMedia(r.Context(), projectID, postID, header.Filename, altText, data)
+	downloadMetadata, err := h.Service.UploadMedia(r.Context(), projectID, postID, header.Filename, altText, data)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -81,7 +77,7 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	err = json.NewEncoder(w).Encode(uploadMediaResponse{media})
+	err = json.NewEncoder(w).Encode(downloadMetadata)
 	if err != nil {
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
@@ -176,7 +172,7 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 	var req linkMediaToPublishPostRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request",nil))
+		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
 		return
 	}
 
