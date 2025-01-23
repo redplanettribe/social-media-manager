@@ -154,7 +154,7 @@ func (r *MediaRepository) ListMediaFilesForPost(ctx context.Context, postID stri
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT file_name
 		FROM %s
-		WHERE post_id = $1
+		WHERE post_id = $1 AND file_name NOT LIKE 'thumbnail_%%'
 	`, Media), postID)
 	if err != nil {
 		return nil, err
