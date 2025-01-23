@@ -29,7 +29,7 @@ func NewMediaHandler(service media.Service) *MediaHandler {
 // @Param post_id path string true "Post ID"
 // @Param file formData file true "File"
 // @Param alt_text formData string false "Alt text"
-// @Success 201 {object} media.DownloadMediaData
+// @Success 201 {object} media.DownloadMetaData
 // @Failure 400 {object} errors.APIError
 // @Failure 401 {object} errors.APIError
 // @Failure 403 {object} errors.APIError
@@ -159,7 +159,7 @@ type linkMediaToPublishPostRequest struct {
 // @Failure 403 {object} errors.APIError
 // @Failure 404 {object} errors.APIError
 // @Failure 500 {object} errors.APIError
-// @Router /media/{project_id}/link-to-post [post]
+// @Router /media/{project_id}/link-to-platform [post]
 func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
@@ -203,7 +203,7 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 // @Param project_id path string true "Project ID"
 // @Param post_id path string true "Post ID"
 // @Param file_name path string true "File name"
-// @Success 200 {object} media.DownloadMediaData
+// @Success 200 {object} media.DownloadMetaData
 // @Failure 400 {object} errors.APIError
 // @Failure 401 {object} errors.APIError
 // @Failure 403 {object} errors.APIError

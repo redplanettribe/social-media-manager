@@ -91,7 +91,7 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Param post_id path string true "Post ID"
-// @Success 200 {object} post.Post
+// @Success 200 {object} post.PostResponse
 // @Failure 400 {object} errors.APIError "Validation error"
 // @Failure 401 {object} errors.APIError "Unauthorized"
 // @Failure 410 {object} errors.APIError "Post not found"

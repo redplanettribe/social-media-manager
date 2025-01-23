@@ -212,7 +212,7 @@ func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
 	r.Handle("POST /media/{project_id}/{post_id}", r.projectPermissions("write:media").Chain(
 		http.HandlerFunc(h.UploadMedia),
 	))
-	r.Handle("POST /media/{project_id}/link-to-post", r.projectPermissions("write:media").Chain(
+	r.Handle("POST /media/{project_id}/link-to-platform", r.projectPermissions("write:media").Chain(
 		http.HandlerFunc(h.LinkMediaToPublishPost),
 	))
 	r.Handle("GET /media/{project_id}/{post_id}/{file_name}", r.projectPermissions("read:media").Chain(

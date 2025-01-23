@@ -16,7 +16,7 @@ type Service interface {
 		projectID, title, postType, textContent string,
 		isIdea bool,
 		scheduledAt time.Time) (*Post, error)
-	GetPost(ctx context.Context, id string) (*Post, error)
+	GetPost(ctx context.Context, id string) (*PostResponse, error)
 	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
@@ -71,15 +71,36 @@ func (s *service) CreatePost(
 	return p, nil
 }
 
-func (s *service) GetPost(ctx context.Context, id string) (*Post, error) {
-	p, err := s.repo.FindByID(ctx, id)
-	if err != nil {
-		return &Post{}, err
+func (s *service) GetPost(ctx context.Context, id string) (*PostResponse, error) {
+	var (
+		p               *Post
+		linkedPlatforms []Platform
+		g               errgroup.Group
+	)
+
+	g.Go(func() error {
+		var err error
+		p, err = s.repo.FindByID(ctx, id)
+		if p == nil {
+			return ErrPostNotFound
+		}
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		linkedPlatforms, err = s.repo.GetSocialMediaPlatforms(ctx, id)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return nil, err
 	}
-	if p == nil {
-		return &Post{}, ErrPostNotFound
-	}
-	return p, nil
+
+	return &PostResponse{
+		Post:            p,
+		LinkedPlatforms: linkedPlatforms,
+	}, nil
 }
 
 func (s *service) ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error) {
@@ -126,7 +147,7 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID
 }
 
 func (s *service) GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error) {
-	return s.repo.GetSocialMediaPublishers(ctx, postID)
+	return s.repo.GetSocialMediaPublishersIDs(ctx, postID)
 }
 
 func (s *service) FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error) {

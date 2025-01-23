@@ -197,23 +197,23 @@ func (_m *MockService) GetAvailablePostTypes() []string {
 }
 
 // GetPost provides a mock function with given fields: ctx, id
-func (_m *MockService) GetPost(ctx context.Context, id string) (*Post, error) {
+func (_m *MockService) GetPost(ctx context.Context, id string) (*PostResponse, error) {
 	ret := _m.Called(ctx, id)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetPost")
 	}
 
-	var r0 *Post
+	var r0 *PostResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (*Post, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*PostResponse, error)); ok {
 		return rf(ctx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) *Post); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) *PostResponse); ok {
 		r0 = rf(ctx, id)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*Post)
+			r0 = ret.Get(0).(*PostResponse)
 		}
 	}
 

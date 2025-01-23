@@ -24,7 +24,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/media/{project_id}/link-to-post": {
+        "/media/{project_id}/link-to-platform": {
             "post": {
                 "description": "Link media to publish post",
                 "consumes": [
@@ -146,7 +146,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/media.DownloadMediaData"
+                            "$ref": "#/definitions/media.DownloadMetaData"
                         }
                     },
                     "400": {
@@ -220,6 +220,79 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/media/{project_id}/{post_id}/{file_name}/meta": {
+            "get": {
+                "description": "Get download metadata",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get download metadata",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File name",
+                        "name": "file_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/media.DownloadMetaData"
                         }
                     },
                     "400": {
@@ -595,7 +668,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/post.Post"
+                            "$ref": "#/definitions/post.PostResponse"
                         }
                     },
                     "400": {
@@ -2188,7 +2261,7 @@ const docTemplate = `{
                 }
             }
         },
-        "media.DownloadMediaData": {
+        "media.DownloadMetaData": {
             "type": "object",
             "properties": {
                 "added_by": {
@@ -2251,6 +2324,17 @@ const docTemplate = `{
                 "MediaTypeDocument"
             ]
         },
+        "post.Platform": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "post.Post": {
             "type": "object",
             "properties": {
@@ -2265,6 +2349,50 @@ const docTemplate = `{
                 },
                 "is_idea": {
                     "type": "boolean"
+                },
+                "project_id": {
+                    "type": "string"
+                },
+                "scheduled_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "text_content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/post.PostType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "post.PostResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_idea": {
+                    "type": "boolean"
+                },
+                "linked_platforms": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/post.Platform"
+                    }
                 },
                 "project_id": {
                     "type": "string"

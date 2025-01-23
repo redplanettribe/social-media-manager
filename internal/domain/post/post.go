@@ -86,6 +86,16 @@ type Post struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
+type Platform struct {
+	ID   string
+	Name string
+}
+
+type PostResponse struct {
+	*Post
+	LinkedPlatforms []Platform `json:"linked_platforms"`
+}
+
 type PublishPost struct {
 	// Post fields
 	*Post

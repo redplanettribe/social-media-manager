@@ -119,7 +119,7 @@ func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, pu
 	return nil
 }
 
-func (r *PostRepository) GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error) {
+func (r *PostRepository) GetSocialMediaPublishersIDs(ctx context.Context, postID string) ([]string, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT platform_id
 		FROM %s
@@ -141,6 +141,31 @@ func (r *PostRepository) GetSocialMediaPublishers(ctx context.Context, postID st
 	}
 
 	return publishers, nil
+}
+
+func (r *PostRepository) GetSocialMediaPlatforms(ctx context.Context, postID string) ([]post.Platform, error) {
+	rows, err := r.db.Query(ctx, fmt.Sprintf(`
+		SELECT plat.id, plat.name
+		FROM %s popl
+		INNER JOIN %s plat ON popl.platform_id = plat.id
+		WHERE post_id = $1
+	`, PostPlatforms, Platforms), postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	platforms := []post.Platform{}
+	for rows.Next() {
+		p := post.Platform{}
+		err = rows.Scan(&p.ID, &p.Name)
+		if err != nil {
+			return nil, err
+		}
+		platforms = append(platforms, p)
+	}
+
+	return platforms, nil
 }
 
 func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.PublishPost, error) {
@@ -375,7 +400,7 @@ func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID str
 	return posts, nil
 }
 
-func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post.PublishPost, error){
+func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post.PublishPost, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT
 			p.id,

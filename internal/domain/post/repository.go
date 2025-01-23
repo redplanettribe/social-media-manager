@@ -13,7 +13,8 @@ type Repository interface {
 	ArchivePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
-	GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error)
+	GetSocialMediaPublishersIDs(ctx context.Context, postID string) ([]string, error)
+	GetSocialMediaPlatforms(ctx context.Context, postID string) ([]Platform, error)
 	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*PublishPost, error)
 	SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error
 	IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error)
