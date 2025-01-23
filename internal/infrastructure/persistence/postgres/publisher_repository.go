@@ -108,7 +108,7 @@ func (r *PublisherRepository) GetUserPlatformSecrets(ctx context.Context, platfo
 		SELECT secrets
 		FROM %s
 		WHERE platform_id = $1 AND user_id = $2
-	`, UserPlatforms), platformID, userID)
+	`, UserProjectPlatforms), platformID, userID)
 
 	var secrets string
 	err := row.Scan(&secrets)
@@ -125,7 +125,7 @@ func (r *PublisherRepository) SetUserPlatformSecrets(ctx context.Context, platfo
 		VALUES ($1, $2, $3)
 		ON CONFLICT (platform_id, user_id)
 		DO UPDATE SET secrets = $3
-	`, UserPlatforms), platformID, userID, secrets)
+	`, UserProjectPlatforms), platformID, userID, secrets)
 	if err != nil {
 		return err
 	}

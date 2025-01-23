@@ -13,6 +13,7 @@ Table user_project_platforms {
   project_id uuid [ref: > projects.id, not null]
   platform_id varchar(10) [ref: > platforms.id, not null]
   secrets text
+  is_authenticated boolean [not null, default: false]
   created_at timestamp [default: `NOW()`]
   updated_at timestamp [default: `NOW()`]
 

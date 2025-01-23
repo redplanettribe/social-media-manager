@@ -1,7 +1,9 @@
-CREATE TABLE IF NOT EXISTS user_platforms (
+CREATE TABLE IF NOT EXISTS user_project_platforms (
     user_id UUID NOT NULL,
     platform_id VARCHAR(10) NOT NULL,
-    secrets TEXT DEFAULT '"empty"' NOT NULL,
+    secrets TEXT DEFAULT '' NOT NULL,
+    is_authenticated BOOLEAN DEFAULT FALSE NOT NULL,
+    auth_ttl TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (user_id, platform_id),
