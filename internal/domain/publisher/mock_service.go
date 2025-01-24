@@ -49,6 +49,24 @@ func (_m *MockService) AddUserPlatformSecret(ctx context.Context, projectID stri
 	return r0
 }
 
+// Authenticate provides a mock function with given fields: ctx, platformID, projectID, userID, code
+func (_m *MockService) Authenticate(ctx context.Context, platformID string, projectID string, userID string, code string) error {
+	ret := _m.Called(ctx, platformID, projectID, userID, code)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Authenticate")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
+		r0 = rf(ctx, platformID, projectID, userID, code)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetAvailableSocialNetworks provides a mock function with given fields: ctx
 func (_m *MockService) GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error) {
 	ret := _m.Called(ctx)

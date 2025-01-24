@@ -1416,6 +1416,50 @@ paths:
       summary: Publish post to social network
       tags:
       - publishers
+  /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code}:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Platform ID
+        in: path
+        name: platform_id
+        required: true
+        type: string
+      - description: Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Authenticate user
+      tags:
+      - publishers
   /publishers/{project_id}/platform-secrets:
     post:
       consumes:

@@ -8,12 +8,12 @@ import (
 	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
 
-type PlatformHandler struct {
+type PublisherHandler struct {
 	Service publisher.Service
 }
 
-func NewPlatformHandler(service publisher.Service) *PlatformHandler {
-	return &PlatformHandler{Service: service}
+func NewPlatformHandler(service publisher.Service) *PublisherHandler {
+	return &PublisherHandler{Service: service}
 }
 
 // GetAvailableSocialNetworks godoc
@@ -26,7 +26,7 @@ func NewPlatformHandler(service publisher.Service) *PlatformHandler {
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /publishers [get]
-func (h *PlatformHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *http.Request) {
+func (h *PublisherHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *http.Request) {
 	publishers, err := h.Service.GetAvailableSocialNetworks(r.Context())
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -60,7 +60,7 @@ type addSecretKeyRequest struct {
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/platform-secrets [post]
-func (h *PlatformHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Request) {
+func (h *PublisherHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Request) {
 	var req addSecretKeyRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -69,7 +69,6 @@ func (h *PlatformHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Reque
 	}
 
 	projectID := r.PathValue("project_id")
-
 
 	err = h.Service.AddPlatformSecret(r.Context(), projectID, req.SocialPlatformID, req.SecretKey, req.SecretValue)
 	if err != nil {
@@ -93,7 +92,7 @@ func (h *PlatformHandler) AddPlatformSecret(w http.ResponseWriter, r *http.Reque
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/users-secrets [post]
-func (h *PlatformHandler) AddUserPlatformSecret(w http.ResponseWriter, r *http.Request) {
+func (h *PublisherHandler) AddUserPlatformSecret(w http.ResponseWriter, r *http.Request) {
 	var req addSecretKeyRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -126,7 +125,7 @@ func (h *PlatformHandler) AddUserPlatformSecret(w http.ResponseWriter, r *http.R
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/{post_id}/{social_network_id} [post]
-func (h *PlatformHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *http.Request) {
+func (h *PublisherHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
 	socialNetworkID := r.PathValue("social_network_id")
 	projectID := r.PathValue("project_id")
@@ -136,7 +135,7 @@ func (h *PlatformHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *h
 		return
 	}
 
-	err := h.Service.PublishPostToSocialNetwork(r.Context(),projectID, postID, socialNetworkID)
+	err := h.Service.PublishPostToSocialNetwork(r.Context(), projectID, postID, socialNetworkID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -145,7 +144,7 @@ func (h *PlatformHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *h
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *PlatformHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWriter, r *http.Request) {
+func (h *PublisherHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
 	projectID := r.PathValue("project_id")
 
@@ -155,6 +154,41 @@ func (h *PlatformHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWri
 	}
 
 	err := h.Service.PublishPostToAssignedSocialNetworks(r.Context(), projectID, postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// Authenticate godoc
+// @Summary Authenticate user
+// @Description Authenticate user
+// @Tags publishers
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Param platform_id path string true "Platform ID"
+// @Param code path string true "Code"
+// @Success 200
+// @Failure 400 {object} errors.APIError "Bad request"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code} [post]
+func (h *PublisherHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id")
+	userID := r.PathValue("user_id")
+	platformID := r.PathValue("platform_id")
+	code := r.PathValue("code")
+
+	if projectID == "" || userID == "" || platformID == "" || code == "" {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+		return
+	}
+
+	err := h.Service.Authenticate(r.Context(), platformID, projectID, userID, code)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

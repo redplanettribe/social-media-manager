@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -108,7 +109,7 @@ func (r *PublisherRepository) GetUserPlatformSecrets(ctx context.Context, platfo
 		SELECT secrets
 		FROM %s
 		WHERE platform_id = $1 AND user_id = $2
-	`, UserProjectPlatforms), platformID, userID)
+	`, UserPlatforms), platformID, userID)
 
 	var secrets string
 	err := row.Scan(&secrets)
@@ -125,7 +126,7 @@ func (r *PublisherRepository) SetUserPlatformSecrets(ctx context.Context, platfo
 		VALUES ($1, $2, $3)
 		ON CONFLICT (platform_id, user_id)
 		DO UPDATE SET secrets = $3
-	`, UserProjectPlatforms), platformID, userID, secrets)
+	`, UserPlatforms), platformID, userID, secrets)
 	if err != nil {
 		return err
 	}
@@ -146,4 +147,17 @@ func (r *PublisherRepository) GetDefaultUserID(ctx context.Context, projectID st
 	}
 
 	return userID, nil
+}
+
+func (r *PublisherRepository) SetUserPlatformAuthSecretsWithTTL(ctx context.Context, platformID, userID, secrets string, ttl time.Time) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		INSERT INTO %s (platform_id, user_id, secrets, auth_ttl)
+		VALUES ($1, $2, $3, $4)
+		ON CONFLICT (platform_id, user_id)
+		DO UPDATE SET secrets = $3, auth_ttl = $4
+	`, UserPlatforms), platformID, userID, secrets, ttl)
+	if err != nil {
+		return err
+	}
+	return nil
 }

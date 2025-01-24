@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS user_project_platforms (
+CREATE TABLE IF NOT EXISTS user_platforms (
     user_id UUID NOT NULL,
     platform_id VARCHAR(10) NOT NULL,
     secrets TEXT DEFAULT '' NOT NULL,

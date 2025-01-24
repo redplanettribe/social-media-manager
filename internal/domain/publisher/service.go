@@ -17,6 +17,7 @@ type Service interface {
 	PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
 	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
 	AddUserPlatformSecret(ctx context.Context, projectID, platformID, key, secret string) error
+	Authenticate(ctx context.Context, platformID, projectID, userID, code string) error
 }
 
 type service struct {
@@ -35,6 +36,48 @@ func NewService(r Repository, e encrypting.Encrypter, pf PublisherFactory, ps po
 		postService:      ps,
 		mediaService:     m,
 	}
+}
+
+func (s *service) Authenticate(ctx context.Context, platformID, projectID, userID, code string) error {
+
+	var (
+		isEnabled   bool
+		userSecrets string
+	)
+
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(gCtx, projectID, platformID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		userSecrets, err = s.repo.GetUserPlatformSecrets(gCtx, platformID, userID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if !isEnabled {
+		return ErrSocialPlatformNotEnabledForProject
+	}
+
+	publisher, err := s.publisherFactory.Create(platformID, "", userSecrets)
+	if err != nil {
+		return err
+	}
+
+	encryptedSecrets, toknTtl, err := publisher.Authenticate(ctx, code)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.SetUserPlatformAuthSecretsWithTTL(ctx, platformID, userID, encryptedSecrets, toknTtl)
 }
 
 func (s *service) GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error) {
@@ -216,7 +259,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	if userSecrets == "" {
 		return ErrUserSecretsNotSet
 	}
-	 
+
 	publisher, err := s.publisherFactory.Create(platformID, publishPost.Secrets, userSecrets)
 	if err != nil {
 		return err

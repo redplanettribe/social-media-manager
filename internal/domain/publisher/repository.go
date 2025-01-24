@@ -1,6 +1,9 @@
 package publisher
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 type Repository interface {
 	FindAll(ctx context.Context) ([]Platform, error)
@@ -11,4 +14,5 @@ type Repository interface {
 	GetUserPlatformSecrets(ctx context.Context, platformID, userID string) (string, error)
 	SetUserPlatformSecrets(ctx context.Context, platformID, userID, secrets string) error
 	GetDefaultUserID(ctx context.Context, platformID string) (string, error)
+	SetUserPlatformAuthSecretsWithTTL(ctx context.Context, platformID, userID, secrets string, ttl time.Time) error
 }

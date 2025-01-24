@@ -31,7 +31,7 @@ func NewRouter(
 	userHandler *handlers.UserHandler,
 	projectHandler *handlers.ProjectHandler,
 	postHandler *handlers.PostHandler,
-	platformHandler *handlers.PlatformHandler,
+	platformHandler *handlers.PublisherHandler,
 	mediaHandler *handlers.MediaHandler,
 	authenticator authentication.Authenticator,
 	appAuthorizer authorization.AppAuthorizer,
@@ -189,7 +189,7 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 }
 
 /*PUBLISHER ROUTES*/
-func (r *Router) setupPublisherRoutes(h *handlers.PlatformHandler) {
+func (r *Router) setupPublisherRoutes(h *handlers.PublisherHandler) {
 	r.Handle("POST /publishers/{project_id}/{post_id}/{social_network_id}", r.projectPermissions("write:publishers").Chain(
 		http.HandlerFunc(h.PublishPostToSocialNetwork),
 	))
@@ -204,6 +204,9 @@ func (r *Router) setupPublisherRoutes(h *handlers.PlatformHandler) {
 	))
 	r.Handle("PATCH /publishers/{project_id}/user-secrets", r.projectPermissions("write:publishers").Chain(
 		http.HandlerFunc(h.AddUserPlatformSecret),
+	))
+	r.Handle("POST /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code}", r.projectPermissions("write:publishers").Chain(
+		http.HandlerFunc(h.Authenticate),
 	))
 }
 
