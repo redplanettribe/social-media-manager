@@ -23,6 +23,7 @@ type Service interface {
 	IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error)
 	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
 	SetDefaultUser(ctx context.Context, projectID, userID string) error
+	GetDefaultUserPlatformInfo(ctx context.Context, projecID, platformID string) (*UserPlatformInfo, error)
 }
 
 type service struct {
@@ -226,10 +227,22 @@ func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize
 func (s *service) SetDefaultUser(ctx context.Context, projectID, userID string) error {
 	ok, err := s.repo.IsUserInProject(ctx, projectID, userID)
 	if err != nil {
-		return err 
+		return err
 	}
 	if !ok {
 		return ErrUserNotInProject
 	}
 	return s.repo.SetDefaultUser(ctx, projectID, userID)
+}
+
+func (s *service) GetDefaultUserPlatformInfo(ctx context.Context, projectID, platformID string) (*UserPlatformInfo, error) {
+	defaultUserID, err := s.repo.GetDefaultUserID(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	pInfo, err := s.repo.GetPlatformInfo(ctx, defaultUserID, platformID)
+	if err != nil {
+		return nil, err
+	}
+	return pInfo, nil
 }

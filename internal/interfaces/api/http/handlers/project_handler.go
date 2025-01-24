@@ -369,7 +369,7 @@ func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/default-user/{user_id} [patch]
-func (h *ProjectHandler) SetDefaultUser (w http.ResponseWriter, r *http.Request) {
+func (h *ProjectHandler) SetDefaultUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
@@ -394,4 +394,50 @@ func (h *ProjectHandler) SetDefaultUser (w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetDefaultUserPlatformInfo godoc
+// @Summary Get the default user platform info
+// @Description Get the default user platform info for a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param platform_id path string true "Platform ID"
+// @Success 200 {object} project.UserPlatformInfo
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/default-user-platform-info/{platform_id} [get]
+func (h *ProjectHandler) GetDefaultUserPlatformInfo(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	platformID := r.PathValue("platform_id")
+	if platformID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Platform id is required", map[string]string{
+			"platform_id": "required",
+		}))
+		return
+	}
+
+	info, err := h.Service.GetDefaultUserPlatformInfo(ctx, projectID, platformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(info)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
 }

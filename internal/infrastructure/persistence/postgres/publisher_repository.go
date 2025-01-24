@@ -151,10 +151,10 @@ func (r *PublisherRepository) GetDefaultUserID(ctx context.Context, projectID st
 
 func (r *PublisherRepository) SetUserPlatformAuthSecretsWithTTL(ctx context.Context, platformID, userID, secrets string, ttl time.Time) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
-		INSERT INTO %s (platform_id, user_id, secrets, auth_ttl)
-		VALUES ($1, $2, $3, $4)
+		INSERT INTO %s (platform_id, user_id, secrets, is_authenticated, auth_ttl)
+		VALUES ($1, $2, $3, true, $4)
 		ON CONFLICT (platform_id, user_id)
-		DO UPDATE SET secrets = $3, auth_ttl = $4
+		DO UPDATE SET secrets = $3, is_authenticated = true, auth_ttl = $4
 	`, UserPlatforms), platformID, userID, secrets, ttl)
 	if err != nil {
 		return err

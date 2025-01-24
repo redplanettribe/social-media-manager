@@ -146,6 +146,12 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	formData.Set("client_secret", clientSecret)
 	formData.Set("redirect_uri", redirectURI)
 
+	fmt.Println(">>>>>>>>")
+	fmt.Println("code:", code)
+	fmt.Println("client_id:", clientID)
+	fmt.Println("client_secret:", clientSecret)
+	fmt.Println("redirect_uri:", redirectURI)
+
 	// Create request
 	req, err := http.NewRequestWithContext(
 		ctx,

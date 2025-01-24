@@ -149,6 +149,9 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("GET /projects/{project_id}", r.projectPermissions("read:projects").Chain(
 		http.HandlerFunc(h.GetProject),
 	))
+	r.Handle("GET /projects/{project_id}/default-user-platform-info/{platform_id}", r.projectPermissions("read:projects").Chain(
+		http.HandlerFunc(h.GetDefaultUserPlatformInfo),
+	))
 }
 
 /*POST ROUTES*/

@@ -69,6 +69,11 @@ type TeamMember struct {
 	MaxRole     int       `json:"max_role"`
 }
 
+type UserPlatformInfo struct {
+	IsAuthenticated bool
+	AuthTTL         time.Time
+}
+
 func NewProject(name, description, createdBy string) (*Project, error) {
 	if name == "" {
 		return nil, errors.New("name cannot be empty")

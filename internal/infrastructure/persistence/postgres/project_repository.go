@@ -465,3 +465,33 @@ func (r *ProjectRepository) SetDefaultUser(ctx context.Context, projectID, userI
 
 	return nil
 }
+
+func (r *ProjectRepository) GetDefaultUserID(ctx context.Context, projectID string) (string, error) {
+	var userID string
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT user_id
+		FROM %s
+		WHERE project_id = $1 AND default_user = true
+	`, TeamMembers), projectID).Scan(&userID)
+	if err != nil {
+		return "", err
+	}
+
+	return userID, nil
+}
+
+func (r *ProjectRepository) GetPlatformInfo(ctx context.Context, userID, platformID string) (*project.UserPlatformInfo, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT is_authenticated, auth_ttl
+		FROM %s
+		WHERE user_id = $1 AND platform_id = $2
+	`, UserPlatforms), userID, platformID)
+
+	pInfo := &project.UserPlatformInfo{}
+	err := row.Scan(&pInfo.IsAuthenticated, &pInfo.AuthTTL)
+	if err != nil {
+		return nil, err
+	}
+
+	return pInfo, nil
+}

@@ -21,4 +21,6 @@ type Repository interface {
 	CreateProjectSettings(ctx context.Context, projectID string, schedule *WeeklyPostSchedule) error
 	FindActiveProjectsChunk(ctx context.Context, limit, offset int) ([]*Project, error)
 	SetDefaultUser(ctx context.Context, projectID, userID string) error
+	GetDefaultUserID(ctx context.Context, projectID string) (string, error)
+	GetPlatformInfo(ctx context.Context, userID, platformID string) (*UserPlatformInfo, error)
 }

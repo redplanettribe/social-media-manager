@@ -128,6 +128,36 @@ func (_m *MockService) FindActiveProjectsChunk(ctx context.Context, offset int, 
 	return r0, r1
 }
 
+// GetDefaultUserPlatformInfo provides a mock function with given fields: ctx, projecID, platformID
+func (_m *MockService) GetDefaultUserPlatformInfo(ctx context.Context, projecID string, platformID string) (*UserPlatformInfo, error) {
+	ret := _m.Called(ctx, projecID, platformID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetDefaultUserPlatformInfo")
+	}
+
+	var r0 *UserPlatformInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) (*UserPlatformInfo, error)); ok {
+		return rf(ctx, projecID, platformID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) *UserPlatformInfo); ok {
+		r0 = rf(ctx, projecID, platformID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*UserPlatformInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
+		r1 = rf(ctx, projecID, platformID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetEnabledSocialPlatforms provides a mock function with given fields: ctx, projectID
 func (_m *MockService) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error) {
 	ret := _m.Called(ctx, projectID)
