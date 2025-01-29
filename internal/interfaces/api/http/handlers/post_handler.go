@@ -185,7 +185,6 @@ func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -217,8 +216,6 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -313,8 +310,6 @@ func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -436,7 +431,6 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
