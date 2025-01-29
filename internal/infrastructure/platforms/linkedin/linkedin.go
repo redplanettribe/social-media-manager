@@ -146,12 +146,6 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	formData.Set("client_secret", clientSecret)
 	formData.Set("redirect_uri", redirectURI)
 
-	fmt.Println(">>>>>>>>")
-	fmt.Println("code:", code)
-	fmt.Println("client_id:", clientID)
-	fmt.Println("client_secret:", clientSecret)
-	fmt.Println("redirect_uri:", redirectURI)
-
 	// Create request
 	req, err := http.NewRequestWithContext(
 		ctx,
@@ -186,11 +180,55 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 		return "", time.Time{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
-	// return encrypted secrets
+	userReq, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodGet,
+		"https://api.linkedin.com/v2/userinfo",
+		nil,
+	)
+	if err != nil {
+		return "", time.Time{}, fmt.Errorf("failed to create userinfo request: %w", err)
+	}
+
+	// Set auth header with the new access token
+	setHeaders(userReq, tokenResp.AccessToken)
+
+	// Send request
+	userResp, err := client.Do(userReq)
+	if err != nil {
+		return "", time.Time{}, fmt.Errorf("failed to get user info: %w", err)
+	}
+	defer userResp.Body.Close()
+
+	// Handle non-200 responses
+	if userResp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(userResp.Body)
+		return "", time.Time{}, fmt.Errorf("userinfo request failed with status %d: %s", userResp.StatusCode, string(body))
+	}
+
+	// Parse user info response
+	var userInfo struct {
+		Sub string `json:"sub"`
+	}
+	if err := json.NewDecoder(userResp.Body).Decode(&userInfo); err != nil {
+		return "", time.Time{}, fmt.Errorf("failed to decode user info: %w", err)
+	}
+
+	urn := fmt.Sprintf("urn:li:person:%s", userInfo.Sub)
+
+	// Store access token
 	_, err = l.AddUserSecret("access_token", tokenResp.AccessToken)
 	if err != nil {
 		return "", time.Time{}, err
 	}
+
+	// Store URN
+	_, err = l.AddUserSecret("urn", urn)
+	if err != nil {
+		return "", time.Time{}, err
+	}
+
+	// Store expiration
 	expiresAt := time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second)
 	expiresAtStr := expiresAt.Format(time.RFC3339)
 	secretStr, err := l.AddUserSecret("token_expires_at", expiresAtStr)
