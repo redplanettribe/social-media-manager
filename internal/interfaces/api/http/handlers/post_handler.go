@@ -355,8 +355,6 @@ func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Reque
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
-
-	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNoContent)
 }
 
