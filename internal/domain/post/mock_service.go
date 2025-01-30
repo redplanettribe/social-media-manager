@@ -364,6 +364,24 @@ func (_m *MockService) MovePostInQueue(ctx context.Context, projectID string, cu
 	return r0
 }
 
+// RemoveFromProjectQueue provides a mock function with given fields: ctx, projectID, postID
+func (_m *MockService) RemoveFromProjectQueue(ctx context.Context, projectID string, postID string) error {
+	ret := _m.Called(ctx, projectID, postID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveFromProjectQueue")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // SchedulePost provides a mock function with given fields: ctx, id, scheduledAt
 func (_m *MockService) SchedulePost(ctx context.Context, id string, scheduledAt time.Time) error {
 	ret := _m.Called(ctx, id, scheduledAt)
@@ -375,6 +393,24 @@ func (_m *MockService) SchedulePost(ctx context.Context, id string, scheduledAt 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) error); ok {
 		r0 = rf(ctx, id, scheduledAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UnschedulePost provides a mock function with given fields: ctx, id
+func (_m *MockService) UnschedulePost(ctx context.Context, id string) error {
+	ret := _m.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UnschedulePost")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, id)
 	} else {
 		r0 = ret.Error(0)
 	}

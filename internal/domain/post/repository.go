@@ -22,6 +22,8 @@ type Repository interface {
 	GetProjectPostQueue(ctx context.Context, projectID string) (*Queue, error)
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	RemoveFromProjectQueue(ctx context.Context, projectID, postID string) error
+	AddToProjectIdeaQueue(ctx context.Context, projectID, postID string) error
+	RemoveFromProjectIdeaQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string, postIDs []string) ([]*Post, error)
 	UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error
 	GetPostsForPublishQueue(ctx context.Context, postID string) ([]*PublishPost, error)

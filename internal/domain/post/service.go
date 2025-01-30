@@ -67,6 +67,13 @@ func (s *service) CreatePost(
 		return &Post{}, err
 	}
 
+	if p.IsIdea {
+		err := s.repo.AddToProjectIdeaQueue(ctx, projectID, p.ID)
+		if err != nil {
+			return &Post{}, err
+		}
+	}
+
 	err = s.repo.Save(ctx, p)
 	if err != nil {
 		return &Post{}, err

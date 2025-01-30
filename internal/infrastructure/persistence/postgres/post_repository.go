@@ -311,6 +311,32 @@ func (r *PostRepository) RemoveFromProjectQueue(ctx context.Context, projectID, 
 	return nil
 }
 
+func (r *PostRepository) AddToProjectIdeaQueue(ctx context.Context, projectID, postID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET idea_queue = array_append(idea_queue, $2)
+		WHERE id = $1
+	`, Projects), projectID, postID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *PostRepository) RemoveFromProjectIdeaQueue(ctx context.Context, projectID, postID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET idea_queue = array_remove(idea_queue, $2)
+		WHERE id = $1
+	`, Projects), projectID, postID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *PostRepository) GetProjectQueuedPosts(ctx context.Context, projectID string, postIDs []string) ([]*post.Post, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT 
