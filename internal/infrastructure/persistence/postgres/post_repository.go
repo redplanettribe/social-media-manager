@@ -170,7 +170,7 @@ func (r *PostRepository) GetSocialMediaPlatforms(ctx context.Context, postID str
 
 func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*post.PublishPost, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT
+		SELECT DISTINCT ON (p.id)
 		p.id,
 		p.project_id,
 		p.title,
@@ -192,10 +192,10 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		WHERE p.status = $1 
 		AND p.scheduled_at < $2
 		AND prpl.secrets IS NOT NULL
-		ORDER BY p.scheduled_at
+		ORDER BY p.id, p.scheduled_at
 		LIMIT $3 OFFSET $4;
 		`, Posts, PostPlatforms, Platforms, ProjectPlatforms),
-		post.PostStatusScheduled, time.Now().Add(5*time.Minute), chunksize, offset)
+		post.PostStatusScheduled, time.Now().Add(5*time.Minute).UTC(), chunksize, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -203,8 +203,9 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 
 	var posts []*post.PublishPost
 	for rows.Next() {
-		p := &post.PublishPost{}
-
+		p := &post.PublishPost{
+			Post: &post.Post{},
+		}
 		err = rows.Scan(
 			&p.Post.ID,
 			&p.Post.ProjectID,
@@ -450,4 +451,16 @@ func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post
 
 	pp.Post = p
 	return pp, nil
+}
+
+func (r *PostRepository) UpdatePublishPostStatus(ctx context.Context, postID, platformID, status string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET status = $3
+		WHERE post_id = $1 AND platform_id = $2
+	`, PostPlatforms), postID, platformID, status)
+	if err != nil {
+		return err
+	}
+	return nil
 }

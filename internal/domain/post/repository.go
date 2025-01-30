@@ -24,4 +24,5 @@ type Repository interface {
 	UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error
 	GetPostsForPublishQueue(ctx context.Context, postID string) ([]*PublishPost, error)
 	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
+	UpdatePublishPostStatus(ctx context.Context, postID, platformID, status string) error
 }

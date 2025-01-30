@@ -245,6 +245,13 @@ definitions:
       name:
         type: string
     type: object
+  project.UserPlatformInfo:
+    properties:
+      authTTL:
+        type: string
+      isAuthenticated:
+        type: boolean
+    type: object
   publisher.Platform:
     properties:
       id:
@@ -1129,6 +1136,50 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Add a user to a project
+      tags:
+      - projects
+  /projects/{project_id}/default-user-platform-info/{platform_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get the default user platform info for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Platform ID
+        in: path
+        name: platform_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.UserPlatformInfo'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the default user platform info
       tags:
       - projects
   /projects/{project_id}/default-user/{user_id}:

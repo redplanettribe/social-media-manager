@@ -167,7 +167,6 @@ func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platfo
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("mediaNames", mediaNames)
 	var (
 		medias  = make([]*Media, len(mediaNames))
 		g, gCtx = errgroup.WithContext(ctx)

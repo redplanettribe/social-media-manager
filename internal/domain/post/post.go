@@ -21,14 +21,14 @@ const (
 	PostStatusArchived          PostStatus = "archived"
 )
 
-type PublisherPostStatus string
+type PublishPostStatus string
 
 // Status of a post in the publisher
 const (
-	PublisherPostStatusReady      PublisherPostStatus = "ready"
-	PublisherPostStatusProcessing PublisherPostStatus = "processing"
-	PublisherPostStatusPublished  PublisherPostStatus = "published"
-	PublisherPostStatusFailed     PublisherPostStatus = "failed"
+	PublisherPostStatusReady      PublishPostStatus = "ready"
+	PublisherPostStatusProcessing PublishPostStatus = "processing"
+	PublisherPostStatusPublished  PublishPostStatus = "published"
+	PublisherPostStatusFailed     PublishPostStatus = "failed"
 )
 
 type PostType string
@@ -64,6 +64,7 @@ func (pt PostType) IsValid() bool {
 var (
 	ErrProjectNotFound       = errors.New("project not found")
 	ErrPostNotFound          = errors.New("post not found")
+	ErrPostNotDraft          = errors.New("post not in draft status")
 	ErrPublisherNotInProject = errors.New("publisher not in project")
 	ErrPostScheduledTime     = errors.New("post scheduled time is in the past")
 	ErrPostAlreadyInQueue    = errors.New("post already in queue")

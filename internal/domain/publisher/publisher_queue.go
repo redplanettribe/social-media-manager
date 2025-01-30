@@ -107,7 +107,7 @@ func (pq *publisherQueue) runFailedHandlerWorker(ctx context.Context) {
 			}
 			// we could do any number of things here, like exponential backoff, logging, changing status in db, etc.
 			// at the moment let's only logg it
-			fmt.Print("Processing failed post", p)
+			fmt.Println("Processing failed post :", p.ID)
 		}
 	}
 }

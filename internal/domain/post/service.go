@@ -24,12 +24,14 @@ type Service interface {
 	GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error)
 	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error)
 	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
-	SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error
+	SchedulePost(ctx context.Context, id string, scheduledAt time.Time) error
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
 	DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error)
 	GetAvailablePostTypes() []string
+	UpdatePostStatus(ctx context.Context, id string, status PostStatus) error
+	UpdatePublishPostStatus(ctx context.Context, postID, platformID string, status PublishPostStatus) error
 }
 
 type service struct {
@@ -158,11 +160,23 @@ func (s *service) GetPostToPublish(ctx context.Context, postID string) (*Publish
 	return s.repo.GetPostToPublish(ctx, postID)
 }
 
-func (s *service) SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error {
-	if sheduled_at.Before(time.Now()) {
+func (s *service) SchedulePost(ctx context.Context, id string, scheduletAt time.Time) error {
+	p, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+
+	if p.Status != string(PostStatusDraft) {
+		return ErrPostNotDraft
+	}
+
+	if scheduletAt.Before(time.Now().UTC()) {
 		return ErrPostScheduledTime
 	}
-	return s.repo.SchedulePost(ctx, id, sheduled_at)
+	return s.repo.SchedulePost(ctx, id, scheduletAt)
 }
 
 func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID string) error {
@@ -281,4 +295,20 @@ func (s *service) GetAvailablePostTypes() []string {
 		PostTypeVideo.String(),
 		PostTypeDocument.String(),
 	}
+}
+
+func (s *service) UpdatePostStatus(ctx context.Context, id string, status PostStatus) error {
+	p, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+	p.Status = string(status)
+	return s.repo.Update(ctx, p)
+}
+
+func (s *service) UpdatePublishPostStatus(ctx context.Context, postID, platformID string, status PublishPostStatus) error {
+	return s.repo.UpdatePublishPostStatus(ctx, postID, platformID, string(status))
 }

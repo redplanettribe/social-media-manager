@@ -2,6 +2,7 @@ package publisher
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 	post "github.com/pedrodcsjostrom/opencm/internal/domain/post"
@@ -180,8 +181,7 @@ func (s *service) AddUserPlatformSecret(ctx context.Context, projectID, platform
 	return s.repo.SetUserPlatformSecrets(ctx, platformID, userID, newSecrets)
 }
 
-func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error {
-
+func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, projectID, postID string) error {
 	publishers, err := s.postService.GetSocialMediaPublishers(ctx, postID)
 	if err != nil {
 		return err
@@ -191,15 +191,53 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 		return ErrNoPublishersAssigned
 	}
 
+	// Create channel to collect results
+	type publishResult struct {
+		platformID string
+		err        error
+	}
+	results := make(chan publishResult, len(publishers))
+
+	// Launch goroutines for each publisher
 	g, gCtx := errgroup.WithContext(ctx)
 	for _, publisherID := range publishers {
 		pid := publisherID
 		g.Go(func() error {
-			return s.PublishPostToSocialNetwork(gCtx, projecID, postID, pid)
+			err := s.PublishPostToSocialNetwork(gCtx, projectID, postID, pid)
+			results <- publishResult{pid, err}
+			return nil // Don't propagate errors through errgroup
 		})
 	}
 
-	return g.Wait()
+	g.Wait()
+	close(results)
+
+	var failures int
+	failedPlatforms := make([]string, 0)
+	for result := range results {
+		if result.err != nil {
+			failures++
+			failedPlatforms = append(failedPlatforms, result.platformID)
+		}
+	}
+
+	// Update post status based on results
+	if failures == len(publishers) {
+		// All publishers failed
+		if err := s.postService.UpdatePostStatus(ctx, postID, post.PostStatusFailed); err != nil {
+			return fmt.Errorf("failed to update post status: %w", err)
+		}
+		return fmt.Errorf("all publishers failed: %v", failedPlatforms)
+	} else if failures > 0 {
+		// Some publishers failed
+		if err := s.postService.UpdatePostStatus(ctx, postID, post.PostStatusPartialyPublished); err != nil {
+			return fmt.Errorf("failed to update post status: %w", err)
+		}
+		return fmt.Errorf("some publishers failed: %v", failedPlatforms)
+	}
+
+	// All successful
+	return s.postService.UpdatePostStatus(ctx, postID, post.PostStatusPublished)
 }
 
 func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
@@ -266,7 +304,16 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	}
 
 	if err := publisher.Publish(ctx, publishPost, media); err != nil {
+		fmt.Printf("Failed to publish post to %s: %v\n", platformID, err)
+		e := s.postService.UpdatePostStatus(ctx, postID, post.PostStatusFailed)
+		if e != nil {
+			return fmt.Errorf("failed to update publish post status to failed: %w", e)
+		}
 		return err
+	}
+
+	if err := s.postService.UpdatePostStatus(ctx, postID, post.PostStatusPublished); err != nil {
+		return fmt.Errorf("failed to update publish post status to published: %w", err)
 	}
 
 	return nil

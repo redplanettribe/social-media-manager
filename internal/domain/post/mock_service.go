@@ -364,9 +364,9 @@ func (_m *MockService) MovePostInQueue(ctx context.Context, projectID string, cu
 	return r0
 }
 
-// SchedulePost provides a mock function with given fields: ctx, id, scheduled_at
-func (_m *MockService) SchedulePost(ctx context.Context, id string, scheduled_at time.Time) error {
-	ret := _m.Called(ctx, id, scheduled_at)
+// SchedulePost provides a mock function with given fields: ctx, id, scheduledAt
+func (_m *MockService) SchedulePost(ctx context.Context, id string, scheduledAt time.Time) error {
+	ret := _m.Called(ctx, id, scheduledAt)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SchedulePost")
@@ -374,7 +374,43 @@ func (_m *MockService) SchedulePost(ctx context.Context, id string, scheduled_at
 
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, time.Time) error); ok {
-		r0 = rf(ctx, id, scheduled_at)
+		r0 = rf(ctx, id, scheduledAt)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePostStatus provides a mock function with given fields: ctx, id, status
+func (_m *MockService) UpdatePostStatus(ctx context.Context, id string, status PostStatus) error {
+	ret := _m.Called(ctx, id, status)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdatePostStatus")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, PostStatus) error); ok {
+		r0 = rf(ctx, id, status)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// UpdatePublishPostStatus provides a mock function with given fields: ctx, postID, platformID, status
+func (_m *MockService) UpdatePublishPostStatus(ctx context.Context, postID string, platformID string, status PublishPostStatus) error {
+	ret := _m.Called(ctx, postID, platformID, status)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdatePublishPostStatus")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, PublishPostStatus) error); ok {
+		r0 = rf(ctx, postID, platformID, status)
 	} else {
 		r0 = ret.Error(0)
 	}

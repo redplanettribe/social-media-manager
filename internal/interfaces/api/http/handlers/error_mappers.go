@@ -62,6 +62,7 @@ func mapErrorToAPIError(err error) *e.APIError {
 	case e.MatchError(err,
 		publisher.ErrPlatformSecretsNotSet,
 		publisher.ErrUserSecretsNotSet,
+		post.ErrPostNotDraft,
 	):
 		return &e.APIError{
 			Status:  http.StatusUnprocessableEntity,

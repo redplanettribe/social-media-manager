@@ -114,7 +114,7 @@ func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
 }
 
 func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
-	fmt.Println("Publishing to Linkedin")
+	fmt.Printf("Publishing post %s to LinkedIn\n", pp.ID)
 	fmt.Println("Post ID:", pp.ID)
 	for _, m := range media {
 		fmt.Println("Media Name:", m.Filename)
