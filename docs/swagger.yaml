@@ -1542,6 +1542,79 @@ paths:
       summary: Publish post to social network
       tags:
       - publishers
+  /publishers/{project_id}/{post_id}/{social_network_id}/validate:
+    get:
+      consumes:
+      - application/json
+      description: Validate post for social network
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Social Network ID
+        in: path
+        name: social_network_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Validate post for social network
+      tags:
+      - publishers
+  /publishers/{project_id}/{post_id}/validate:
+    get:
+      consumes:
+      - application/json
+      description: Validate post for all assigned social networks
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Validate post for all assigned social networks
+      tags:
+      - publishers
   /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code}:
     post:
       consumes:

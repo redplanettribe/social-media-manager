@@ -143,12 +143,38 @@ func (s *service) PublishPostToAssignedSocialNetworks(ctx context.Context, proje
 	return s.postService.UpdatePostStatus(ctx, postID, post.PostStatusPublished)
 }
 
+func (s *service) ValidatePostForAssignedSocialNetworks(ctx context.Context, projectID, postID string) error {
+	publishers, err := s.postService.GetSocialMediaPublishers(ctx, postID)
+	if err != nil {
+		return err
+	}
+
+	if len(publishers) == 0 {
+		return ErrNoPublishersAssigned
+	}
+
+	g, gCtx := errgroup.WithContext(ctx)
+	for _, publisherID := range publishers {
+		pid := publisherID
+		g.Go(func() error {
+			err := s.ValidatePostForSocialNetwork(gCtx, projectID, postID, pid)
+			return fmt.Errorf("failed to validate post for %s: %w", pid, err)
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
 	var (
 		isEnabled     bool
 		publishPost   *post.PublishPost
 		media         []*media.Media
-		userSecrets   string
+		secrets       string
 		defaultUserID string
 		g             errgroup.Group
 	)
@@ -181,7 +207,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 
 	g.Go(func() error {
 		var err error
-		userSecrets, err = s.repo.GetUserPlatformSecrets(ctx, platformID, defaultUserID)
+		secrets, err = s.repo.GetUserPlatformSecrets(ctx, platformID, defaultUserID)
 		return err
 	})
 
@@ -197,11 +223,11 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return post.ErrPostNotFound
 	}
 
-	if userSecrets == "" {
+	if secrets == "" {
 		return ErrUserSecretsNotSet
 	}
 
-	publisher, err := s.publisherFactory.Create(platformID, userSecrets)
+	publisher, err := s.publisherFactory.Create(platformID, secrets)
 	if err != nil {
 		return err
 	}
@@ -222,10 +248,72 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 	return nil
 }
 
-func (s *service) ValidatePostForAssignedSocialNetworks(ctx context.Context, projectID, postID string) error {
-	return nil
-}
-
 func (s *service) ValidatePostForSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
+	var (
+		isEnabled     bool
+		publishPost   *post.PublishPost
+		media         []*media.Media
+		secrets       string
+		defaultUserID string
+		g             errgroup.Group
+	)
+
+	defaultUserID, err := s.repo.GetDefaultUserID(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	if defaultUserID == "" {
+		return ErrDefaultUserNotSet
+	}
+
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(ctx, projectID, platformID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		publishPost, err = s.postService.GetPostToPublish(ctx, postID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		media, err = s.mediaService.GetMediaForPost(ctx, projectID, postID, platformID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		secrets, err = s.repo.GetUserPlatformSecrets(ctx, platformID, defaultUserID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if !isEnabled {
+		return ErrSocialPlatformNotEnabledForProject
+	}
+
+	if publishPost == nil {
+		return post.ErrPostNotFound
+	}
+
+	if secrets == "" {
+		return ErrUserSecretsNotSet
+	}
+
+	publisher, err := s.publisherFactory.Create(platformID, secrets)
+	if err != nil {
+		return err
+	}
+
+	if err := publisher.ValidatePost(ctx, publishPost, media); err != nil {
+		return err
+	}
+
 	return nil
 }
