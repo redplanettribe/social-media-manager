@@ -73,6 +73,7 @@ var (
 	ErrPostNotLinkedToAnyPlatform = errors.New("post not linked to any platform")
 	ErrPostIsIdea                 = errors.New("post is an idea")
 	ErrInvalidPostType            = errors.New("invalid post type")
+	ErrPostNotInQueue             = errors.New("post not in queue")
 )
 
 type Post struct {

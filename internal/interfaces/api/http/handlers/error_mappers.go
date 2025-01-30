@@ -18,6 +18,7 @@ func mapErrorToAPIError(err error) *e.APIError {
 		post.ErrPostScheduledTime,
 		media.ErrUnsupportedMediaType,
 		post.ErrInvalidPostType,
+		post.ErrPostNotInQueue,
 	):
 		return &e.APIError{
 			Status:  http.StatusBadRequest,

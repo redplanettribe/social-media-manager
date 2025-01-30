@@ -386,6 +386,46 @@ func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Reque
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// RemovePostFromProjectQueue godoc
+// @Summary Remove a post from a project queue
+// @Description Remove a post from a project queue by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Param project_id path string true "Project ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/dequeue [patch]
+func (h *PostHandler) RemovePostFromProjectQueue(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.RemoveFromProjectQueue(r.Context(), projectID, postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // GetProjectQueuedPosts godoc
 // @Summary Get all queued posts of a project
 // @Description Get all queued posts of a project by its id

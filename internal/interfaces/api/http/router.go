@@ -174,6 +174,9 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("PATCH /posts/{project_id}/{post_id}/enqueue", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.AddPostToProjectQueue),
 	))
+	r.Handle("PATCH /posts/{project_id}/{post_id}/dequeue", r.projectPermissions("write:posts").Chain(
+		http.HandlerFunc(h.RemovePostFromProjectQueue),
+	))
 	r.Handle("PATCH /posts/{project_id}/queue/move", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.MovePostInQueue),
 	))
