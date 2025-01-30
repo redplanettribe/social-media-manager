@@ -21,49 +21,34 @@ var (
 	ErrNotImplemented = errors.New("not implemented")
 )
 
-type PlatformSecrets struct {
-	PlaceHolderKey string `json:"placeholder_key"`
-}
-
-type UserSecrets struct {
+type Secrets struct {
 	AccessToken    string    `json:"access_token"`
 	URN            string    `json:"urn"`
 	TokenExpiresAt time.Time `json:"token_expires_at"`
 }
 
 type Linkedin struct {
-	ID              string
-	SecretStr       string
-	platformSecrets PlatformSecrets
-	userSecrets     UserSecrets
-	encrypter       encrypting.Encrypter
+	ID          string
+	SecretStr   string
+	userSecrets Secrets
+	encrypter   encrypting.Encrypter
 }
 
 func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
-	return &Linkedin{
+	l := &Linkedin{
 		ID:        "linkedin",
 		SecretStr: secrets,
 		encrypter: e,
 	}
-}
-
-func (l *Linkedin) AddPlatformSecret(key, secret string) (string, error) {
-	switch key {
-	case "placeholder_key":
-		l.platformSecrets.PlaceHolderKey = secret
-	default:
-		return "", errors.New("invalid key")
-	}
-
-	newSecretStr, err := l.encrypter.EncryptJSON(l.platformSecrets)
+	err := l.validateSecrets(secrets)
 	if err != nil {
-		return "", err
+		fmt.Println("Error validating secrets:", err)
 	}
 
-	return newSecretStr, nil
+	return l
 }
 
-func (l *Linkedin) AddUserSecret(key, secret string) (string, error) {
+func (l *Linkedin) addSecret(key, secret string) (string, error) {
 	switch key {
 	case "access_token":
 		l.userSecrets.AccessToken = secret
@@ -87,29 +72,16 @@ func (l *Linkedin) AddUserSecret(key, secret string) (string, error) {
 	return newSecretStr, nil
 }
 
-func (l *Linkedin) ValidateUserSecrets(secrets string) error {
+func (l *Linkedin) validateSecrets(secrets string) error {
 	if secrets == "" || secrets == "empty" {
 		return nil
 	}
-	var s UserSecrets
+	var s Secrets
 	err := l.encrypter.DecryptJSON(secrets, &s)
 	if err != nil {
 		return err
 	}
 	l.userSecrets = s
-	return nil
-}
-
-func (l *Linkedin) ValidatePlatformSecrets(secrets string) error {
-	if secrets == "" || secrets == "empty" {
-		return nil
-	}
-	var s PlatformSecrets
-	err := l.encrypter.DecryptJSON(secrets, &s)
-	if err != nil {
-		return err
-	}
-	l.platformSecrets = s
 	return nil
 }
 
@@ -120,7 +92,7 @@ func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*m
 		fmt.Println("Media Name:", m.Filename)
 	}
 	posterFactory := NewPosterFactory()
-	poster, err := posterFactory.NewPoster(pp, l.userSecrets, l.platformSecrets)
+	poster, err := posterFactory.NewPoster(pp, l.userSecrets)
 	if err != nil {
 		return err
 	}
@@ -217,13 +189,13 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	urn := fmt.Sprintf("urn:li:person:%s", userInfo.Sub)
 
 	// Store access token
-	_, err = l.AddUserSecret("access_token", tokenResp.AccessToken)
+	_, err = l.addSecret("access_token", tokenResp.AccessToken)
 	if err != nil {
 		return "", time.Time{}, err
 	}
 
 	// Store URN
-	_, err = l.AddUserSecret("urn", urn)
+	_, err = l.addSecret("urn", urn)
 	if err != nil {
 		return "", time.Time{}, err
 	}
@@ -231,7 +203,7 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	// Store expiration
 	expiresAt := time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second)
 	expiresAtStr := expiresAt.Format(time.RFC3339)
-	secretStr, err := l.AddUserSecret("token_expires_at", expiresAtStr)
+	secretStr, err := l.addSecret("token_expires_at", expiresAtStr)
 	if err != nil {
 		return "", time.Time{}, err
 	}

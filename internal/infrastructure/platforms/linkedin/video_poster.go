@@ -15,18 +15,16 @@ import (
 )
 
 type VideoPoster struct {
-	uSecrets   UserSecrets
-	pSecrets   PlatformSecrets
+	secrets    Secrets
 	httpClient *http.Client
 	authorURN  string
 }
 
-func NewVideoPoster(userSecrets UserSecrets, platformSecrets PlatformSecrets) *VideoPoster {
+func NewVideoPoster(s Secrets) *VideoPoster {
 	return &VideoPoster{
-		uSecrets:   userSecrets,
-		pSecrets:   platformSecrets,
+		secrets:    s,
 		httpClient: &http.Client{Timeout: 10 * time.Second},
-		authorURN:  userSecrets.URN,
+		authorURN:  s.URN,
 	}
 }
 
@@ -67,7 +65,7 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 	if pp == nil {
 		return errors.New("publish post is nil")
 	}
-	if vp.uSecrets.AccessToken == "" {
+	if vp.secrets.AccessToken == "" {
 		return errors.New("user access token is not set")
 	}
 	if vp.authorURN == "" {
@@ -110,7 +108,7 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 	if err != nil {
 		return fmt.Errorf("failed to create init video request: %w", err)
 	}
-	setHeaders(initReq, vp.uSecrets.AccessToken)
+	setHeaders(initReq, vp.secrets.AccessToken)
 
 	initResp, err := vp.httpClient.Do(initReq)
 	if err != nil {
@@ -142,8 +140,8 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 		if err != nil {
 			return fmt.Errorf("failed to create chunk upload request: %w", err)
 		}
-		
-		setBinaryHeaders(uploadReq, vp.uSecrets.AccessToken)
+
+		setBinaryHeaders(uploadReq, vp.secrets.AccessToken)
 
 		uploadResp, err := vp.httpClient.Do(uploadReq)
 		if err != nil {
@@ -172,11 +170,11 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 		if err != nil {
 			return fmt.Errorf("failed to create thumbnail upload request: %w", err)
 		}
-		
+
 		// Set headers as per documentation
 		thumbReq.Header.Set("Content-Type", "application/octet-stream")
 		thumbReq.Header.Set("media-type-family", "STILLIMAGE")
-		thumbReq.Header.Set("Authorization", "Bearer "+vp.uSecrets.AccessToken)
+		thumbReq.Header.Set("Authorization", "Bearer "+vp.secrets.AccessToken)
 
 		thumbResp, err := vp.httpClient.Do(thumbReq)
 		if err != nil {
@@ -205,7 +203,7 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 	if err != nil {
 		return fmt.Errorf("failed to create finalize request: %w", err)
 	}
-	setHeaders(finalizeReq, vp.uSecrets.AccessToken)
+	setHeaders(finalizeReq, vp.secrets.AccessToken)
 
 	finalizeResp, err := vp.httpClient.Do(finalizeReq)
 	if err != nil {
@@ -230,7 +228,7 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 		},
 		"content": map[string]interface{}{
 			"media": map[string]interface{}{
-				"id":      videoURN,
+				"id": videoURN,
 			},
 		},
 		"lifecycleState":            "PUBLISHED",
@@ -246,7 +244,7 @@ func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList
 	if err != nil {
 		return fmt.Errorf("failed to create post request: %w", err)
 	}
-	setHeaders(postReq, vp.uSecrets.AccessToken)
+	setHeaders(postReq, vp.secrets.AccessToken)
 
 	postResp, err := vp.httpClient.Do(postReq)
 	if err != nil {

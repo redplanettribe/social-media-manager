@@ -14,14 +14,12 @@ import (
 )
 
 type TextPoster struct {
-	uSecrets UserSecrets
-	pSecrets PlatformSecrets
+	secrets Secrets
 }
 
-func NewTextPoster(userSecrets UserSecrets, platformSecrets PlatformSecrets) *TextPoster {
+func NewTextPoster(s Secrets) *TextPoster {
 	return &TextPoster{
-		uSecrets: userSecrets,
-		pSecrets: platformSecrets,
+		secrets: s,
 	}
 }
 
@@ -30,15 +28,15 @@ func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, _ []*media
 	if pp == nil {
 		return errors.New("publish post is nil")
 	}
-	if tp.uSecrets.AccessToken == "" {
+	if tp.secrets.AccessToken == "" {
 		return errors.New("user access token is not set")
 	}
-	if tp.uSecrets.URN == "" {
+	if tp.secrets.URN == "" {
 		return errors.New("user URN is not set")
 	}
 
 	body := map[string]interface{}{
-		"author":     tp.uSecrets.URN,
+		"author":     tp.secrets.URN,
 		"commentary": pp.TextContent,
 		"visibility": "PUBLIC",
 		"distribution": map[string]interface{}{
@@ -60,7 +58,7 @@ func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, _ []*media
 		return fmt.Errorf("failed to create LinkedIn post request: %w", err)
 	}
 
-	setHeaders(req, tp.uSecrets.AccessToken)
+	setHeaders(req, tp.secrets.AccessToken)
 
 	// Initialize an HTTP client with a timeout
 	client := &http.Client{Timeout: 10 * time.Second}

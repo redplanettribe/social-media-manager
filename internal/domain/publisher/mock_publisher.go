@@ -18,62 +18,6 @@ type MockPublisher struct {
 	mock.Mock
 }
 
-// AddPlatformSecret provides a mock function with given fields: key, secret
-func (_m *MockPublisher) AddPlatformSecret(key string, secret string) (string, error) {
-	ret := _m.Called(key, secret)
-
-	if len(ret) == 0 {
-		panic("no return value specified for AddPlatformSecret")
-	}
-
-	var r0 string
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string) (string, error)); ok {
-		return rf(key, secret)
-	}
-	if rf, ok := ret.Get(0).(func(string, string) string); ok {
-		r0 = rf(key, secret)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(key, secret)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// AddUserSecret provides a mock function with given fields: key, secret
-func (_m *MockPublisher) AddUserSecret(key string, secret string) (string, error) {
-	ret := _m.Called(key, secret)
-
-	if len(ret) == 0 {
-		panic("no return value specified for AddUserSecret")
-	}
-
-	var r0 string
-	var r1 error
-	if rf, ok := ret.Get(0).(func(string, string) (string, error)); ok {
-		return rf(key, secret)
-	}
-	if rf, ok := ret.Get(0).(func(string, string) string); ok {
-		r0 = rf(key, secret)
-	} else {
-		r0 = ret.Get(0).(string)
-	}
-
-	if rf, ok := ret.Get(1).(func(string, string) error); ok {
-		r1 = rf(key, secret)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Authenticate provides a mock function with given fields: ctx, code
 func (_m *MockPublisher) Authenticate(ctx context.Context, code string) (string, time.Time, error) {
 	ret := _m.Called(ctx, code)
@@ -120,42 +64,6 @@ func (_m *MockPublisher) Publish(ctx context.Context, _a1 *post.PublishPost, _a2
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, *post.PublishPost, []*media.Media) error); ok {
 		r0 = rf(ctx, _a1, _a2)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// ValidatePlatformSecrets provides a mock function with given fields: secrets
-func (_m *MockPublisher) ValidatePlatformSecrets(secrets string) error {
-	ret := _m.Called(secrets)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ValidatePlatformSecrets")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(secrets)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// ValidateUserSecrets provides a mock function with given fields: secrets
-func (_m *MockPublisher) ValidateUserSecrets(secrets string) error {
-	ret := _m.Called(secrets)
-
-	if len(ret) == 0 {
-		panic("no return value specified for ValidateUserSecrets")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(string) error); ok {
-		r0 = rf(secrets)
 	} else {
 		r0 = ret.Error(0)
 	}

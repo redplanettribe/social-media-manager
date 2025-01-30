@@ -15,7 +15,7 @@ type Poster interface {
 }
 
 type PosterFactory interface {
-	NewPoster(p *post.PublishPost, userSecrets UserSecrets, platformSecrets PlatformSecrets) (Poster, error)
+	NewPoster(p *post.PublishPost, userSecrets Secrets) (Poster, error)
 }
 
 type posterFactory struct {
@@ -25,18 +25,18 @@ func NewPosterFactory() PosterFactory {
 	return &posterFactory{}
 }
 
-func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets UserSecrets, platformSecrets PlatformSecrets) (Poster, error) {
+func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets Secrets) (Poster, error) {
 	switch p.Type {
 	case post.PostTypeText:
-		return NewTextPoster(userSecrets, platformSecrets), nil
+		return NewTextPoster(userSecrets), nil
 	case post.PostTypeImage:
-		return NewImagePoster(userSecrets, platformSecrets), nil
+		return NewImagePoster(userSecrets), nil
 	case post.PostTypeMultiImage:
-		return NewMultiImagePoster(userSecrets, platformSecrets), nil
+		return NewMultiImagePoster(userSecrets), nil
 	case post.PostTypeVideo:
-		return NewVideoPoster(userSecrets, platformSecrets), nil
+		return NewVideoPoster(userSecrets), nil
 	case post.PostTypeDocument, post.PostTypeCarousel:
-		return NewDocumentPoster(userSecrets, platformSecrets), nil
+		return NewDocumentPoster(userSecrets), nil
 	case post.PostTypeMixMedia:
 		return nil, errors.New("mix media not supported on linkedin")
 	default:
@@ -46,24 +46,24 @@ func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets UserSecrets,
 
 // LinkedInPost represents the JSON structure required by LinkedIn's API for creating a post.
 type LinkedInPost struct {
-    Author                    string       `json:"author"`
-    Commentary                string       `json:"commentary"`
-    Visibility                string       `json:"visibility"`
-    Distribution              Distribution `json:"distribution"`
-    LifecycleState            string       `json:"lifecycleState"`
-    IsReshareDisabledByAuthor bool         `json:"isReshareDisabledByAuthor"`
+	Author                    string       `json:"author"`
+	Commentary                string       `json:"commentary"`
+	Visibility                string       `json:"visibility"`
+	Distribution              Distribution `json:"distribution"`
+	LifecycleState            string       `json:"lifecycleState"`
+	IsReshareDisabledByAuthor bool         `json:"isReshareDisabledByAuthor"`
 }
 
 // Distribution represents the distribution settings in the LinkedIn post.
 type Distribution struct {
-    FeedDistribution               string   `json:"feedDistribution"`
-    TargetEntities                 []string `json:"targetEntities"`
-    ThirdPartyDistributionChannels []string `json:"thirdPartyDistributionChannels"`
+	FeedDistribution               string   `json:"feedDistribution"`
+	TargetEntities                 []string `json:"targetEntities"`
+	ThirdPartyDistributionChannels []string `json:"thirdPartyDistributionChannels"`
 }
 
 func setHeaders(req *http.Request, accessToken string) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-    req.Header.Set("X-Restli-Protocol-Version", "2.0.0")
+	req.Header.Set("X-Restli-Protocol-Version", "2.0.0")
 	req.Header.Set("LinkedIn-Version", "202411")
 	req.Header.Set("Content-Type", "application/json")
 }

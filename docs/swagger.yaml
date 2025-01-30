@@ -10,15 +10,6 @@ definitions:
       status:
         type: integer
     type: object
-  handlers.addSecretKeyRequest:
-    properties:
-      secret_key:
-        type: string
-      secret_value:
-        type: string
-      social_platform_id:
-        type: string
-    type: object
   handlers.addTimeSlotRequest:
     type: object
   handlers.assignRoleRequest:
@@ -1593,80 +1584,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Authenticate user
-      tags:
-      - publishers
-  /publishers/{project_id}/platform-secrets:
-    post:
-      consumes:
-      - application/json
-      description: Add a secret to a social network
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.addSecretKeyRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            type: string
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Add a secret to a social network
-      tags:
-      - publishers
-  /publishers/{project_id}/users-secrets:
-    post:
-      consumes:
-      - application/json
-      description: Add a secret to a social network
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Request body
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.addSecretKeyRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            type: string
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Add a secret to a social network
       tags:
       - publishers
   /users:

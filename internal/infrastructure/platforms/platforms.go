@@ -24,25 +24,14 @@ type publisherFactory struct {
 	encrypter encrypting.Encrypter
 }
 
-func (pf *publisherFactory) Create(platform string, platformSecrets, userSecrets string) (publisher.Publisher, error) {
+func (pf *publisherFactory) Create(platform string, secrets string) (publisher.Publisher, error) {
 	var p publisher.Publisher
 	e := pf.encrypter
 	switch platform {
 	case "linkedin":
-		p = linkedin.NewLinkedin(platformSecrets, e)
+		p = linkedin.NewLinkedin(secrets, e)
 	default:
 		return nil, errors.New("unknown platform")
 	}
-
-	err := p.ValidatePlatformSecrets(platformSecrets)
-	if err != nil {
-		return nil, err
-	}
-
-	err = p.ValidateUserSecrets(userSecrets)
-	if err != nil {
-		return nil, err
-	}
-
 	return p, nil
 }

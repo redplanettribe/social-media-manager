@@ -13,42 +13,6 @@ type MockService struct {
 	mock.Mock
 }
 
-// AddPlatformSecret provides a mock function with given fields: ctx, projectID, platformID, key, secret
-func (_m *MockService) AddPlatformSecret(ctx context.Context, projectID string, platformID string, key string, secret string) error {
-	ret := _m.Called(ctx, projectID, platformID, key, secret)
-
-	if len(ret) == 0 {
-		panic("no return value specified for AddPlatformSecret")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
-		r0 = rf(ctx, projectID, platformID, key, secret)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// AddUserPlatformSecret provides a mock function with given fields: ctx, projectID, platformID, key, secret
-func (_m *MockService) AddUserPlatformSecret(ctx context.Context, projectID string, platformID string, key string, secret string) error {
-	ret := _m.Called(ctx, projectID, platformID, key, secret)
-
-	if len(ret) == 0 {
-		panic("no return value specified for AddUserPlatformSecret")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
-		r0 = rf(ctx, projectID, platformID, key, secret)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
 // Authenticate provides a mock function with given fields: ctx, platformID, projectID, userID, code
 func (_m *MockService) Authenticate(ctx context.Context, platformID string, projectID string, userID string, code string) error {
 	ret := _m.Called(ctx, platformID, projectID, userID, code)
