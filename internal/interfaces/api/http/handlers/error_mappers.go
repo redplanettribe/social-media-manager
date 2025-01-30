@@ -63,6 +63,8 @@ func mapErrorToAPIError(err error) *e.APIError {
 		publisher.ErrPlatformSecretsNotSet,
 		publisher.ErrUserSecretsNotSet,
 		post.ErrPostNotDraft,
+		post.ErrPostNotLinkedToAnyPlatform,
+		publisher.ErrNoPublishersAssigned,
 	):
 		return &e.APIError{
 			Status:  http.StatusUnprocessableEntity,

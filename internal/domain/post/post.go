@@ -62,15 +62,16 @@ func (pt PostType) IsValid() bool {
 
 // Error messages
 var (
-	ErrProjectNotFound       = errors.New("project not found")
-	ErrPostNotFound          = errors.New("post not found")
-	ErrPostNotDraft          = errors.New("post not in draft status")
-	ErrPublisherNotInProject = errors.New("publisher not in project")
-	ErrPostScheduledTime     = errors.New("post scheduled time is in the past")
-	ErrPostAlreadyInQueue    = errors.New("post already in queue")
-	ErrPostAlreadyPublished  = errors.New("post already published")
-	ErrPostIsIdea            = errors.New("post is an idea")
-	ErrInvalidPostType       = errors.New("invalid post type")
+	ErrProjectNotFound            = errors.New("project not found")
+	ErrPostNotFound               = errors.New("post not found")
+	ErrPostNotDraft               = errors.New("post not in draft status")
+	ErrPublisherNotInProject      = errors.New("publisher not in project")
+	ErrPostScheduledTime          = errors.New("post scheduled time is in the past")
+	ErrPostAlreadyInQueue         = errors.New("post already in queue")
+	ErrPostAlreadyPublished       = errors.New("post already published")
+	ErrPostNotLinkedToAnyPlatform = errors.New("post not linked to any platform")
+	ErrPostIsIdea                 = errors.New("post is an idea")
+	ErrInvalidPostType            = errors.New("invalid post type")
 )
 
 type Post struct {

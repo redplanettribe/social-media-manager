@@ -2,7 +2,6 @@ package post
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
@@ -161,16 +160,40 @@ func (s *service) GetPostToPublish(ctx context.Context, postID string) (*Publish
 }
 
 func (s *service) SchedulePost(ctx context.Context, id string, scheduletAt time.Time) error {
-	p, err := s.repo.FindByID(ctx, id)
-	if err != nil {
-		return err
-	}
-	if p == nil {
-		return ErrPostNotFound
-	}
+	var (
+		p         *Post
+		platforms []Platform
+	)
 
-	if p.Status != string(PostStatusDraft) {
-		return ErrPostNotDraft
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		var err error
+		p, err = s.repo.FindByID(gCtx, id)
+		if err != nil {
+			return err
+		}
+		if p == nil {
+			return ErrPostNotFound
+		}
+
+		if p.Status != string(PostStatusDraft) {
+			return ErrPostNotDraft
+		}
+		return nil
+	})
+
+	g.Go(func() error {
+		var err error
+		platforms, err = s.repo.GetSocialMediaPlatforms(gCtx, id)
+		if len(platforms) == 0 {
+			return ErrPostNotLinkedToAnyPlatform
+		}
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
 	}
 
 	if scheduletAt.Before(time.Now().UTC()) {
@@ -181,8 +204,9 @@ func (s *service) SchedulePost(ctx context.Context, id string, scheduletAt time.
 
 func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID string) error {
 	var (
-		p     *Post
-		queue *Queue
+		p         *Post
+		queue     *Queue
+		platforms []Platform
 	)
 
 	g, gCtx := errgroup.WithContext(ctx)
@@ -199,11 +223,19 @@ func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID strin
 		return err
 	})
 
+	g.Go(func() error {
+		var err error
+		platforms, err = s.repo.GetSocialMediaPlatforms(gCtx, postID)
+		if len(platforms) == 0 {
+			return ErrPostNotLinkedToAnyPlatform
+		}
+		return err
+	})
+
 	if err := g.Wait(); err != nil {
 		return err
 	}
 
-	fmt.Println("queue", queue)
 	if p == nil {
 		return ErrPostNotFound
 	}
