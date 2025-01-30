@@ -10,33 +10,34 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 )
 
-type Poster interface {
+type LinkedinPoster interface {
 	Post(ctx context.Context, post *post.PublishPost, media []*media.Media) error
+	Validate(ctx context.Context, post *post.PublishPost, media []*media.Media) error
 }
 
-type PosterFactory interface {
-	NewPoster(p *post.PublishPost, userSecrets Secrets) (Poster, error)
+type LinkedinPosterFactory interface {
+	NewPoster(p *post.PublishPost, userSecrets Secrets) (LinkedinPoster, error)
 }
 
 type posterFactory struct {
 }
 
-func NewPosterFactory() PosterFactory {
+func NewLinkedinPosterFactory() LinkedinPosterFactory {
 	return &posterFactory{}
 }
 
-func (pf *posterFactory) NewPoster(p *post.PublishPost, userSecrets Secrets) (Poster, error) {
+func (pf *posterFactory) NewPoster(p *post.PublishPost, secrets Secrets) (LinkedinPoster, error) {
 	switch p.Type {
 	case post.PostTypeText:
-		return NewTextPoster(userSecrets), nil
+		return NewTextPoster(secrets), nil
 	case post.PostTypeImage:
-		return NewImagePoster(userSecrets), nil
+		return NewImagePoster(secrets), nil
 	case post.PostTypeMultiImage:
-		return NewMultiImagePoster(userSecrets), nil
+		return NewMultiImagePoster(secrets), nil
 	case post.PostTypeVideo:
-		return NewVideoPoster(userSecrets), nil
+		return NewVideoPoster(secrets), nil
 	case post.PostTypeDocument, post.PostTypeCarousel:
-		return NewDocumentPoster(userSecrets), nil
+		return NewDocumentPoster(secrets), nil
 	case post.PostTypeMixMedia:
 		return nil, errors.New("mix media not supported on linkedin")
 	default:

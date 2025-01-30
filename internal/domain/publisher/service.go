@@ -14,7 +14,9 @@ import (
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
 	PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
+	ValidatePostForAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
 	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
+	ValidatePostForSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
 	Authenticate(ctx context.Context, platformID, projectID, userID, code string) error
 }
 
@@ -217,5 +219,13 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 		return fmt.Errorf("failed to update publish post status to published: %w", err)
 	}
 
+	return nil
+}
+
+func (s *service) ValidatePostForAssignedSocialNetworks(ctx context.Context, projectID, postID string) error {
+	return nil
+}
+
+func (s *service) ValidatePostForSocialNetwork(ctx context.Context, projectID, postID, platformID string) error {
 	return nil
 }

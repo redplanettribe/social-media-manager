@@ -71,6 +71,24 @@ func (_m *MockPublisher) Publish(ctx context.Context, _a1 *post.PublishPost, _a2
 	return r0
 }
 
+// ValidatePost provides a mock function with given fields: ctx, _a1, _a2
+func (_m *MockPublisher) ValidatePost(ctx context.Context, _a1 *post.PublishPost, _a2 []*media.Media) error {
+	ret := _m.Called(ctx, _a1, _a2)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ValidatePost")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, *post.PublishPost, []*media.Media) error); ok {
+		r0 = rf(ctx, _a1, _a2)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewMockPublisher creates a new instance of MockPublisher. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockPublisher(t interface {

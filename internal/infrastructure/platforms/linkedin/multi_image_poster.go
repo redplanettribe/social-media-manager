@@ -29,6 +29,25 @@ func NewMultiImagePoster(s Secrets) *MultiImagePoster {
 	}
 }
 
+func (mp *MultiImagePoster) Validate(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
+	if pp == nil {
+		return errors.New("publish post is nil")
+	}
+	if mp.secrets.AccessToken == "" {
+		return errors.New("user access token is not set")
+	}
+	if mp.authorURN == "" {
+		return errors.New("user URN is not set")
+	}
+	if len(mediaList) < 2 {
+		return errors.New("multi-image post requires at least 2 images")
+	}
+	if !onlyImages(mediaList) {
+		return errors.New("multi-image post only supports images")
+	}
+	return nil
+}
+
 type initUploadRequestMulti struct {
 	InitializeUploadRequest struct {
 		Owner string `json:"owner"`
@@ -44,20 +63,8 @@ type initUploadResponseMulti struct {
 }
 
 func (mp *MultiImagePoster) Post(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
-	if pp == nil {
-		return errors.New("publish post is nil")
-	}
-	if mp.secrets.AccessToken == "" {
-		return errors.New("user access token is not set")
-	}
-	if mp.authorURN == "" {
-		return errors.New("user URN is not set")
-	}
-	if len(mediaList) < 2 {
-		return errors.New("multi-image post requires at least 2 images")
-	}
-	if !onlyImages(mediaList) {
-		return errors.New("multi-image post only supports images")
+	if err := mp.Validate(ctx, pp, mediaList); err != nil {
+		return err
 	}
 
 	var (

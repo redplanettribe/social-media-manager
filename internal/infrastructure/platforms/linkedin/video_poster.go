@@ -28,6 +28,40 @@ func NewVideoPoster(s Secrets) *VideoPoster {
 	}
 }
 
+func (vp *VideoPoster) Validate(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
+	if pp == nil {
+		return errors.New("publish post is nil")
+	}
+	if vp.secrets.AccessToken == "" {
+		return errors.New("user access token is not set")
+	}
+	if vp.authorURN == "" {
+		return errors.New("user URN is not set")
+	}
+	if len(mediaList) != 1 {
+		return errors.New("exactly one video is required")
+	}
+
+	m := mediaList[0]
+	if !m.IsVideo() {
+		return errors.New("provided media is not a video")
+	}
+	if m.Size > 500*1024*1024 {
+		return errors.New("video file size is too large")
+	}
+	if m.Length > 30*60 {
+		return errors.New("video length is too long")
+	}
+	if m.Length < 3 {
+		return errors.New("video length is too short")
+	}
+	if m.Format != "mp4" {
+		return errors.New("video format is not mp4")
+	}
+
+	return nil
+}
+
 type initVideoUploadReq struct {
 	InitializeUploadRequest struct {
 		Owner           string `json:"owner"`
@@ -62,36 +96,10 @@ type finalizeVideoUploadReq struct {
 }
 
 func (vp *VideoPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
-	if pp == nil {
-		return errors.New("publish post is nil")
+	if err := vp.Validate(ctx, pp, mediaList); err != nil {
+		return err
 	}
-	if vp.secrets.AccessToken == "" {
-		return errors.New("user access token is not set")
-	}
-	if vp.authorURN == "" {
-		return errors.New("user URN is not set")
-	}
-	if len(mediaList) != 1 {
-		return errors.New("exactly one video is required")
-	}
-
 	m := mediaList[0]
-	if !m.IsVideo() {
-		return errors.New("provided media is not a video")
-	}
-	if m.Size > 500*1024*1024 {
-		return errors.New("video file size is too large")
-	}
-	if m.Length > 30*60 {
-		return errors.New("video length is too long")
-	}
-	if m.Length < 3 {
-		return errors.New("video length is too short")
-	}
-	if m.Format != "mp4" {
-		return errors.New("video format is not mp4")
-	}
-
 	// Step 1: Initialize video upload
 	initReqBody := initVideoUploadReq{}
 	initReqBody.InitializeUploadRequest.Owner = vp.authorURN

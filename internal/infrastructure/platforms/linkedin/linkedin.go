@@ -48,41 +48,13 @@ func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	return l
 }
 
-func (l *Linkedin) addSecret(key, secret string) (string, error) {
-	switch key {
-	case "access_token":
-		l.userSecrets.AccessToken = secret
-	case "urn":
-		l.userSecrets.URN = secret
-	case "token_expires_at":
-		t, err := time.Parse(time.RFC3339, secret)
-		if err != nil {
-			return "", err
-		}
-		l.userSecrets.TokenExpiresAt = t
-	default:
-		return "", errors.New("invalid key")
-	}
-
-	newSecretStr, err := l.encrypter.EncryptJSON(l.userSecrets)
-	if err != nil {
-		return "", err
-	}
-
-	return newSecretStr, nil
-}
-
-func (l *Linkedin) validateSecrets(secrets string) error {
-	if secrets == "" || secrets == "empty" {
-		return nil
-	}
-	var s Secrets
-	err := l.encrypter.DecryptJSON(secrets, &s)
+func (l *Linkedin) ValidatePost(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
+	posterFactory := NewLinkedinPosterFactory()
+	poster, err := posterFactory.NewPoster(pp, l.userSecrets)
 	if err != nil {
 		return err
 	}
-	l.userSecrets = s
-	return nil
+	return poster.Validate(ctx, pp, media)
 }
 
 func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
@@ -91,7 +63,7 @@ func (l *Linkedin) Publish(ctx context.Context, pp *post.PublishPost, media []*m
 	for _, m := range media {
 		fmt.Println("Media Name:", m.Filename)
 	}
-	posterFactory := NewPosterFactory()
+	posterFactory := NewLinkedinPosterFactory()
 	poster, err := posterFactory.NewPoster(pp, l.userSecrets)
 	if err != nil {
 		return err
@@ -209,4 +181,41 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	}
 
 	return secretStr, expiresAt, nil
+}
+
+func (l *Linkedin) addSecret(key, secret string) (string, error) {
+	switch key {
+	case "access_token":
+		l.userSecrets.AccessToken = secret
+	case "urn":
+		l.userSecrets.URN = secret
+	case "token_expires_at":
+		t, err := time.Parse(time.RFC3339, secret)
+		if err != nil {
+			return "", err
+		}
+		l.userSecrets.TokenExpiresAt = t
+	default:
+		return "", errors.New("invalid key")
+	}
+
+	newSecretStr, err := l.encrypter.EncryptJSON(l.userSecrets)
+	if err != nil {
+		return "", err
+	}
+
+	return newSecretStr, nil
+}
+
+func (l *Linkedin) validateSecrets(secrets string) error {
+	if secrets == "" || secrets == "empty" {
+		return nil
+	}
+	var s Secrets
+	err := l.encrypter.DecryptJSON(secrets, &s)
+	if err != nil {
+		return err
+	}
+	l.userSecrets = s
+	return nil
 }

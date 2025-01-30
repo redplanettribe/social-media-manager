@@ -21,13 +21,31 @@ type ImagePoster struct {
 	authorURN  string
 }
 
-// NewImagePoster creates a new instance of ImagePoster.
 func NewImagePoster(s Secrets) *ImagePoster {
 	return &ImagePoster{
 		secrets:    s,
 		httpClient: &http.Client{Timeout: 30 * time.Second},
 		authorURN:  s.URN,
 	}
+}
+
+func (ip *ImagePoster) Validate(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
+	if pp == nil {
+		return errors.New("publish post is nil")
+	}
+	if ip.secrets.AccessToken == "" {
+		return errors.New("user access token is not set")
+	}
+	if ip.authorURN == "" {
+		return errors.New("user URN is not set")
+	}
+	if len(mediaList) == 0 {
+		return errors.New("no images to upload")
+	}
+	if len(mediaList) > 1 {
+		return errors.New("single image upload only")
+	}
+	return nil
 }
 
 // initUploadRequest contains the request body for initializing an image upload.
@@ -47,20 +65,8 @@ type initUploadResponse struct {
 }
 
 func (ip *ImagePoster) Post(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
-	if pp == nil {
-		return errors.New("publish post is nil")
-	}
-	if ip.secrets.AccessToken == "" {
-		return errors.New("user access token is not set")
-	}
-	if ip.authorURN == "" {
-		return errors.New("user URN is not set")
-	}
-	if len(mediaList) == 0 {
-		return errors.New("no images to upload")
-	}
-	if len(mediaList) > 1 {
-		return errors.New("single image upload only")
+	if err := ip.Validate(ctx, pp, mediaList); err != nil {
+		return err
 	}
 
 	m := mediaList[0]

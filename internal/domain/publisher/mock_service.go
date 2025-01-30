@@ -97,6 +97,42 @@ func (_m *MockService) PublishPostToSocialNetwork(ctx context.Context, projectID
 	return r0
 }
 
+// ValidatePostForAssignedSocialNetworks provides a mock function with given fields: ctx, projecID, postID
+func (_m *MockService) ValidatePostForAssignedSocialNetworks(ctx context.Context, projecID string, postID string) error {
+	ret := _m.Called(ctx, projecID, postID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ValidatePostForAssignedSocialNetworks")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projecID, postID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// ValidatePostForSocialNetwork provides a mock function with given fields: ctx, projectID, postID, platformID
+func (_m *MockService) ValidatePostForSocialNetwork(ctx context.Context, projectID string, postID string, platformID string) error {
+	ret := _m.Called(ctx, projectID, postID, platformID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ValidatePostForSocialNetwork")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID, platformID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockService(t interface {

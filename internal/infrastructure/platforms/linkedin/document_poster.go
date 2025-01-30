@@ -28,23 +28,7 @@ func NewDocumentPoster(s Secrets) *DocumentPoster {
 	}
 }
 
-// initDocUploadReq and initDocUploadResp mirror LinkedIn’s document upload initialization process.
-type initDocUploadReq struct {
-	InitializeUploadRequest struct {
-		Owner string `json:"owner"`
-	} `json:"initializeUploadRequest"`
-}
-
-type initDocUploadResp struct {
-	Value struct {
-		UploadUrlExpiresAt int64  `json:"uploadUrlExpiresAt"`
-		UploadUrl          string `json:"uploadUrl"`
-		Document           string `json:"document"`
-	} `json:"value"`
-}
-
-// Post uploads a document and creates a LinkedIn post referring to it.
-func (dp *DocumentPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
+func (dp *DocumentPoster) Validate(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
 	if pp == nil {
 		return errors.New("publish post is nil")
 	}
@@ -64,7 +48,29 @@ func (dp *DocumentPoster) Post(ctx context.Context, pp *post.PublishPost, mediaL
 	if pp.Type == post.PostTypeCarousel && d.Format != "pdf" {
 		return errors.New("carousel post requires a PDF document")
 	}
+	return nil
+}
 
+// initDocUploadReq and initDocUploadResp mirror LinkedIn’s document upload initialization process.
+type initDocUploadReq struct {
+	InitializeUploadRequest struct {
+		Owner string `json:"owner"`
+	} `json:"initializeUploadRequest"`
+}
+
+type initDocUploadResp struct {
+	Value struct {
+		UploadUrlExpiresAt int64  `json:"uploadUrlExpiresAt"`
+		UploadUrl          string `json:"uploadUrl"`
+		Document           string `json:"document"`
+	} `json:"value"`
+}
+
+// Post uploads a document and creates a LinkedIn post referring to it.
+func (dp *DocumentPoster) Post(ctx context.Context, pp *post.PublishPost, mediaList []*media.Media) error {
+	if err := dp.Validate(ctx, pp, mediaList); err != nil {
+		return err
+	}
 	// Step 1: Initialize document upload
 	initReqBody := initDocUploadReq{}
 	initReqBody.InitializeUploadRequest.Owner = dp.authorURN

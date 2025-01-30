@@ -23,8 +23,7 @@ func NewTextPoster(s Secrets) *TextPoster {
 	}
 }
 
-func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, _ []*media.Media) error {
-	// Validate input
+func (tp *TextPoster) Validate(ctx context.Context, pp *post.PublishPost, _ []*media.Media) error {
 	if pp == nil {
 		return errors.New("publish post is nil")
 	}
@@ -33,6 +32,18 @@ func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, _ []*media
 	}
 	if tp.secrets.URN == "" {
 		return errors.New("user URN is not set")
+	}
+	if pp.TextContent == "" {
+		return errors.New("text content is empty")
+	}
+	return nil
+}
+
+func (tp *TextPoster) Post(ctx context.Context, pp *post.PublishPost, _ []*media.Media) error {
+
+	err := tp.Validate(ctx, pp, nil)
+	if err != nil {
+		return err
 	}
 
 	body := map[string]interface{}{
