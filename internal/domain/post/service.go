@@ -24,6 +24,7 @@ type Service interface {
 	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error)
 	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
 	SchedulePost(ctx context.Context, id string, scheduledAt time.Time) error
+	UnschedulePost(ctx context.Context, id string) error
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
@@ -200,6 +201,20 @@ func (s *service) SchedulePost(ctx context.Context, id string, scheduletAt time.
 		return ErrPostScheduledTime
 	}
 	return s.repo.SchedulePost(ctx, id, scheduletAt)
+}
+
+func (s *service) UnschedulePost(ctx context.Context, id string) error {
+	p, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+	if p.Status != string(PostStatusScheduled) {
+		return ErrPostNotScheduled
+	}
+	return s.repo.UnschedulePost(ctx, id)
 }
 
 func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID string) error {

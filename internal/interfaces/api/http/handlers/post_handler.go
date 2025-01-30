@@ -313,6 +313,39 @@ func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// UnschedulePost godoc
+// @Summary Unschedule a post
+// @Description Unschedule a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Param project_id path string true "Project ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/unschedule [patch]
+func (h *PostHandler) UnschedulePost(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.UnschedulePost(r.Context(), postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // AddPostToProjectQueue godoc
 // @Summary Add a post to a project queue
 // @Description Add a post to a project queue by its id

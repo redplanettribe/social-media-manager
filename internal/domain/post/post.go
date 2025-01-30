@@ -64,6 +64,7 @@ func (pt PostType) IsValid() bool {
 var (
 	ErrProjectNotFound            = errors.New("project not found")
 	ErrPostNotFound               = errors.New("post not found")
+	ErrPostNotScheduled           = errors.New("post not scheduled")
 	ErrPostNotDraft               = errors.New("post not in draft status")
 	ErrPublisherNotInProject      = errors.New("publisher not in project")
 	ErrPostScheduledTime          = errors.New("post scheduled time is in the past")

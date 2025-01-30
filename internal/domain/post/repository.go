@@ -17,6 +17,7 @@ type Repository interface {
 	GetSocialMediaPlatforms(ctx context.Context, postID string) ([]Platform, error)
 	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*PublishPost, error)
 	SchedulePost(ctx context.Context, id string, sheduled_at time.Time) error
+	UnschedulePost(ctx context.Context, id string) error
 	IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error)
 	GetProjectPostQueue(ctx context.Context, projectID string) (*Queue, error)
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error

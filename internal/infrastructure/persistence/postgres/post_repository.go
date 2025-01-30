@@ -243,6 +243,18 @@ func (r *PostRepository) SchedulePost(ctx context.Context, id string, scheduledA
 	return nil
 }
 
+func (r *PostRepository) UnschedulePost(ctx context.Context, id string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET scheduled_at = $2, status = $3, updated_at = $4
+		WHERE id = $1
+	`, Posts), id, time.Time{}, post.PostStatusDraft, time.Now())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *PostRepository) IsPublisherPlatformEnabledForProject(ctx context.Context, projectID, publisherID string) (bool, error) {
 	row := r.db.QueryRow(ctx, fmt.Sprintf(`
 		SELECT COUNT(*)
