@@ -54,7 +54,7 @@ func (s *service) GetPublishPostInfo(ctx context.Context, projectID, postID, pla
 
 	g.Go(func() error {
 		var err error
-		media, err = s.mediaService.GetDownloadMetadataDataForPost(ctx, projectID, postID)
+		media, err = s.mediaService.GetDownloadMetadataForPublishPost(ctx, projectID, postID, platformID)
 		return err
 	})
 
@@ -237,7 +237,7 @@ func (s *service) PublishPostToSocialNetwork(ctx context.Context, projectID, pos
 
 	g.Go(func() error {
 		var err error
-		media, err = s.mediaService.GetMediaForPost(ctx, projectID, postID, platformID)
+		media, err = s.mediaService.GetMediaForPublishPost(ctx, projectID, postID, platformID)
 		return err
 	})
 
@@ -316,7 +316,7 @@ func (s *service) ValidatePostForSocialNetwork(ctx context.Context, projectID, p
 
 	g.Go(func() error {
 		var err error
-		media, err = s.mediaService.GetMediaForPost(ctx, projectID, postID, platformID)
+		media, err = s.mediaService.GetMediaForPublishPost(ctx, projectID, postID, platformID)
 		return err
 	})
 

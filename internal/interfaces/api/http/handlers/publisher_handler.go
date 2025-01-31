@@ -171,10 +171,10 @@ func (h *PublisherHandler) ValidatePostForAssignedSocialNetworks(w http.Response
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /publishers/{project_id}/{post_id}/{social_network_id}/validate [get]
+// @Router /publishers/{project_id}/{post_id}/{platform_id}/validate [get]
 func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
-	socialNetworkID := r.PathValue("social_network_id")
+	socialNetworkID := r.PathValue("platform_id")
 	projectID := r.PathValue("project_id")
 
 	if postID == "" || socialNetworkID == "" || projectID == "" {
@@ -204,7 +204,7 @@ func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /publishers/{project_id}/{post_id}/{social_network_id}/info [get]
+// @Router /publishers/{project_id}/{post_id}/{platform_id}/info [get]
 func (h *PublisherHandler) GetPublishPostInfo(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
 	socialNetworkID := r.PathValue("platform_id")

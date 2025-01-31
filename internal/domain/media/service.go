@@ -13,7 +13,8 @@ type Service interface {
 	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMetaData, error)
 	GetDownloadMetaData(ctx context.Context, projectID, postID, fileName string) (DownloadMetaData, error)
 	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
-	GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
+	GetMediaForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
+	GetDownloadMetadataForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*DownloadMetaData, error)
 	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
 	GetDownloadMetadataDataForPost(ctx context.Context, projectID, postID string) ([]*DownloadMetaData, error)
 }
@@ -162,17 +163,17 @@ func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName 
 	}, nil
 }
 
-func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error) {
-	mediaNames, err := s.repo.GetMediaFileNamesForPost(ctx, postID, platformID)
+func (s *service) GetMediaForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error) {
+	filenames, err := s.repo.GetMediaFileNamesForPublishPost(ctx, postID, platformID)
 	if err != nil {
 		return nil, err
 	}
 	var (
-		medias  = make([]*Media, len(mediaNames))
+		medias  = make([]*Media, len(filenames))
 		g, gCtx = errgroup.WithContext(ctx)
 	)
 
-	for i, mediaName := range mediaNames {
+	for i, mediaName := range filenames {
 		i, name := i, mediaName
 		g.Go(func() error {
 			media, err := s.GetMediaFile(gCtx, projectID, postID, name)
@@ -197,6 +198,35 @@ func (s *service) GetMediaForPost(ctx context.Context, projectID, postID, platfo
 	}
 
 	return medias, nil
+}
+
+func (s *service) GetDownloadMetadataForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*DownloadMetaData, error) {
+	filenames, err := s.repo.GetMediaFileNamesForPublishPost(ctx, postID, platformID)
+	if err != nil {
+		return nil, err
+	}
+	var (
+		downloadMetaDatas = make([]*DownloadMetaData, len(filenames))
+		g, gCtx           = errgroup.WithContext(ctx)
+	)
+
+	for i, filename := range filenames {
+		i, filename := i, filename
+		g.Go(func() error {
+			downloadMetaData, err := s.GetDownloadMetaData(gCtx, projectID, postID, filename)
+			if err != nil {
+				return err
+			}
+			downloadMetaDatas[i] = &downloadMetaData
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return downloadMetaDatas, nil
 }
 
 func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error {

@@ -44,7 +44,7 @@ func (r *MediaRepository) GetMetadata(ctx context.Context, postID, fileName stri
 	return &m, nil
 }
 
-func (r *MediaRepository) GetMediaFileNamesForPost(ctx context.Context, postID, platformID string) ([]string, error) {
+func (r *MediaRepository) GetMediaFileNamesForPublishPost(ctx context.Context, postID, platformID string) ([]string, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT file_name
 		FROM %s m
