@@ -25,5 +25,5 @@ type PublisherFactory interface {
 
 type PublishPostInfo struct {
 	Post  *post.PublishPost
-	Media []*media.Media
+	Media []*media.DownloadMetaData
 }

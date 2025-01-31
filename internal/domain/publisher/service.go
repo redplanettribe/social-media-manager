@@ -42,7 +42,7 @@ func NewService(r Repository, e encrypting.Encrypter, pf PublisherFactory, ps po
 func (s *service) GetPublishPostInfo(ctx context.Context, projectID, postID, platformID string) (*PublishPostInfo, error) {
 	var (
 		publishPost *post.PublishPost
-		media       []*media.Media
+		media       []*media.DownloadMetaData
 		g           errgroup.Group
 	)
 
@@ -54,7 +54,7 @@ func (s *service) GetPublishPostInfo(ctx context.Context, projectID, postID, pla
 
 	g.Go(func() error {
 		var err error
-		media, err = s.mediaService.GetMediaForPost(ctx, projectID, postID, platformID)
+		media, err = s.mediaService.GetDownloadMetadataDataForPost(ctx, projectID, postID)
 		return err
 	})
 
