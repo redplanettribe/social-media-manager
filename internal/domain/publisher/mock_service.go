@@ -61,6 +61,36 @@ func (_m *MockService) GetAvailableSocialNetworks(ctx context.Context) ([]Platfo
 	return r0, r1
 }
 
+// GetPublishPostInfo provides a mock function with given fields: ctx, projectID, postID, platformID
+func (_m *MockService) GetPublishPostInfo(ctx context.Context, projectID string, postID string, platformID string) (*PublishPostInfo, error) {
+	ret := _m.Called(ctx, projectID, postID, platformID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetPublishPostInfo")
+	}
+
+	var r0 *PublishPostInfo
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) (*PublishPostInfo, error)); ok {
+		return rf(ctx, projectID, postID, platformID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) *PublishPostInfo); ok {
+		r0 = rf(ctx, projectID, postID, platformID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*PublishPostInfo)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = rf(ctx, projectID, postID, platformID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // PublishPostToAssignedSocialNetworks provides a mock function with given fields: ctx, projecID, postID
 func (_m *MockService) PublishPostToAssignedSocialNetworks(ctx context.Context, projecID string, postID string) error {
 	ret := _m.Called(ctx, projecID, postID)

@@ -2064,6 +2064,69 @@
                 }
             }
         },
+        "/publishers/{project_id}/{post_id}/{social_network_id}/info": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get publish post info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "publishers"
+                ],
+                "summary": "Get publish post info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Social Network ID",
+                        "name": "social_network_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/publisher.PublishPostInfo"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/publishers/{project_id}/{post_id}/{social_network_id}/validate": {
             "get": {
                 "security": [
@@ -2665,6 +2728,57 @@
                 }
             }
         },
+        "media.Media": {
+            "type": "object",
+            "properties": {
+                "added_by": {
+                    "type": "string"
+                },
+                "alt_text": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "filename": {
+                    "type": "string"
+                },
+                "format": {
+                    "type": "string"
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "length": {
+                    "type": "integer"
+                },
+                "media_type": {
+                    "$ref": "#/definitions/media.MediaType"
+                },
+                "post_id": {
+                    "type": "string"
+                },
+                "size": {
+                    "description": "in bytes",
+                    "type": "integer"
+                },
+                "thumbnail": {
+                    "$ref": "#/definitions/media.Media"
+                },
+                "width": {
+                    "type": "integer"
+                }
+            }
+        },
         "media.MediaType": {
             "type": "string",
             "enum": [
@@ -2796,6 +2910,54 @@
                 "PostTypeCarousel"
             ]
         },
+        "post.PublishPost": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_idea": {
+                    "type": "boolean"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "type": "string"
+                },
+                "publish_status": {
+                    "type": "string"
+                },
+                "scheduled_at": {
+                    "type": "string"
+                },
+                "secrets": {
+                    "description": "Additional fields",
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "text_content": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/post.PostType"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "project.Project": {
             "type": "object",
             "properties": {
@@ -2878,6 +3040,20 @@
                 "LinkedIn",
                 "Instagram"
             ]
+        },
+        "publisher.PublishPostInfo": {
+            "type": "object",
+            "properties": {
+                "media": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/media.Media"
+                    }
+                },
+                "post": {
+                    "$ref": "#/definitions/post.PublishPost"
+                }
+            }
         },
         "session.Session": {
             "type": "object",

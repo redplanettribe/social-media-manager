@@ -18,6 +18,7 @@ type Service interface {
 	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
 	ValidatePostForSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
 	Authenticate(ctx context.Context, platformID, projectID, userID, code string) error
+	GetPublishPostInfo(ctx context.Context, projectID, postID, platformID string) (*PublishPostInfo, error)
 }
 
 type service struct {
@@ -36,6 +37,41 @@ func NewService(r Repository, e encrypting.Encrypter, pf PublisherFactory, ps po
 		postService:      ps,
 		mediaService:     m,
 	}
+}
+
+func (s *service) GetPublishPostInfo(ctx context.Context, projectID, postID, platformID string) (*PublishPostInfo, error) {
+	var (
+		publishPost *post.PublishPost
+		media       []*media.Media
+		g           errgroup.Group
+	)
+
+	g.Go(func() error {
+		var err error
+		publishPost, err = s.postService.GetPostToPublish(ctx, postID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		media, err = s.mediaService.GetMediaForPost(ctx, projectID, postID, platformID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+	if publishPost == nil {
+		return nil, post.ErrPostNotFound
+	}
+	if publishPost.ProjectID != projectID {
+		return nil, post.ErrPostNotInProject
+	}
+
+	return &PublishPostInfo{
+		Post:  publishPost,
+		Media: media,
+	}, nil
 }
 
 func (s *service) Authenticate(ctx context.Context, platformID, projectID, userID, code string) error {

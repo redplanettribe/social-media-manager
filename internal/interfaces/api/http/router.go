@@ -223,6 +223,9 @@ func (r *Router) setupPublisherRoutes(h *handlers.PublisherHandler) {
 	r.Handle("GET /publishers/{project_id}/{post_id}/validate", r.projectPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.ValidatePostForAssignedSocialNetworks),
 	))
+	r.Handle("GET /publishers/{project_id}/{post_id}/{platform_id}/info", r.projectPermissions("read:publishers").Chain(
+		http.HandlerFunc(h.GetPublishPostInfo),
+	))
 }
 
 /*MEDIA ROUTES*/

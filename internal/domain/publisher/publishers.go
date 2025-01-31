@@ -22,3 +22,8 @@ type Publisher interface {
 type PublisherFactory interface {
 	Create(platform string, secrets string) (Publisher, error)
 }
+
+type PublishPostInfo struct {
+	Post  *post.PublishPost
+	Media []*media.Media
+}

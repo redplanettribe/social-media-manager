@@ -113,6 +113,40 @@ definitions:
       width:
         type: integer
     type: object
+  media.Media:
+    properties:
+      added_by:
+        type: string
+      alt_text:
+        type: string
+      created_at:
+        type: string
+      data:
+        items:
+          type: integer
+        type: array
+      filename:
+        type: string
+      format:
+        type: string
+      height:
+        type: integer
+      id:
+        type: string
+      length:
+        type: integer
+      media_type:
+        $ref: '#/definitions/media.MediaType'
+      post_id:
+        type: string
+      size:
+        description: in bytes
+        type: integer
+      thumbnail:
+        $ref: '#/definitions/media.Media'
+      width:
+        type: integer
+    type: object
   media.MediaType:
     enum:
     - image
@@ -206,6 +240,38 @@ definitions:
     - PostTypeShortVideo
     - PostTypeDocument
     - PostTypeCarousel
+  post.PublishPost:
+    properties:
+      created_at:
+        type: string
+      created_by:
+        type: string
+      id:
+        type: string
+      is_idea:
+        type: boolean
+      platform:
+        type: string
+      project_id:
+        type: string
+      publish_status:
+        type: string
+      scheduled_at:
+        type: string
+      secrets:
+        description: Additional fields
+        type: string
+      status:
+        type: string
+      text_content:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/post.PostType'
+      updated_at:
+        type: string
+    type: object
   project.Project:
     properties:
       created_at:
@@ -262,6 +328,15 @@ definitions:
     - X
     - LinkedIn
     - Instagram
+  publisher.PublishPostInfo:
+    properties:
+      media:
+        items:
+          $ref: '#/definitions/media.Media'
+        type: array
+      post:
+        $ref: '#/definitions/post.PublishPost'
+    type: object
   session.Session:
     properties:
       createdAt:
@@ -1610,6 +1685,47 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Publish post to social network
+      tags:
+      - publishers
+  /publishers/{project_id}/{post_id}/{social_network_id}/info:
+    get:
+      consumes:
+      - application/json
+      description: Get publish post info
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Social Network ID
+        in: path
+        name: social_network_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/publisher.PublishPostInfo'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get publish post info
       tags:
       - publishers
   /publishers/{project_id}/{post_id}/{social_network_id}/validate:

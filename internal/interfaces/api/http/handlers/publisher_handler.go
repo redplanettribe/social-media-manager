@@ -190,3 +190,41 @@ func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r
 
 	w.WriteHeader(http.StatusOK)
 }
+
+// GetPublishPostInfo godoc
+// @Summary Get publish post info
+// @Description Get publish post info
+// @Tags publishers
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param social_network_id path string true "Social Network ID"
+// @Success 200 {object} publisher.PublishPostInfo
+// @Failure 400 {object} errors.APIError "Bad request"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /publishers/{project_id}/{post_id}/{social_network_id}/info [get]
+func (h *PublisherHandler) GetPublishPostInfo(w http.ResponseWriter, r *http.Request) {
+	postID := r.PathValue("post_id")
+	socialNetworkID := r.PathValue("social_network_id")
+	projectID := r.PathValue("project_id")
+
+	if postID == "" || socialNetworkID == "" || projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+		return
+	}
+
+	info, err := h.Service.GetPublishPostInfo(r.Context(), projectID, postID, socialNetworkID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(info)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
