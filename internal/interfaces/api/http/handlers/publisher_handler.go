@@ -207,7 +207,7 @@ func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r
 // @Router /publishers/{project_id}/{post_id}/{social_network_id}/info [get]
 func (h *PublisherHandler) GetPublishPostInfo(w http.ResponseWriter, r *http.Request) {
 	postID := r.PathValue("post_id")
-	socialNetworkID := r.PathValue("social_network_id")
+	socialNetworkID := r.PathValue("platform_id")
 	projectID := r.PathValue("project_id")
 
 	if postID == "" || socialNetworkID == "" || projectID == "" {
