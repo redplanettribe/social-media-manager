@@ -50,17 +50,17 @@ func (_m *MockService) AddToProjectQueue(ctx context.Context, projectID string, 
 	return r0
 }
 
-// ArchivePost provides a mock function with given fields: ctx, id
-func (_m *MockService) ArchivePost(ctx context.Context, id string) error {
-	ret := _m.Called(ctx, id)
+// ArchivePost provides a mock function with given fields: ctx, projectID, postID
+func (_m *MockService) ArchivePost(ctx context.Context, projectID string, postID string) error {
+	ret := _m.Called(ctx, projectID, postID)
 
 	if len(ret) == 0 {
 		panic("no return value specified for ArchivePost")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
-		r0 = rf(ctx, id)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -406,6 +406,24 @@ func (_m *MockService) RemovePostFromProjectQueue(ctx context.Context, projectID
 
 	if len(ret) == 0 {
 		panic("no return value specified for RemovePostFromProjectQueue")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// RestorePost provides a mock function with given fields: ctx, projectID, postID
+func (_m *MockService) RestorePost(ctx context.Context, projectID string, postID string) error {
+	ret := _m.Called(ctx, projectID, postID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RestorePost")
 	}
 
 	var r0 error

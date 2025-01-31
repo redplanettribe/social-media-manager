@@ -70,11 +70,13 @@ var (
 	ErrPostScheduledTime          = errors.New("post scheduled time is in the past")
 	ErrPostAlreadyInQueue         = errors.New("post already in queue")
 	ErrPostAlreadyPublished       = errors.New("post already published")
+	ErrPostNotInProject           = errors.New("post not in project")
 	ErrPostNotLinkedToAnyPlatform = errors.New("post not linked to any platform")
 	ErrPostIsIdea                 = errors.New("post is an idea")
 	ErrInvalidPostType            = errors.New("invalid post type")
 	ErrPostNotInQueue             = errors.New("post not in queue")
 	ErrPostIsNotIdea              = errors.New("post is not an idea")
+	ErrPostNotArchived            = errors.New("post not archived")
 )
 
 type Post struct {

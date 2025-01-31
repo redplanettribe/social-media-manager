@@ -171,6 +171,7 @@ func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/archive [patch]
 func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id") // not checking for this bc middleware should have already checked
 	postID := r.PathValue("post_id")
 	if postID == "" {
 		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
@@ -179,7 +180,40 @@ func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.Service.ArchivePost(r.Context(), postID)
+	err := h.Service.ArchivePost(r.Context(), projectID, postID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RestorePost godoc
+// @Summary Restore a post
+// @Description Restore a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param post_id path string true "Post ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/restore [patch]
+func (h *PostHandler) RestorePost(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id") // not checking for this bc middleware should have already checked
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.RestorePost(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

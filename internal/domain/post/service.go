@@ -17,7 +17,8 @@ type Service interface {
 		scheduledAt time.Time) (*Post, error)
 	GetPost(ctx context.Context, id string) (*PostResponse, error)
 	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
-	ArchivePost(ctx context.Context, id string) error
+	RestorePost(ctx context.Context, projectID, postID string) error
+	ArchivePost(ctx context.Context, projectID, postID string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error
 	GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error)
@@ -119,8 +120,8 @@ func (s *service) ListProjectPosts(ctx context.Context, projectID string) ([]*Po
 	return s.repo.FindByProjectID(ctx, projectID)
 }
 
-func (s *service) ArchivePost(ctx context.Context, id string) error {
-	p, err := s.repo.FindByID(ctx, id)
+func (s *service) ArchivePost(ctx context.Context, projectID, postID string) error {
+	p, err := s.repo.FindByID(ctx, postID)
 	if err != nil {
 		return err
 	}
@@ -130,21 +131,43 @@ func (s *service) ArchivePost(ctx context.Context, id string) error {
 	if p.Status == string(PostStatusPublished) {
 		return ErrPostAlreadyPublished
 	}
+
+	if p.ProjectID != projectID {
+		return ErrPostNotInProject
+	}
 	g, gCtx := errgroup.WithContext(ctx)
 
 	g.Go(func() error {
-		return s.repo.ArchivePost(gCtx, id)
+		return s.repo.ArchivePost(gCtx, postID)
 	})
 
 	g.Go(func() error {
-		return s.repo.RemoveFromProjectQueue(gCtx, p.ProjectID, id)
+		return s.repo.RemoveFromProjectQueue(gCtx, p.ProjectID, postID)
 	})
 
 	g.Go(func() error {
-		return s.repo.RemoveFromProjectIdeaQueue(gCtx, p.ProjectID, id)
+		return s.repo.RemoveFromProjectIdeaQueue(gCtx, p.ProjectID, postID)
 	})
 
 	return g.Wait()
+}
+
+func (s *service) RestorePost(ctx context.Context, projectID, postID string) error {
+	p, err := s.repo.FindByID(ctx, postID)
+	if err != nil {
+		return err
+	}
+	if p == nil {
+		return ErrPostNotFound
+	}
+	if p.Status != string(PostStatusArchived) {
+		return ErrPostNotArchived
+	}
+	if p.ProjectID != projectID {
+		return ErrPostNotInProject
+	}
+
+	return s.repo.RestorePost(ctx, postID)
 }
 
 func (s *service) DeletePost(ctx context.Context, id string) error {

@@ -36,6 +36,7 @@ func mapErrorToAPIError(err error) *e.APIError {
 		media.ErrPostNotLinkedToPlatform,
 		media.ErrMediaAlreadyLinkedToPost,
 		user.ErrInvalidPassword,
+		post.ErrPostNotInProject,
 	):
 		return &e.APIError{
 			Status:  http.StatusForbidden,
@@ -69,6 +70,7 @@ func mapErrorToAPIError(err error) *e.APIError {
 		post.ErrPostNotScheduled,
 		post.ErrPostIsIdea,
 		post.ErrPostIsNotIdea,
+		post.ErrPostNotArchived,
 	):
 		return &e.APIError{
 			Status:  http.StatusUnprocessableEntity,

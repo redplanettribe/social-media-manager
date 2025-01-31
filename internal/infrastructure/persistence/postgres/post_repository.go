@@ -97,6 +97,18 @@ func (r *PostRepository) ArchivePost(ctx context.Context, id string) error {
 	return nil
 }
 
+func (r *PostRepository) RestorePost(ctx context.Context, id string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET status = $2, updated_at = $3
+		WHERE id = $1
+	`, Posts), id, post.PostStatusDraft, time.Now())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *PostRepository) DeletePost(ctx context.Context, id string) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		DELETE FROM %s
