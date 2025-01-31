@@ -29,6 +29,7 @@ type Service interface {
 	RemoveFromProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
+	MoveIdeaInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
 	DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error)
 	GetAvailablePostTypes() []string
 	UpdatePostStatus(ctx context.Context, id string, status PostStatus) error
@@ -376,6 +377,20 @@ func (s *service) MovePostInQueue(ctx context.Context, projectID string, current
 	}
 	q.Move(currentIndex, newIndex)
 	return s.repo.UpdateProjectPostQueue(ctx, projectID, q.Arr())
+}
+
+func (s *service) MoveIdeaInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error {
+	q, err := s.repo.GetProjectIdeaQueue(ctx, projectID)
+	if err != nil {
+		return err
+	}
+
+	if q.IsEmpty() {
+		return nil
+	}
+
+	q.Move(currentIndex, newIndex)
+	return s.repo.UpdateProjectIdeaQueue(ctx, projectID, q.Arr())
 }
 
 func (s *service) DequeuePostsToPublish(ctx context.Context, projectID string) ([]*PublishPost, error) {

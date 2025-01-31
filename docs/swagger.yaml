@@ -64,7 +64,7 @@ definitions:
       password:
         type: string
     type: object
-  handlers.movePostRequest:
+  handlers.moveInQueueRequest:
     properties:
       current_index:
         type: integer
@@ -971,6 +971,87 @@ paths:
       summary: Create a new post
       tags:
       - posts
+  /posts/{project_id}/idea-queue/move:
+    patch:
+      consumes:
+      - application/json
+      description: Add a post to a project idea queue by its id
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a post to a project idea queue
+      tags:
+      - posts
+  /posts/{project_id}/post-queue/move:
+    patch:
+      consumes:
+      - application/json
+      description: Move a post in the project queue by its current and new index
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Move post request
+        in: body
+        name: move
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.moveInQueueRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Move a post in the project queue
+      tags:
+      - posts
   /posts/{project_id}/queue:
     get:
       consumes:
@@ -1010,54 +1091,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get all queued posts of a project
-      tags:
-      - posts
-  /posts/{project_id}/queue/move:
-    patch:
-      consumes:
-      - application/json
-      description: Move a post in the project queue by its current and new index
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Post ID
-        in: path
-        name: post_id
-        required: true
-        type: string
-      - description: Move post request
-        in: body
-        name: move
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.movePostRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No content
-        "400":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "410":
-          description: Post not found
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Move a post in the project queue
       tags:
       - posts
   /projects:

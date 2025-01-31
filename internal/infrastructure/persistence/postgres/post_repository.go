@@ -287,6 +287,46 @@ func (r *PostRepository) GetProjectPostQueue(ctx context.Context, projectID stri
 	return queue, nil
 }
 
+func (r *PostRepository) UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET post_queue = $2
+		WHERE id = $1
+	`, Projects), projectID, queue)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *PostRepository) GetProjectIdeaQueue(ctx context.Context, projectID string) (*post.Queue, error) {
+	row := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT idea_queue
+		FROM %s
+		WHERE id = $1
+	`, Projects), projectID)
+
+	var queue *post.Queue
+	err := row.Scan(&queue)
+	if err != nil {
+		return queue, err
+	}
+
+	return queue, nil
+}
+
+func (r *PostRepository) UpdateProjectIdeaQueue(ctx context.Context, projectID string, queue []string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET idea_queue = $2
+		WHERE id = $1
+	`, Projects), projectID, queue)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *PostRepository) AddToProjectQueue(ctx context.Context, projectID, postID string) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		UPDATE %s
@@ -381,18 +421,6 @@ func (r *PostRepository) GetProjectQueuedPosts(ctx context.Context, projectID st
 	}
 
 	return posts, nil
-}
-
-func (r *PostRepository) UpdateProjectPostQueue(ctx context.Context, projectID string, queue []string) error {
-	_, err := r.db.Exec(ctx, fmt.Sprintf(`
-		UPDATE %s
-		SET post_queue = $2
-		WHERE id = $1
-	`, Projects), projectID, queue)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID string) ([]*post.PublishPost, error) {

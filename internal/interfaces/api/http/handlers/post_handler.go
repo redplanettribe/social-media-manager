@@ -462,7 +462,7 @@ func (h *PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-type movePostRequest struct {
+type moveInQueueRequest struct {
 	CurrentIndex int `json:"current_index"`
 	NewIndex     int `json:"new_index"`
 }
@@ -475,16 +475,16 @@ type movePostRequest struct {
 // @Produce json
 // @Param project_id path string true "Project ID"
 // @Param post_id path string true "Post ID"
-// @Param move body movePostRequest true "Move post request"
+// @Param move body moveInQueueRequest true "Move post request"
 // @Success 204 "No content"
 // @Failure 400 {object} errors.APIError "Validation error"
 // @Failure 401 {object} errors.APIError "Unauthorized"
 // @Failure 410 {object} errors.APIError "Post not found"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /posts/{project_id}/queue/move [patch]
+// @Router /posts/{project_id}/post-queue/move [patch]
 func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
-	var req movePostRequest
+	var req moveInQueueRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
@@ -499,6 +499,43 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err := h.Service.MovePostInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// AddPostToProjectIdeaQueue godoc
+// @Summary Add a post to a project idea queue
+// @Description Add a post to a project idea queue by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/idea-queue/move [patch]
+func (h *PostHandler) MoveIdeaInQueue(w http.ResponseWriter, r *http.Request) {
+	var req moveInQueueRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.MoveIdeaInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
