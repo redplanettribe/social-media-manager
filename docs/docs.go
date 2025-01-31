@@ -2572,7 +2572,19 @@ const docTemplate = `{
             }
         },
         "handlers.addTimeSlotRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "day_of_week": {
+                    "description": "time.Weekday",
+                    "type": "integer"
+                },
+                "hour": {
+                    "type": "integer"
+                },
+                "minute": {
+                    "type": "integer"
+                }
+            }
         },
         "handlers.assignRoleRequest": {
             "type": "object",

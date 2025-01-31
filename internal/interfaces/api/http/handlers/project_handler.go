@@ -309,9 +309,9 @@ func (h *ProjectHandler) SetTimeZone(w http.ResponseWriter, r *http.Request) {
 }
 
 type addTimeSlotRequest struct {
-	DayOfWeek time.Weekday `json:"day_of_week"`
-	Hour      int          `json:"hour"`
-	Minute    int          `json:"minute"`
+	DayOfWeek int `json:"day_of_week"` // time.Weekday
+	Hour      int `json:"hour"`
+	Minute    int `json:"minute"`
 }
 
 // AddTimeSlot godoc
@@ -345,7 +345,7 @@ func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.Service.AddTimeSlot(ctx, projectID, req.DayOfWeek, req.Hour, req.Minute)
+	err := h.Service.AddTimeSlot(ctx, projectID, time.Weekday(req.DayOfWeek), req.Hour, req.Minute)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

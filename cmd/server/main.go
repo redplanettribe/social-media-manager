@@ -13,7 +13,6 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
-	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/scheduler"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
@@ -28,6 +27,8 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
 	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
 )
+
+// cmd/server/main.go
 
 // @title OpenCM API
 // @version 1.0
@@ -120,7 +121,7 @@ func main() {
 		projectAuthorizer,
 	)
 	// Initialize the publisher queue
-	publisherQueue := pq.NewPublisherQueue(&cfg.Publisher, publisherFactory, publisherService)
+	publisherQueue := publisher.NewPublisherQueue(&cfg.Publisher, publisherFactory, publisherService)
 	publisherQueue.Start(ctx)
 
 	// Start the post scheduler

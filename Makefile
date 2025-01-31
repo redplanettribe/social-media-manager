@@ -54,7 +54,7 @@ generate-mocks:
 .PHONY: generate-api-docs
 generate-api-docs:
 	@echo "Generating API documentation..."
-	swag init -g cmd/server/main.go
+	swag init -g cmd/server/main.go -d ./
 
 
 .PHONY: lint

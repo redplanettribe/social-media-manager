@@ -11,6 +11,14 @@ definitions:
         type: integer
     type: object
   handlers.addTimeSlotRequest:
+    properties:
+      day_of_week:
+        description: time.Weekday
+        type: integer
+      hour:
+        type: integer
+      minute:
+        type: integer
     type: object
   handlers.assignRoleRequest:
     properties:
