@@ -418,7 +418,7 @@ func (h *PostHandler) RemovePostFromProjectQueue(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err := h.Service.RemoveFromProjectQueue(r.Context(), projectID, postID)
+	err := h.Service.RemovePostFromProjectQueue(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

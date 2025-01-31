@@ -26,7 +26,8 @@ type Service interface {
 	SchedulePost(ctx context.Context, id string, scheduledAt time.Time) error
 	UnschedulePost(ctx context.Context, id string) error
 	AddToProjectQueue(ctx context.Context, projectID, postID string) error
-	RemoveFromProjectQueue(ctx context.Context, projectID, postID string) error
+	RemovePostFromProjectQueue(ctx context.Context, projectID, postID string) error
+	RemoveIdeaFromProjectQueue(ctx context.Context, projectID, postID string) error
 	GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error)
 	MovePostInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
 	MoveIdeaInQueue(ctx context.Context, projectID string, currentIndex, newIndex int) error
@@ -126,7 +127,24 @@ func (s *service) ArchivePost(ctx context.Context, id string) error {
 	if p == nil {
 		return ErrPostNotFound
 	}
-	return s.repo.ArchivePost(ctx, id)
+	if p.Status == string(PostStatusPublished) {
+		return ErrPostAlreadyPublished
+	}
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		return s.repo.ArchivePost(gCtx, id)
+	})
+
+	g.Go(func() error {
+		return s.repo.RemoveFromProjectQueue(gCtx, p.ProjectID, id)
+	})
+
+	g.Go(func() error {
+		return s.repo.RemoveFromProjectIdeaQueue(gCtx, p.ProjectID, id)
+	})
+
+	return g.Wait()
 }
 
 func (s *service) DeletePost(ctx context.Context, id string) error {
@@ -137,7 +155,21 @@ func (s *service) DeletePost(ctx context.Context, id string) error {
 	if p == nil {
 		return ErrPostNotFound
 	}
-	return s.repo.DeletePost(ctx, id)
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		return s.repo.RemoveFromProjectQueue(gCtx, p.ProjectID, id)
+	})
+
+	g.Go(func() error {
+		return s.repo.RemoveFromProjectIdeaQueue(gCtx, p.ProjectID, id)
+	})
+
+	g.Go(func() error {
+		return s.repo.DeletePost(gCtx, id)
+	})
+
+	return g.Wait()
 }
 
 func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error {
@@ -284,7 +316,7 @@ func (s *service) AddToProjectQueue(ctx context.Context, projectID, postID strin
 	return s.repo.AddToProjectQueue(ctx, projectID, postID)
 }
 
-func (s *service) RemoveFromProjectQueue(ctx context.Context, projectID, postID string) error {
+func (s *service) RemovePostFromProjectQueue(ctx context.Context, projectID, postID string) error {
 	var (
 		p *Post
 	)
@@ -336,6 +368,47 @@ func (s *service) RemoveFromProjectQueue(ctx context.Context, projectID, postID 
 	})
 
 	return g2.Wait()
+}
+
+func (s *service) RemoveIdeaFromProjectQueue(ctx context.Context, projectID, postID string) error {
+	var (
+		p *Post
+	)
+
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		var err error
+		p, err = s.repo.FindByID(gCtx, postID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		queue, err := s.repo.GetProjectIdeaQueue(gCtx, projectID)
+		if err != nil {
+			return err
+		}
+		if !queue.Contains(postID) {
+			return ErrPostNotInQueue
+		}
+
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if p == nil {
+		return ErrPostNotFound
+	}
+
+	if !p.IsIdea {
+		return ErrPostIsNotIdea
+	}
+
+	return s.repo.RemoveFromProjectIdeaQueue(ctx, projectID, postID)
 }
 
 func (s *service) GetProjectQueuedPosts(ctx context.Context, projectID string) ([]*Post, error) {

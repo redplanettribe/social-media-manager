@@ -74,6 +74,7 @@ var (
 	ErrPostIsIdea                 = errors.New("post is an idea")
 	ErrInvalidPostType            = errors.New("invalid post type")
 	ErrPostNotInQueue             = errors.New("post not in queue")
+	ErrPostIsNotIdea              = errors.New("post is not an idea")
 )
 
 type Post struct {

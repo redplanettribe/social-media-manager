@@ -68,6 +68,7 @@ func mapErrorToAPIError(err error) *e.APIError {
 		publisher.ErrNoPublishersAssigned,
 		post.ErrPostNotScheduled,
 		post.ErrPostIsIdea,
+		post.ErrPostIsNotIdea,
 	):
 		return &e.APIError{
 			Status:  http.StatusUnprocessableEntity,
