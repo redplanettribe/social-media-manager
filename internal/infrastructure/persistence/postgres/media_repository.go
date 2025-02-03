@@ -79,6 +79,17 @@ func (r *MediaRepository) LinkMediaToPublishPost(ctx context.Context, postID, me
 	return nil
 }
 
+func (r *MediaRepository) UnlinkMediaFromPublishPost(ctx context.Context, postID, mediaID, platformID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE post_id = $1 AND media_id = $2 AND platform_id = $3
+	`, PostPlatformMedia), postID, mediaID, platformID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r *MediaRepository) DoesPostBelongToProject(ctx context.Context, projectID, postID string) (bool, error) {
 	var count int
 	err := r.db.QueryRow(ctx, fmt.Sprintf(`

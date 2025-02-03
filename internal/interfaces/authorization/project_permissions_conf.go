@@ -10,6 +10,7 @@ func GetTeamPermissions() *Permissions {
 		/* */ Read("publishers").
 		/* */ Write("media").
 		/* */ Read("media").
+		/* */ Delete("media").
 		AddRole("manager").Inherit("member").
 		/* */ Write("projects").
 		/* */ Delete("posts").

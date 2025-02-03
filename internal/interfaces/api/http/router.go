@@ -233,8 +233,11 @@ func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
 	r.Handle("POST /media/{project_id}/{post_id}", r.projectPermissions("write:media").Chain(
 		http.HandlerFunc(h.UploadMedia),
 	))
-	r.Handle("POST /media/{project_id}/link-to-platform", r.projectPermissions("write:media").Chain(
+	r.Handle("POST  /media/{project_id}/{post_id}/{platform_id}/{media_id}/link", r.projectPermissions("write:media").Chain(
 		http.HandlerFunc(h.LinkMediaToPublishPost),
+	))
+	r.Handle("DELETE /media/{project_id}/{post_id}/{platform_id}/{media_id}/unlink", r.projectPermissions("delete:media").Chain(
+		http.HandlerFunc(h.UnLinkMediaFromPublishPost),
 	))
 	r.Handle("GET /media/{project_id}/{post_id}/{file_name}", r.projectPermissions("read:media").Chain(
 		http.HandlerFunc(h.GetMediaFile),
@@ -245,6 +248,7 @@ func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
 	r.Handle("GET /media/{project_id}/{post_id}/meta", r.projectPermissions("read:media").Chain(
 		http.HandlerFunc(h.GetDownloadMetadataDataForPost),
 	))
+
 }
 
 // appPermissions returns a middleware stack that checks if the user has the required permission for the desired action

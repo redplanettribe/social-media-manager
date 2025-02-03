@@ -14,6 +14,7 @@ const (
 var (
 	ErrInvalidMedia                 = errors.New("invalid media")
 	ErrPostDoesNotBelongToProject   = errors.New("post does not belong to project")
+	ErrMediaNotLinkedToPost         = errors.New("media not linked to post")
 	ErrMediaDoesNotBelongToPost     = errors.New("media does not belong to post")
 	ErrPlatformNotEnabledForProject = errors.New("platform not enabled for project")
 	ErrPostNotLinkedToPlatform      = errors.New("post not linked to platform")

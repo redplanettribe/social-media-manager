@@ -19,6 +19,11 @@ func mapErrorToAPIError(err error) *e.APIError {
 		media.ErrUnsupportedMediaType,
 		post.ErrInvalidPostType,
 		post.ErrPostNotInQueue,
+		media.ErrMediaAlreadyLinkedToPost,
+		media.ErrFileAlreadyExists,
+		media.ErrInvalidMedia,
+		media.ErrPostDoesNotBelongToProject,
+		media.ErrMediaNotLinkedToPost,
 	):
 		return &e.APIError{
 			Status:  http.StatusBadRequest,

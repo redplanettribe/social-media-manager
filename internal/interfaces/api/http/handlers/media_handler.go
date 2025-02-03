@@ -97,7 +97,7 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} errors.APIError
 // @Failure 404 {object} errors.APIError
 // @Failure 500 {object} errors.APIError
-// @Router /media/{project_id}/{post_id}/{file_name} [get]
+// @Router /media/{project_id}/{post_id}/{platform_id}/{media_id}/unlink [get]
 func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
@@ -138,12 +138,6 @@ func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-type linkMediaToPublishPostRequest struct {
-	MediaID    string `json:"media_id"`
-	PlatformID string `json:"platform_id"`
-	PostID     string `json:"post_id"`
-}
-
 // LinkMediaToPublishPost godoc
 // @Summary Link media to publish post
 // @Description Link media to publish post
@@ -152,14 +146,14 @@ type linkMediaToPublishPostRequest struct {
 // @Param project_id path string true "Project ID"
 // @Param post_id path string true "Post ID"
 // @Param platform_id path string true "Platform ID"
-// @Param media_id body linkMediaToPublishPostRequest true "Media ID"
+// @Param media_id path string true "Media ID"
 // @Success 204
 // @Failure 400 {object} errors.APIError
 // @Failure 401 {object} errors.APIError
 // @Failure 403 {object} errors.APIError
 // @Failure 404 {object} errors.APIError
 // @Failure 500 {object} errors.APIError
-// @Router /media/{project_id}/link-to-platform [post]
+// @Router /media/{project_id}/{post_id}/{platform_id}/{media_id}/link [post]
 func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Request) {
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
@@ -169,24 +163,90 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	var req linkMediaToPublishPostRequest
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
-		return
-	}
-
-	mediaID, platformID, postID := req.MediaID, req.PlatformID, req.PostID
-	if mediaID == "" || platformID == "" || postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Media id, platform id and post id are required", map[string]string{
-			"media_id":    "required",
-			"platform_id": "required",
-			"post_id":     "required",
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
 		}))
 		return
 	}
 
-	err = h.Service.LinkMediaToPublishPost(r.Context(), projectID, postID, mediaID, platformID)
+	platformID := r.PathValue("platform_id")
+	if platformID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Platform id is required", map[string]string{
+			"platform_id": "required",
+		}))
+		return
+	}
+
+	mediaID := r.PathValue("media_id")
+	if mediaID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Media id is required", map[string]string{
+			"media_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.LinkMediaToPublishPost(r.Context(), projectID, postID, mediaID, platformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// UnLinkMediaFromPublishPost godoc
+// @Summary Delink media from publish post
+// @Description Delink media from publish post
+// @Tags media
+// @Accept json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param platform_id path string true "Platform ID"
+// @Param media_id path string true "Media ID"
+// @Success 204
+// @Failure 400 {object} errors.APIError
+// @Failure 401 {object} errors.APIError
+// @Failure 403 {object} errors.APIError
+// @Failure 404 {object} errors.APIError
+// @Failure 500 {object} errors.APIError
+// @Router /media/{project_id}/{post_id}/{platform_id}/{media_id} [delete]
+func (h *MediaHandler) UnLinkMediaFromPublishPost(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("UnLinkMediaFromPublishPost")
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	platformID := r.PathValue("platform_id")
+	if platformID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Platform id is required", map[string]string{
+			"platform_id": "required",
+		}))
+		return
+	}
+
+	mediaID := r.PathValue("media_id")
+	if mediaID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Media id is required", map[string]string{
+			"media_id": "required",
+		}))
+		return
+	}
+
+	err := h.Service.UnLinkMediaFromPublishPost(r.Context(), projectID, postID, mediaID, platformID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

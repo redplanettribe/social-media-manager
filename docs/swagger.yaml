@@ -56,15 +56,6 @@ definitions:
       username:
         type: string
     type: object
-  handlers.linkMediaToPublishPostRequest:
-    properties:
-      media_id:
-        type: string
-      platform_id:
-        type: string
-      post_id:
-        type: string
-    type: object
   handlers.loginRequest:
     properties:
       email:
@@ -118,40 +109,6 @@ definitions:
         type: string
       url_thumbnail:
         type: string
-      width:
-        type: integer
-    type: object
-  media.Media:
-    properties:
-      added_by:
-        type: string
-      alt_text:
-        type: string
-      created_at:
-        type: string
-      data:
-        items:
-          type: integer
-        type: array
-      filename:
-        type: string
-      format:
-        type: string
-      height:
-        type: integer
-      id:
-        type: string
-      length:
-        type: integer
-      media_type:
-        $ref: '#/definitions/media.MediaType'
-      post_id:
-        type: string
-      size:
-        description: in bytes
-        type: integer
-      thumbnail:
-        $ref: '#/definitions/media.Media'
       width:
         type: integer
     type: object
@@ -340,7 +297,7 @@ definitions:
     properties:
       media:
         items:
-          $ref: '#/definitions/media.Media'
+          $ref: '#/definitions/media.DownloadMetaData'
         type: array
       post:
         $ref: '#/definitions/post.PublishPost'
@@ -458,56 +415,6 @@ paths:
       summary: Upload media
       tags:
       - media
-  /media/{project_id}/{post_id}/{file_name}:
-    get:
-      description: Get media file. This endpoint shouldn't be used. Use the frontend
-        to get the media file directly from the bucket.
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Post ID
-        in: path
-        name: post_id
-        required: true
-        type: string
-      - description: File name
-        in: path
-        name: file_name
-        required: true
-        type: string
-      produces:
-      - application/octet-stream
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      summary: Get media file
-      tags:
-      - media
   /media/{project_id}/{post_id}/{file_name}/meta:
     get:
       description: Get download metadata
@@ -557,7 +464,59 @@ paths:
       summary: Get download metadata
       tags:
       - media
-  /media/{project_id}/link-to-platform:
+  /media/{project_id}/{post_id}/{platform_id}/{media_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delink media from publish post
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Platform ID
+        in: path
+        name: platform_id
+        required: true
+        type: string
+      - description: Media ID
+        in: path
+        name: media_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Delink media from publish post
+      tags:
+      - media
+  /media/{project_id}/{post_id}/{platform_id}/{media_id}/link:
     post:
       consumes:
       - application/json
@@ -579,11 +538,10 @@ paths:
         required: true
         type: string
       - description: Media ID
-        in: body
+        in: path
         name: media_id
         required: true
-        schema:
-          $ref: '#/definitions/handlers.linkMediaToPublishPostRequest'
+        type: string
       responses:
         "204":
           description: No Content
@@ -608,6 +566,56 @@ paths:
           schema:
             $ref: '#/definitions/errors.APIError'
       summary: Link media to publish post
+      tags:
+      - media
+  /media/{project_id}/{post_id}/{platform_id}/{media_id}/unlink:
+    get:
+      description: Get media file. This endpoint shouldn't be used. Use the frontend
+        to get the media file directly from the bucket.
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: File name
+        in: path
+        name: file_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Get media file
       tags:
       - media
   /posts:
@@ -1656,46 +1664,7 @@ paths:
       summary: Get available social networks
       tags:
       - publishers
-  /publishers/{project_id}/{post_id}/{social_network_id}:
-    post:
-      consumes:
-      - application/json
-      description: Publish post to social network
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Post ID
-        in: path
-        name: post_id
-        required: true
-        type: string
-      - description: Social Network ID
-        in: path
-        name: social_network_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Publish post to social network
-      tags:
-      - publishers
-  /publishers/{project_id}/{post_id}/{social_network_id}/info:
+  /publishers/{project_id}/{post_id}/{platform_id}/info:
     get:
       consumes:
       - application/json
@@ -1736,7 +1705,7 @@ paths:
       summary: Get publish post info
       tags:
       - publishers
-  /publishers/{project_id}/{post_id}/{social_network_id}/validate:
+  /publishers/{project_id}/{post_id}/{platform_id}/validate:
     get:
       consumes:
       - application/json
@@ -1773,6 +1742,45 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Validate post for social network
+      tags:
+      - publishers
+  /publishers/{project_id}/{post_id}/{social_network_id}:
+    post:
+      consumes:
+      - application/json
+      description: Publish post to social network
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Social Network ID
+        in: path
+        name: social_network_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Publish post to social network
       tags:
       - publishers
   /publishers/{project_id}/{post_id}/validate:

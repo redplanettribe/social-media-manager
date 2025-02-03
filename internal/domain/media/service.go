@@ -16,6 +16,7 @@ type Service interface {
 	GetMediaForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
 	GetDownloadMetadataForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*DownloadMetaData, error)
 	LinkMediaToPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
+	UnLinkMediaFromPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error
 	GetDownloadMetadataDataForPost(ctx context.Context, projectID, postID string) ([]*DownloadMetaData, error)
 }
 
@@ -292,6 +293,40 @@ func (s *service) LinkMediaToPublishPost(ctx context.Context, projectID, postID,
 	}
 
 	return s.repo.LinkMediaToPublishPost(ctx, postID, mediaID, platformID)
+}
+
+func (s *service) UnLinkMediaFromPublishPost(ctx context.Context, projectID, postID, mediaID, platformID string) error {
+	var (
+		doesPostBelongToProject bool
+		isAlreadyLinked         bool
+	)
+
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(func() error {
+		var err error
+		doesPostBelongToProject, err = s.repo.DoesPostBelongToProject(gCtx, projectID, postID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		isAlreadyLinked, err = s.repo.IsMediaLinkedToPublishPost(gCtx, postID, mediaID, platformID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if !doesPostBelongToProject {
+		return ErrPostDoesNotBelongToProject
+	}
+	if !isAlreadyLinked {
+		return ErrMediaNotLinkedToPost
+	}
+
+	return s.repo.UnlinkMediaFromPublishPost(ctx, postID, mediaID, platformID)
 }
 
 func (s *service) GetDownloadMetaData(ctx context.Context, projectID, postID, fileName string) (DownloadMetaData, error) {

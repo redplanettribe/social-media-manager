@@ -24,85 +24,6 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/media/{project_id}/link-to-platform": {
-            "post": {
-                "description": "Link media to publish post",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "media"
-                ],
-                "summary": "Link media to publish post",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Post ID",
-                        "name": "post_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Platform ID",
-                        "name": "platform_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Media ID",
-                        "name": "media_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handlers.linkMediaToPublishPostRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    }
-                }
-            }
-        },
         "/media/{project_id}/{post_id}": {
             "post": {
                 "description": "Upload media",
@@ -182,79 +103,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/media/{project_id}/{post_id}/{file_name}": {
-            "get": {
-                "description": "Get media file. This endpoint shouldn't be used. Use the frontend to get the media file directly from the bucket.",
-                "produces": [
-                    "application/octet-stream"
-                ],
-                "tags": [
-                    "media"
-                ],
-                "summary": "Get media file",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Post ID",
-                        "name": "post_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "File name",
-                        "name": "file_name",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    }
-                }
-            }
-        },
         "/media/{project_id}/{post_id}/{file_name}/meta": {
             "get": {
                 "description": "Get download metadata",
@@ -293,6 +141,233 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/media.DownloadMetaData"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/media/{project_id}/{post_id}/{platform_id}/{media_id}": {
+            "delete": {
+                "description": "Delink media from publish post",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Delink media from publish post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Platform ID",
+                        "name": "platform_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Media ID",
+                        "name": "media_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/media/{project_id}/{post_id}/{platform_id}/{media_id}/link": {
+            "post": {
+                "description": "Link media to publish post",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Link media to publish post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Platform ID",
+                        "name": "platform_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Media ID",
+                        "name": "media_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/media/{project_id}/{post_id}/{platform_id}/{media_id}/unlink": {
+            "get": {
+                "description": "Get media file. This endpoint shouldn't be used. Use the frontend to get the media file directly from the bucket.",
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "media"
+                ],
+                "summary": "Get media file",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "File name",
+                        "name": "file_name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -2006,67 +2081,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/publishers/{project_id}/{post_id}/{social_network_id}": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Publish post to social network",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "publishers"
-                ],
-                "summary": "Publish post to social network",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Post ID",
-                        "name": "post_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Social Network ID",
-                        "name": "social_network_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/publishers/{project_id}/{post_id}/{social_network_id}/info": {
+        "/publishers/{project_id}/{post_id}/{platform_id}/info": {
             "get": {
                 "security": [
                     {
@@ -2129,7 +2144,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/publishers/{project_id}/{post_id}/{social_network_id}/validate": {
+        "/publishers/{project_id}/{post_id}/{platform_id}/validate": {
             "get": {
                 "security": [
                     {
@@ -2147,6 +2162,66 @@ const docTemplate = `{
                     "publishers"
                 ],
                 "summary": "Validate post for social network",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "post_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Social Network ID",
+                        "name": "social_network_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
+        "/publishers/{project_id}/{post_id}/{social_network_id}": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Publish post to social network",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "publishers"
+                ],
+                "summary": "Publish post to social network",
                 "parameters": [
                     {
                         "type": "string",
@@ -2642,20 +2717,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.linkMediaToPublishPostRequest": {
-            "type": "object",
-            "properties": {
-                "media_id": {
-                    "type": "string"
-                },
-                "platform_id": {
-                    "type": "string"
-                },
-                "post_id": {
-                    "type": "string"
-                }
-            }
-        },
         "handlers.loginRequest": {
             "type": "object",
             "properties": {
@@ -2736,57 +2797,6 @@ const docTemplate = `{
                 },
                 "url_thumbnail": {
                     "type": "string"
-                },
-                "width": {
-                    "type": "integer"
-                }
-            }
-        },
-        "media.Media": {
-            "type": "object",
-            "properties": {
-                "added_by": {
-                    "type": "string"
-                },
-                "alt_text": {
-                    "type": "string"
-                },
-                "created_at": {
-                    "type": "string"
-                },
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "filename": {
-                    "type": "string"
-                },
-                "format": {
-                    "type": "string"
-                },
-                "height": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "length": {
-                    "type": "integer"
-                },
-                "media_type": {
-                    "$ref": "#/definitions/media.MediaType"
-                },
-                "post_id": {
-                    "type": "string"
-                },
-                "size": {
-                    "description": "in bytes",
-                    "type": "integer"
-                },
-                "thumbnail": {
-                    "$ref": "#/definitions/media.Media"
                 },
                 "width": {
                     "type": "integer"
@@ -3061,7 +3071,7 @@ const docTemplate = `{
                 "media": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/media.Media"
+                        "$ref": "#/definitions/media.DownloadMetaData"
                     }
                 },
                 "post": {
