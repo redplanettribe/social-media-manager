@@ -84,6 +84,67 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// UpdatePost godoc
+// @Summary Update a post
+// @Description Update a post with the given title, text content, image links, video links, is idea and scheduled at
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param post body createPostRequest true "Post update request"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id} [patch]
+func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
+	var req createPostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	p, err := h.Service.UpdatePost(
+		r.Context(),
+		postID,
+		projectID,
+		req.Title,
+		req.Type,
+		req.TextContent,
+		req.IsIdea,
+	)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(p)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
 // GetPost godoc
 // @Summary Get a post by id
 // @Description Get a post by its id

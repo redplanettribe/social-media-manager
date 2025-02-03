@@ -36,7 +36,7 @@ func (r *PostRepository) Update(ctx context.Context, p *post.Post) error {
 		UPDATE %s
 		SET title = $2, type = $3, text_content = $4, is_idea = $5, status = $6, scheduled_at = $7, updated_at = $8
 		WHERE id = $1
-	`, Posts), p.ID, p.Title, p.Type, p.TextContent, p.IsIdea, p.Status, p.ScheduledAt, time.Now())
+	`, Posts), p.ID, p.Title, p.Type, p.TextContent, p.IsIdea, p.Status, p.ScheduledAt, time.Now().UTC())
 	if err != nil {
 		return err
 	}

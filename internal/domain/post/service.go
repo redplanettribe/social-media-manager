@@ -15,6 +15,7 @@ type Service interface {
 		projectID, title, postType, textContent string,
 		isIdea bool,
 		scheduledAt time.Time) (*Post, error)
+	UpdatePost(ctx context.Context, id, projectID, title, postType, textContent string, isIdea bool) (*Post, error)
 	GetPost(ctx context.Context, id string) (*PostResponse, error)
 	ListProjectPosts(ctx context.Context, projectID string) ([]*Post, error)
 	RestorePost(ctx context.Context, projectID, postID string) error
@@ -80,6 +81,35 @@ func (s *service) CreatePost(
 	err = s.repo.Save(ctx, p)
 	if err != nil {
 		return &Post{}, err
+	}
+	return p, nil
+}
+
+func (s *service) UpdatePost(ctx context.Context, id, projectID, title, postType, textContent string, isIdea bool) (*Post, error) {
+	if !PostType(postType).IsValid() {
+		return nil, ErrInvalidPostType
+	}
+
+	p, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if p == nil {
+		return nil, ErrPostNotFound
+	}
+
+	if p.ProjectID != projectID {
+		return nil, ErrPostNotInProject
+	}
+
+	p.Title = title
+	p.Type = PostType(postType)
+	p.TextContent = textContent
+	p.IsIdea = isIdea
+
+	err = s.repo.Update(ctx, p)
+	if err != nil {
+		return nil, err
 	}
 	return p, nil
 }

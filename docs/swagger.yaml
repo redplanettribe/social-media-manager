@@ -758,6 +758,54 @@ paths:
       summary: Get a post by id
       tags:
       - posts
+    patch:
+      consumes:
+      - application/json
+      description: Update a post with the given title, text content, image links,
+        video links, is idea and scheduled at
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Post update request
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.createPostRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Post not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a post
+      tags:
+      - posts
   /posts/{project_id}/{post_id}/archive:
     patch:
       consumes:
