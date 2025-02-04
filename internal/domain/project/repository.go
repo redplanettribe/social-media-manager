@@ -11,6 +11,7 @@ type Repository interface {
 	FindProjectByID(ctx context.Context, projectID string) (*Project, error)
 	GetProjectUsers(ctx context.Context, projectID string) ([]*TeamMember, error)
 	AddUserToProject(ctx context.Context, projectID, userID string) error
+	RemoveUserFromProject(ctx context.Context, projectID, userID string) error
 	IsUserInProject(ctx context.Context, projectID, userID string) (bool, error)
 	DoesProjectNameExist(ctx context.Context, name, userID string) (bool, error)
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error

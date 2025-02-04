@@ -232,6 +232,38 @@ func (r *ProjectRepository) AddUserToProject(ctx context.Context, projectID, use
 	return nil
 }
 
+func (r *ProjectRepository) RemoveUserFromProject(ctx context.Context, projectID, userID string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback(ctx)
+		} else {
+			err = tx.Commit(ctx)
+		}
+	}()
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1 AND user_id = $2
+	`, TeamMembers), projectID, userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1 AND user_id = $2
+	`, TeamMembersRoles), projectID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ProjectRepository) DoesProjectNameExist(ctx context.Context, name, userID string) (bool, error) {
 	var exists bool
 	err := r.db.QueryRow(ctx, fmt.Sprintf(`

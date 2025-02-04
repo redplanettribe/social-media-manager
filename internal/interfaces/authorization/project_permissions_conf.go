@@ -4,6 +4,7 @@ func GetTeamPermissions() *Permissions {
 	return NewPermissions().
 		AddRole("member").
 		/* */ Read("projects").
+		/* */ Delete("projects").
 		/* */ Read("posts").
 		/* */ Write("posts").
 		/* */ Write("publishers").

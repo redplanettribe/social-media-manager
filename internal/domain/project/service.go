@@ -17,6 +17,7 @@ type Service interface {
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
 	AddUserToProject(ctx context.Context, projectID, email string) error
+	RemoveUserFromProject(ctx context.Context, projectID, userID string) error
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error)
 	SetTimeZone(ctx context.Context, projectID, timeZone string) error
@@ -154,6 +155,17 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 	}
 
 	return s.repo.AddUserToProject(ctx, projectID, userID)
+}
+
+func (s *service) RemoveUserFromProject(ctx context.Context, projectID, userID string) error {
+	ok, err := s.repo.IsUserInProject(ctx, projectID, userID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return ErrUserNotInProject
+	}
+	return s.repo.RemoveUserFromProject(ctx, projectID, userID)
 }
 
 func (s *service) EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {

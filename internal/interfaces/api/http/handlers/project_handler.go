@@ -229,6 +229,48 @@ func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// RemoveUserFromProject godoc
+// @Summary Remove a user from a project
+// @Description Remove a user from a project by their email
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/remove-user/{user_id} [delete]
+func (h *ProjectHandler) RemoveUserFromProject(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
+			"user_id": "required",
+		}), nil)
+		return
+	}
+
+	err := h.Service.RemoveUserFromProject(ctx, projectID, userID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // EnableSocialPlatform godoc
 // @Summary Enable a social platform
 // @Description Enable a social platform for a project
