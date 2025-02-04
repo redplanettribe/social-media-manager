@@ -12,6 +12,7 @@ import (
 //go:generate mockery --name=Service --case=underscore --inpackage
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
+	UpdateProject(ctx context.Context, projectID, name, description string) (*Project, error)
 	ListProjects(ctx context.Context) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
@@ -77,6 +78,16 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 	}
 
 	return project, nil
+}
+
+func (s *service) UpdateProject(ctx context.Context, projectID, name, description string) (*Project, error) {
+	p, err := s.repo.FindProjectByID(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+	p.Name = name
+	p.Description = description
+	return s.repo.Update(ctx, p)
 }
 
 func (s *service) ListProjects(ctx context.Context) ([]*Project, error) {

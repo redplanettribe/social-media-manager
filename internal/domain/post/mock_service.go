@@ -472,9 +472,9 @@ func (_m *MockService) UnschedulePost(ctx context.Context, id string) error {
 	return r0
 }
 
-// UpdatePost provides a mock function with given fields: ctx, id, projectID, title, postType, textContent
-func (_m *MockService) UpdatePost(ctx context.Context, id string, projectID string, title string, postType string, textContent string) (*Post, error) {
-	ret := _m.Called(ctx, id, projectID, title, postType, textContent)
+// UpdatePost provides a mock function with given fields: ctx, id, projectID, title, postType, textContent, isIdea
+func (_m *MockService) UpdatePost(ctx context.Context, id string, projectID string, title string, postType string, textContent string, isIdea bool) (*Post, error) {
+	ret := _m.Called(ctx, id, projectID, title, postType, textContent, isIdea)
 
 	if len(ret) == 0 {
 		panic("no return value specified for UpdatePost")
@@ -482,19 +482,19 @@ func (_m *MockService) UpdatePost(ctx context.Context, id string, projectID stri
 
 	var r0 *Post
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, string) (*Post, error)); ok {
-		return rf(ctx, id, projectID, title, postType, textContent)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, string, bool) (*Post, error)); ok {
+		return rf(ctx, id, projectID, title, postType, textContent, isIdea)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, string) *Post); ok {
-		r0 = rf(ctx, id, projectID, title, postType, textContent)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string, string, bool) *Post); ok {
+		r0 = rf(ctx, id, projectID, title, postType, textContent, isIdea)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*Post)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, string, string) error); ok {
-		r1 = rf(ctx, id, projectID, title, postType, textContent)
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string, string, string, bool) error); ok {
+		r1 = rf(ctx, id, projectID, title, postType, textContent, isIdea)
 	} else {
 		r1 = ret.Error(1)
 	}

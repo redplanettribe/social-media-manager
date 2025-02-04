@@ -1374,6 +1374,50 @@ paths:
       summary: Get a project
       tags:
       - projects
+    patch:
+      consumes:
+      - application/json
+      description: Update a project with the given ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Project update request
+        in: body
+        name: project
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.createProjectRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.Project'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a project
+      tags:
+      - projects
   /projects/{project_id}/add:
     post:
       consumes:

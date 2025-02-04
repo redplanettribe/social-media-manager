@@ -31,6 +31,20 @@ func (r *ProjectRepository) Save(ctx context.Context, p *project.Project) (*proj
 	return p, nil
 }
 
+func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) (*project.Project, error) {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		UPDATE %s
+		SET name = $1, description = $2, updated_at = $3
+		WHERE id = $4
+		RETURNING id, name, description, post_queue, idea_queue, created_by, created_at, updated_at
+	`, Projects), p.Name, p.Description, time.Now().UTC(), p.ID)
+	if err != nil {
+		return &project.Project{}, err
+	}
+
+	return p, nil
+}
+
 func (r *ProjectRepository) ListByUserID(ctx context.Context, userID string) ([]*project.Project, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT p.id, p.name, p.description, p.post_queue, p.idea_queue, p.created_by, p.created_at, p.updated_at

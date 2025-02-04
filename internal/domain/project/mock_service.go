@@ -342,6 +342,36 @@ func (_m *MockService) SetTimeZone(ctx context.Context, projectID string, timeZo
 	return r0
 }
 
+// UpdateProject provides a mock function with given fields: ctx, projectID, name, description
+func (_m *MockService) UpdateProject(ctx context.Context, projectID string, name string, description string) (*Project, error) {
+	ret := _m.Called(ctx, projectID, name, description)
+
+	if len(ret) == 0 {
+		panic("no return value specified for UpdateProject")
+	}
+
+	var r0 *Project
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) (*Project, error)); ok {
+		return rf(ctx, projectID, name, description)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) *Project); ok {
+		r0 = rf(ctx, projectID, name, description)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*Project)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, string, string) error); ok {
+		r1 = rf(ctx, projectID, name, description)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewMockService creates a new instance of MockService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockService(t interface {

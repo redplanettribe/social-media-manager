@@ -125,6 +125,9 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("POST /projects", r.appPermissions("write:projects").Chain(
 		http.HandlerFunc(h.CreateProject),
 	))
+	r.Handle("PATCH /projects/{project_id}", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.UpdateProject),
+	))
 	r.Handle("POST /projects/{project_id}/add", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.AddUserToProject),
 	))

@@ -64,6 +64,57 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// UpdateProject godoc
+// @Summary Update a project
+// @Description Update a project with the given ID
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param project body createProjectRequest true "Project update request"
+// @Success 200 {object} project.Project
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id} [patch]
+func (h *ProjectHandler) UpdateProject(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	var req createProjectRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		e.WriteBusinessError(w, e.NewValidationError("Invalid request payload", nil), nil)
+		return
+	}
+
+	if req.Name == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Name is required", map[string]string{
+			"name": "required",
+		}), nil)
+		return
+	}
+
+	p, err := h.Service.UpdateProject(ctx, projectID, req.Name, req.Description)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(p)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
 // ListProjects godoc
 // @Summary List all projects
 // @Description List all projects that the user is a member of
