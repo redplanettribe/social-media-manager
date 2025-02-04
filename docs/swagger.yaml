@@ -1388,6 +1388,44 @@ paths:
       tags:
       - projects
   /projects/{project_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a project with the given ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a project
+      tags:
+      - projects
     get:
       consumes:
       - application/json
@@ -1605,6 +1643,54 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Set the default user for a project
+      tags:
+      - projects
+  /projects/{project_id}/disable-social-platform/{platform_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Disable a social platform for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Social Platform ID
+        in: path
+        name: social_platform_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Disable a social platform
       tags:
       - projects
   /projects/{project_id}/enable-social-platform/{social_platform_id}:

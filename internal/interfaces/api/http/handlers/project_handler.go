@@ -347,6 +347,49 @@ func (h *ProjectHandler) EnableSocialPlatform(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// DisableSocialPlatform godoc
+// @Summary Disable a social platform
+// @Description Disable a social platform for a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param social_platform_id path string true "Social Platform ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 403 {object} errors.APIError "Forbidden"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/disable-social-platform/{platform_id} [delete]
+func (h *ProjectHandler) DisableSocialPlatform(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	socialPlatformID := r.PathValue("platform_id")
+	if socialPlatformID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Social platform id is required", map[string]string{
+			"platform_id": "required",
+		}), nil)
+		return
+	}
+
+	err := h.Service.DisableSocialPlatform(ctx, projectID, socialPlatformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 // GetEnabledSocialPlatforms godoc
 // @Summary Get enabled social platforms
 // @Description Get the social platforms enabled for a project

@@ -80,6 +80,42 @@ func (_m *MockService) CreateProject(ctx context.Context, name string, descripti
 	return r0, r1
 }
 
+// DeleteProject provides a mock function with given fields: ctx, projectID
+func (_m *MockService) DeleteProject(ctx context.Context, projectID string) error {
+	ret := _m.Called(ctx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DeleteProject")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// DisableSocialPlatform provides a mock function with given fields: ctx, projectID, socialPlatformID
+func (_m *MockService) DisableSocialPlatform(ctx context.Context, projectID string, socialPlatformID string) error {
+	ret := _m.Called(ctx, projectID, socialPlatformID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for DisableSocialPlatform")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, projectID, socialPlatformID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // EnableSocialPlatform provides a mock function with given fields: ctx, projectID, socialPlatformID
 func (_m *MockService) EnableSocialPlatform(ctx context.Context, projectID string, socialPlatformID string) error {
 	ret := _m.Called(ctx, projectID, socialPlatformID)

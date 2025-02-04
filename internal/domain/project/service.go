@@ -20,6 +20,7 @@ type Service interface {
 	AddUserToProject(ctx context.Context, projectID, email string) error
 	RemoveUserFromProject(ctx context.Context, projectID, userID string) error
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
+	DisableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error)
 	SetTimeZone(ctx context.Context, projectID, timeZone string) error
 	AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
@@ -205,6 +206,17 @@ func (s *service) EnableSocialPlatform(ctx context.Context, projectID, socialPla
 	}
 
 	return s.repo.EnableSocialPlatform(ctx, projectID, socialPlatformID)
+}
+
+func (s *service) DisableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {
+	enabled, err := s.repo.IsProjectSocialPlatformEnabled(ctx, projectID, socialPlatformID)
+	if err != nil {
+		return err
+	}
+	if !enabled {
+		return ErrSocialPlatformNotEnabled
+	}
+	return s.repo.DisableSocialPlatform(ctx, projectID, socialPlatformID)
 }
 
 func (s *service) GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error) {

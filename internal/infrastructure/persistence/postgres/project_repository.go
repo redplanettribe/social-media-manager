@@ -304,6 +304,18 @@ func (r *ProjectRepository) EnableSocialPlatform(ctx context.Context, projectID,
 	return nil
 }
 
+func (r *ProjectRepository) DisableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1 AND platform_id = $2
+	`, ProjectPlatforms), projectID, socialPlatformID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ProjectRepository) DoesSocialPlatformExist(ctx context.Context, socialPlatformID string) (bool, error) {
 	var exists bool
 	err := r.db.QueryRow(ctx, fmt.Sprintf(`

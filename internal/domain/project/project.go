@@ -16,6 +16,7 @@ var (
 	ErrProjectExists                = errors.New("project already exists")
 	ErrSocialPlatformNotFound       = errors.New("social network not found")
 	ErrSocialPlatformAlreadyEnabled = errors.New("social network already enabled")
+	ErrSocialPlatformNotEnabled     = errors.New("social network not enabled")
 )
 
 type TeamRoleOptions string
