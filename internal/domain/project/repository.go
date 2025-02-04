@@ -5,6 +5,7 @@ import "context"
 type Repository interface {
 	Save(ctx context.Context, project *Project) (*Project, error)
 	Update(ctx context.Context, project *Project) (*Project, error)
+	Delete(ctx context.Context, projectID string) error
 	AssignProjectOwner(ctx context.Context, projectID, userID string) error
 	ListByUserID(ctx context.Context, userID string) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)

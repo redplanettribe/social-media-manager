@@ -13,6 +13,7 @@ import (
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
 	UpdateProject(ctx context.Context, projectID, name, description string) (*Project, error)
+	DeleteProject(ctx context.Context, projectID string) error
 	ListProjects(ctx context.Context) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
@@ -89,6 +90,10 @@ func (s *service) UpdateProject(ctx context.Context, projectID, name, descriptio
 	p.Name = name
 	p.Description = description
 	return s.repo.Update(ctx, p)
+}
+
+func (s *service) DeleteProject(ctx context.Context, projectID string) error {
+	return s.repo.Delete(ctx, projectID)
 }
 
 func (s *service) ListProjects(ctx context.Context) ([]*Project, error) {

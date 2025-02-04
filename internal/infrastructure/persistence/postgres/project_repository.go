@@ -45,6 +45,18 @@ func (r *ProjectRepository) Update(ctx context.Context, p *project.Project) (*pr
 	return p, nil
 }
 
+func (r *ProjectRepository) Delete(ctx context.Context, projectID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE id = $1
+	`, Projects), projectID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ProjectRepository) ListByUserID(ctx context.Context, userID string) ([]*project.Project, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT p.id, p.name, p.description, p.post_queue, p.idea_queue, p.created_by, p.created_at, p.updated_at
