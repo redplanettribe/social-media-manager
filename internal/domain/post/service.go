@@ -22,6 +22,7 @@ type Service interface {
 	ArchivePost(ctx context.Context, projectID, postID string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error
+	RemoveSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error
 	GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error)
 	FindScheduledReadyPosts(ctx context.Context, offset, chunkSize int) ([]*PublishPost, error)
 	GetPostToPublish(ctx context.Context, id string) (*PublishPost, error)
@@ -240,6 +241,45 @@ func (s *service) AddSocialMediaPublisher(ctx context.Context, projectID, postID
 		return ErrPostNotFound
 	}
 	return s.repo.AddSocialMediaPublisher(ctx, postID, publisherID)
+}
+
+func (s *service) RemoveSocialMediaPublisher(ctx context.Context, projectID, postID, publisherID string) error {
+	var (
+		isEnabled bool
+		post      *Post
+	)
+	g, gCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsPublisherPlatformEnabledForProject(gCtx, projectID, publisherID)
+		if err != nil {
+			return err
+		}
+		if !isEnabled {
+			return ErrPublisherNotInProject
+		}
+		return nil
+	})
+	g.Go(func() error {
+		var err error
+		post, err = s.repo.FindByID(gCtx, postID)
+		if err != nil {
+			return err
+		}
+		if post == nil {
+			return ErrPostNotFound
+		}
+		if post.ProjectID != projectID {
+			return ErrPostNotInProject
+		}
+		return nil
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	return s.repo.RemoveSocialMediaPublisher(ctx, postID, publisherID)
 }
 
 func (s *service) GetSocialMediaPublishers(ctx context.Context, postID string) ([]string, error) {

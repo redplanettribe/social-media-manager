@@ -131,6 +131,34 @@ func (r *PostRepository) AddSocialMediaPublisher(ctx context.Context, postID, pu
 	return nil
 }
 
+func (r *PostRepository) RemoveSocialMediaPublisher(ctx context.Context, postID, publisherID string) error {
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback(ctx)
+
+	// Delete from post_platforms
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+        DELETE FROM %s
+        WHERE post_id = $1 AND platform_id = $2
+    `, PostPlatforms), postID, publisherID)
+	if err != nil {
+		return fmt.Errorf("failed to delete from post_platforms: %w", err)
+	}
+
+	// Delete from post_platform_media
+	_, err = tx.Exec(ctx, fmt.Sprintf(`
+        DELETE FROM %s
+        WHERE post_id = $1 AND platform_id = $2
+    `, PostPlatformMedia), postID, publisherID)
+	if err != nil {
+		return fmt.Errorf("failed to delete from post_platform_media: %w", err)
+	}
+
+	return tx.Commit(ctx)
+}
+
 func (r *PostRepository) GetSocialMediaPublishersIDs(ctx context.Context, postID string) ([]string, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT platform_id

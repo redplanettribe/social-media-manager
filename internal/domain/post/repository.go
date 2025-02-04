@@ -14,6 +14,7 @@ type Repository interface {
 	RestorePost(ctx context.Context, id string) error
 	DeletePost(ctx context.Context, id string) error
 	AddSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
+	RemoveSocialMediaPublisher(ctx context.Context, postID, publisherID string) error
 	GetSocialMediaPublishersIDs(ctx context.Context, postID string) ([]string, error)
 	GetSocialMediaPlatforms(ctx context.Context, postID string) ([]Platform, error)
 	FindScheduledReadyPosts(ctx context.Context, offset, chunksize int) ([]*PublishPost, error)

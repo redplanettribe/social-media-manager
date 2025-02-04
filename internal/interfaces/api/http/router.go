@@ -177,6 +177,9 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 	r.Handle("POST /posts/{project_id}/{post_id}/platforms/{platform_id}", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.AddSocialMediaPublisherPlatform),
 	))
+	r.Handle("DELETE /posts/{project_id}/{post_id}/platforms/{platform_id}", r.projectPermissions("delete:posts").Chain(
+		http.HandlerFunc(h.RemoveSocialMediaPublisherPlatform),
+	))
 	r.Handle("PATCH /posts/{project_id}/{post_id}/schedule", r.projectPermissions("write:posts").Chain(
 		http.HandlerFunc(h.SchedulePost),
 	))

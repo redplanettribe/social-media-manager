@@ -418,6 +418,24 @@ func (_m *MockService) RemovePostFromProjectQueue(ctx context.Context, projectID
 	return r0
 }
 
+// RemoveSocialMediaPublisher provides a mock function with given fields: ctx, projectID, postID, publisherID
+func (_m *MockService) RemoveSocialMediaPublisher(ctx context.Context, projectID string, postID string, publisherID string) error {
+	ret := _m.Called(ctx, projectID, postID, publisherID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveSocialMediaPublisher")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string) error); ok {
+		r0 = rf(ctx, projectID, postID, publisherID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // RestorePost provides a mock function with given fields: ctx, projectID, postID
 func (_m *MockService) RestorePost(ctx context.Context, projectID string, postID string) error {
 	ret := _m.Called(ctx, projectID, postID)

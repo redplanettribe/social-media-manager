@@ -358,6 +358,50 @@ func (h *PostHandler) AddSocialMediaPublisherPlatform(w http.ResponseWriter, r *
 	w.WriteHeader(http.StatusNoContent)
 }
 
+// RemoveSocialMediaPublisherPlatform godoc
+// @Summary Remove a social media publisher platform from a post
+// @Description Remove a social media publisher platform from a post by its id
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param platform_id path string true "Platform ID"
+// @Success 204 "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Post not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /posts/{project_id}/{post_id}/platforms/{platform_id} [delete]
+func (h *PostHandler) RemoveSocialMediaPublisherPlatform(w http.ResponseWriter, r *http.Request) {
+	platformID := r.PathValue("platform_id")
+	if platformID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Publisher ID is required", map[string]string{
+			"platform_id": "required",
+		}))
+		return
+	}
+
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+
+	err := h.Service.RemoveSocialMediaPublisher(r.Context(), projectID, postID, platformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 type schedulePostRequest struct {
 	ScheduledAt time.Time `json:"scheduled_at"`
 }
