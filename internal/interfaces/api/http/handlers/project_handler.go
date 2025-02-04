@@ -189,7 +189,7 @@ type addUserRequest struct {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param user_id path string true "User ID"
+// @Param user body addUserRequest true "User addition request"
 // @Success 204 {string} string "No content"
 // @Failure 400 {object} errors.APIError "Validation error"
 // @Failure 401 {object} errors.APIError "Unauthorized"
@@ -197,7 +197,7 @@ type addUserRequest struct {
 // @Failure 409 {object} errors.APIError "User already exists"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /projects/{project_id}/add [post]
+// @Router /projects/{project_id}/add-user [post]
 func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	projectID := r.PathValue("project_id")

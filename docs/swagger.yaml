@@ -20,6 +20,11 @@ definitions:
       minute:
         type: integer
     type: object
+  handlers.addUserRequest:
+    properties:
+      email:
+        type: string
+    type: object
   handlers.assignRoleRequest:
     properties:
       role_id:
@@ -1429,11 +1434,12 @@ paths:
         name: project_id
         required: true
         type: string
-      - description: User ID
-        in: path
-        name: user_id
+      - description: User addition request
+        in: body
+        name: user
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/handlers.addUserRequest'
       produces:
       - application/json
       responses:

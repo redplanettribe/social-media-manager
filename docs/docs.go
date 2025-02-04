@@ -1670,11 +1670,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "user_id",
-                        "in": "path",
-                        "required": true
+                        "description": "User addition request",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.addUserRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -2798,6 +2800,14 @@ const docTemplate = `{
                 },
                 "minute": {
                     "type": "integer"
+                }
+            }
+        },
+        "handlers.addUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
                 }
             }
         },

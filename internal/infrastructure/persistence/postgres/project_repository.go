@@ -156,17 +156,16 @@ func (r *ProjectRepository) FindProjectByID(ctx context.Context, projectID strin
 
 func (r *ProjectRepository) GetProjectUsers(ctx context.Context, projectID string) ([]*project.TeamMember, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT u.id, u.username, u.email, tm.default_user, tm.added_at, tmr.team_role_id
+		SELECT u.id, u.username, u.email, tm.default_user, tm.added_at, 
+			(SELECT MAX(team_role_id)
+			FROM %s tmr_sub
+			WHERE tmr_sub.user_id = tm.user_id 
+			AND tmr_sub.project_id = tm.project_id) as max_role_id
 		FROM %s tm
 		INNER JOIN %s u ON tm.user_id = u.id
-		INNER JOIN %s tmr ON tm.user_id = tmr.user_id
-		WHERE tm.project_id = $1
-		AND tmr.team_role_id = (
-      	SELECT MAX(team_role_id)
-		FROM %s tmr_sub
-		WHERE tmr_sub.user_id = tmr.user_id AND tmr.project_id = $1
-  ); 
-	`, TeamMembers, Users, TeamMembersRoles, TeamMembersRoles), projectID)
+		WHERE tm.project_id = $1;
+	`, TeamMembersRoles, TeamMembers, Users), projectID)
+
 	if err != nil {
 		return nil, err
 	}
