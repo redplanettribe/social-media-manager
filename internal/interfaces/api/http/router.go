@@ -257,6 +257,9 @@ func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
 	r.Handle("GET /media/{project_id}/{post_id}/meta", r.projectPermissions("read:media").Chain(
 		http.HandlerFunc(h.GetDownloadMetadataDataForPost),
 	))
+	r.Handle("DELETE /media/{project_id}/{post_id}/{file_name}", r.projectPermissions("delete:media").Chain(
+		http.HandlerFunc(h.DeleteMedia),
+	))
 
 }
 

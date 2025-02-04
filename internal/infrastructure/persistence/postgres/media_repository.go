@@ -2,8 +2,10 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
 )
@@ -182,4 +184,30 @@ func (r *MediaRepository) ListMediaFilesForPost(ctx context.Context, postID stri
 		fileNames = append(fileNames, fileName)
 	}
 	return fileNames, nil
+}
+
+func (r *MediaRepository) GetMediaFileName(ctx context.Context, mediaID string) (string, error) {
+	var fileName string
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT file_name
+		FROM %s
+		WHERE id = $1
+	`, Media), mediaID).Scan(&fileName)
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		return "", err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return "", nil
+	}
+	return fileName, nil
+}
+
+func (r *MediaRepository) DeleteMetadata(ctx context.Context, mediaID string) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE id = $1
+	`, Media), mediaID)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -93,7 +93,14 @@ func (c *S3Client) getKey(projectID, postID, fileName string) string {
 	return fmt.Sprintf("project-%s/post-%s/%s", projectID, postID, fileName)
 }
 
-// // returns true if filename starts with "th-"
-// func (c *S3Client) isThumbnail(fileName string) bool {
-// 	return fileName[:3] == "th-"
-// }
+func (c *S3Client) DeleteFile(ctx context.Context, projectID, postID, fileName string) error {
+	key := c.getKey(projectID, postID, fileName)
+	_, err := c.client.DeleteObjectWithContext(ctx, &s3.DeleteObjectInput{
+		Bucket: aws.String(c.cfg.Bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}

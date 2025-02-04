@@ -420,6 +420,53 @@ paths:
       summary: Upload media
       tags:
       - media
+  /media/{project_id}/{post_id}/{file_name}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete media
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: File name
+        in: path
+        name: file_name
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Delete media
+      tags:
+      - media
   /media/{project_id}/{post_id}/{file_name}/meta:
     get:
       description: Get download metadata

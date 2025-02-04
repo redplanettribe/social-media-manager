@@ -336,3 +336,50 @@ func (h *MediaHandler) GetDownloadMetadataDataForPost(w http.ResponseWriter, r *
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
+
+// DeleteMedia godoc
+// @Summary Delete media
+// @Description Delete media
+// @Tags media
+// @Accept json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param file_name path string true "File name"
+// @Success 204
+// @Failure 400 {object} errors.APIError
+// @Failure 401 {object} errors.APIError
+// @Failure 403 {object} errors.APIError
+// @Failure 404 {object} errors.APIError
+// @Failure 500 {object} errors.APIError
+// @Router /media/{project_id}/{post_id}/{file_name} [delete]
+func (h *MediaHandler) DeleteMedia(w http.ResponseWriter, r *http.Request) {
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}))
+		return
+	}
+	postID := r.PathValue("post_id")
+	if postID == "" {
+		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
+			"post_id": "required",
+		}))
+		return
+	}
+	filename := r.PathValue("file_name")
+	if filename == "" {
+		e.WriteHttpError(w, e.NewValidationError("Filename is required", map[string]string{
+			"file_name": "required",
+		}))
+		return
+	}
+
+	err := h.Service.DeleteMedia(r.Context(), projectID, postID, filename)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

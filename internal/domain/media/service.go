@@ -11,6 +11,7 @@ import (
 
 type Service interface {
 	UploadMedia(ctx context.Context, projectID, postID, fileName, altText string, data []byte) (DownloadMetaData, error)
+	DeleteMedia(ctx context.Context, projectID, postID, fileID string) error
 	GetDownloadMetaData(ctx context.Context, projectID, postID, fileName string) (DownloadMetaData, error)
 	GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error)
 	GetMediaForPublishPost(ctx context.Context, projectID, postID, platformID string) ([]*Media, error)
@@ -133,6 +134,46 @@ func (s *service) UploadMedia(ctx context.Context, projectID, postID, fileName, 
 		UrlThumbnail: &thumbnailUrl,
 		MetaData:     md,
 	}, nil
+}
+
+func (s *service) DeleteMedia(ctx context.Context, projectID, postID, metaID string) error {
+	var (
+		fileName string
+		eg       errgroup.Group
+	)
+
+	eg.Go(func() error {
+		var err error
+		fileName, err = s.repo.GetMediaFileName(ctx, metaID)
+		return err
+	})
+
+	eg.Go(func() error {
+		return s.repo.DeleteMetadata(ctx, metaID)
+	})
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	if fileName == "" {
+		return nil
+	}
+
+	eg.Go(func() error {
+		return s.objectRepo.DeleteFile(ctx, projectID, postID, fileName)
+	})
+
+	eg.Go(func() error {
+		thumbnailFileName := getThumbnailName(fileName)
+		return s.objectRepo.DeleteFile(ctx, projectID, postID, thumbnailFileName)
+	})
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *service) GetMediaFile(ctx context.Context, projectID, postID, fileName string) (*Media, error) {
