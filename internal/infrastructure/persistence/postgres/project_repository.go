@@ -114,7 +114,7 @@ func (r *ProjectRepository) AssignProjectOwner(ctx context.Context, projectID, u
     `, TeamMembersRoles)
 
 	// Batch insert roleIDs
-	roleIDs := []project.TeamRoleIDs{project.OwnerRoleID, project.ManagerRoleID, project.MemberRoleID}
+	roleIDs := []project.TeamRoleID{project.OwnerRoleID, project.ManagerRoleID, project.MemberRoleID}
 	for _, roleID := range roleIDs {
 		_, err = tx.Exec(ctx, insertRoleStmt, projectID, roleID, userID)
 		if err != nil {
@@ -148,6 +148,45 @@ func (r *ProjectRepository) GetUserRoles(ctx context.Context, userID, projectID 
 	}
 
 	return roles, nil
+}
+
+func (r *ProjectRepository) GetUserMaxRole(ctx context.Context, userID, projectID string) (int, error) {
+	var roleID int
+	err := r.db.QueryRow(ctx, fmt.Sprintf(`
+		SELECT MAX(team_role_id)
+		FROM %s
+		WHERE user_id = $1 AND project_id = $2
+	`, TeamMembersRoles), userID, projectID).Scan(&roleID)
+	if err != nil {
+		return 0, err
+	}
+
+	return roleID, nil
+}
+
+func (r *ProjectRepository) AddUserRole(ctx context.Context, projectID, userID string, roleID project.TeamRoleID) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+        INSERT INTO %s (project_id,team_role_id, user_id)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (project_id, team_role_id, user_id) DO NOTHING
+    `, TeamMembersRoles), projectID, roleID, userID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *ProjectRepository) RemoveUserRole(ctx context.Context, projectID, userID string, roleID project.TeamRoleID) error {
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+		DELETE FROM %s
+		WHERE project_id = $1 AND user_id = $2 AND team_role_id = $3
+	`, TeamMembersRoles), projectID, userID, roleID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *ProjectRepository) FindProjectByID(ctx context.Context, projectID string) (*project.Project, error) {

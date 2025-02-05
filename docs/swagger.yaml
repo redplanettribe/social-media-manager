@@ -1554,6 +1554,55 @@ paths:
       summary: Update a project
       tags:
       - projects
+  /projects/{project_id}/add-role/{user_id}/{role_id}:
+    post:
+      consumes:
+      - application/json
+      description: Add a role to a user in a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a role to a user
+      tags:
+      - projects
   /projects/{project_id}/add-user:
     post:
       consumes:
@@ -1785,6 +1834,55 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Enable a social platform
+      tags:
+      - projects
+  /projects/{project_id}/remove-role/{user_id}/{role_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a role from a user in a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: Role ID
+        in: path
+        name: role_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove a role from a user
       tags:
       - projects
   /projects/{project_id}/remove-user/{user_id}:

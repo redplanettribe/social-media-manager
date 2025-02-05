@@ -134,6 +134,15 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("POST /projects/{project_id}/add-user", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.AddUserToProject),
 	))
+	r.Handle("GET /projects/{project_id}/user-roles/{user_id}", r.projectPermissions("read:projects").Chain(
+		http.HandlerFunc(h.GetUserRoles),
+	))
+	r.Handle("POST /projects/{project_id}/add-role/{user_id}/{role_id}", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.AddRoleToUser),
+	))
+	r.Handle("DELETE /projects/{project_id}/remove-role/{user_id}/{role_id}", r.projectPermissions("delete:projects").Chain(
+		http.HandlerFunc(h.RemoveRoleFromUser),
+	))
 	r.Handle("DELETE /projects/{project_id}/remove-user/{user_id}", r.projectPermissions("delete:projects").Chain(
 		http.HandlerFunc(h.RemoveUserFromProject),
 	))

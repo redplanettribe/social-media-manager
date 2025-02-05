@@ -18,6 +18,8 @@ type Service interface {
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
 	GetProject(ctx context.Context, projectID string) (*ProjectResponse, error)
 	AddUserToProject(ctx context.Context, projectID, email string) error
+	AddUserRole(ctx context.Context, projectID, userID string, role int) error
+	RemoveUserRole(ctx context.Context, projectID, userID string, role int) error
 	RemoveUserFromProject(ctx context.Context, projectID, userID string) error
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	DisableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
@@ -161,6 +163,73 @@ func (s *service) AddUserToProject(ctx context.Context, projectID, email string)
 	}
 
 	return s.repo.AddUserToProject(ctx, projectID, userID)
+}
+
+func (s *service) AddUserRole(ctx context.Context, projectID, userID string, role int) error {
+	var (
+		reqUserRole     int
+		isUserInProject bool
+	)
+
+	g, gCtx := errgroup.WithContext(ctx)
+	reqUser := ctx.Value(middlewares.UserIDKey).(string)
+	g.Go(func() error {
+		var err error
+		reqUserRole, err = s.repo.GetUserMaxRole(gCtx, reqUser, projectID)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		isUserInProject, err = s.repo.IsUserInProject(gCtx, projectID, userID)
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if reqUserRole < role {
+		return ErrInsufficientPermissions
+	}
+	if !isUserInProject {
+		return ErrUserNotInProject
+	}
+
+	return s.repo.AddUserRole(ctx, projectID, userID, TeamRoleID(role))
+}
+
+func (s *service) RemoveUserRole(ctx context.Context, projectID, userID string, role int) error {
+	if TeamRoleID(role) == MemberRoleID {
+		return ErrBasicRoleCannotBeRemoved
+	}
+	var (
+		reqUserRole     int
+		isUserInProject bool
+	)
+
+	g, gCtx := errgroup.WithContext(ctx)
+	reqUser := ctx.Value(middlewares.UserIDKey).(string)
+	g.Go(func() error {
+		var err error
+		reqUserRole, err = s.repo.GetUserMaxRole(gCtx, reqUser, projectID)
+		return err
+	})
+	g.Go(func() error {
+		var err error
+		isUserInProject, err = s.repo.IsUserInProject(gCtx, projectID, userID)
+		return err
+	})
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if reqUserRole < role {
+		return ErrInsufficientPermissions
+	}
+	if !isUserInProject {
+		return ErrUserNotInProject
+	}
+
+	return s.repo.RemoveUserRole(ctx, projectID, userID, TeamRoleID(role))
 }
 
 func (s *service) RemoveUserFromProject(ctx context.Context, projectID, userID string) error {

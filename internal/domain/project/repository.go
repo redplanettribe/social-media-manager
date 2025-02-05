@@ -9,6 +9,9 @@ type Repository interface {
 	AssignProjectOwner(ctx context.Context, projectID, userID string) error
 	ListByUserID(ctx context.Context, userID string) ([]*Project, error)
 	GetUserRoles(ctx context.Context, userID, projectID string) ([]string, error)
+	GetUserMaxRole(ctx context.Context, userID, projectID string) (int, error)
+	AddUserRole(ctx context.Context, projectID, userID string, roleID TeamRoleID) error
+	RemoveUserRole(ctx context.Context, projectID, userID string, roleID TeamRoleID) error
 	FindProjectByID(ctx context.Context, projectID string) (*Project, error)
 	GetProjectUsers(ctx context.Context, projectID string) ([]*TeamMember, error)
 	AddUserToProject(ctx context.Context, projectID, userID string) error

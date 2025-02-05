@@ -32,6 +32,24 @@ func (_m *MockService) AddTimeSlot(ctx context.Context, projectID string, dayOfW
 	return r0
 }
 
+// AddUserRole provides a mock function with given fields: ctx, projectID, userID, role
+func (_m *MockService) AddUserRole(ctx context.Context, projectID string, userID string, role int) error {
+	ret := _m.Called(ctx, projectID, userID, role)
+
+	if len(ret) == 0 {
+		panic("no return value specified for AddUserRole")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int) error); ok {
+		r0 = rf(ctx, projectID, userID, role)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // AddUserToProject provides a mock function with given fields: ctx, projectID, email
 func (_m *MockService) AddUserToProject(ctx context.Context, projectID string, email string) error {
 	ret := _m.Called(ctx, projectID, email)
@@ -353,6 +371,24 @@ func (_m *MockService) RemoveUserFromProject(ctx context.Context, projectID stri
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
 		r0 = rf(ctx, projectID, userID)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+// RemoveUserRole provides a mock function with given fields: ctx, projectID, userID, role
+func (_m *MockService) RemoveUserRole(ctx context.Context, projectID string, userID string, role int) error {
+	ret := _m.Called(ctx, projectID, userID, role)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveUserRole")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, int) error); ok {
+		r0 = rf(ctx, projectID, userID, role)
 	} else {
 		r0 = ret.Error(0)
 	}

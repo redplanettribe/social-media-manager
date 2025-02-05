@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
@@ -254,6 +255,170 @@ func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request
 	}
 
 	err := h.Service.AddUserToProject(ctx, projectID, req.Email)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// GetUserRoles godoc
+// @Summary Get user roles
+// @Description Get the roles of a user in a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Success 200 {array} string
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/user-roles/{user_id} [get]
+func (h *ProjectHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
+			"user_id": "required",
+		}), nil)
+		return
+	}
+
+	roles, err := h.Service.GetUserRoles(ctx, userID, projectID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(roles)
+	if err != nil {
+		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
+	}
+}
+
+// AddRoleToUser godoc
+// @Summary Add a role to a user
+// @Description Add a role to a user in a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Param role_id path string true "Role ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/add-role/{user_id}/{role_id} [post]
+func (h *ProjectHandler) AddRoleToUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
+			"user_id": "required",
+		}), nil)
+		return
+	}
+
+	roleIDStr := r.PathValue("role_id")
+	if roleIDStr == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Role id is required", map[string]string{
+			"role_id": "required",
+		}), nil)
+		return
+	}
+
+	roleID, err := strconv.Atoi(roleIDStr)
+	if err != nil {
+		e.WriteBusinessError(w, e.NewValidationError("Invalid role id", map[string]string{
+			"role_id": "invalid",
+		}), nil)
+		return
+	}
+
+	err = h.Service.AddUserRole(ctx, projectID, userID, roleID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// RemoveRoleFromUser godoc
+// @Summary Remove a role from a user
+// @Description Remove a role from a user in a project
+// @Tags projects
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Param role_id path string true "Role ID"
+// @Success 204 {string} string "No content"
+// @Failure 400 {object} errors.APIError "Validation error"
+// @Failure 401 {object} errors.APIError "Unauthorized"
+// @Failure 410 {object} errors.APIError "Project not found"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /projects/{project_id}/remove-role/{user_id}/{role_id} [delete]
+func (h *ProjectHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	projectID := r.PathValue("project_id")
+	if projectID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
+			"project_id": "required",
+		}), nil)
+		return
+	}
+
+	userID := r.PathValue("user_id")
+	if userID == "" {
+		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
+			"user_id": "required",
+		}), nil)
+		return
+	}
+
+	roleIDStr := r.PathValue("role_id")
+	if roleIDStr == "" {
+		e.WriteBusinessError(w, e.NewValidationError("Role id is required", map[string]string{
+			"role_id": "required",
+		}), nil)
+		return
+	}
+
+	roleID, err := strconv.Atoi(roleIDStr)
+	if err != nil {
+		e.WriteBusinessError(w, e.NewValidationError("Invalid role id", map[string]string{
+			"role_id": "invalid",
+		}), nil)
+		return
+	}
+
+	err = h.Service.RemoveUserRole(ctx, projectID, userID, roleID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

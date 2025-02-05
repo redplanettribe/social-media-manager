@@ -11,6 +11,8 @@ var (
 	ErrProjectNotFound              = errors.New("project not found")
 	ErrNoUserIDInContext            = errors.New("no user id in context")
 	ErrUserAlreadyInProject         = errors.New("user is already in project")
+	ErrInsufficientPermissions      = errors.New("insufficient permissions")
+	ErrBasicRoleCannotBeRemoved     = errors.New("basic role cannot be removed")
 	ErrUserNotInProject             = errors.New("user is not in project")
 	ErrUserNotFound                 = errors.New("user not found")
 	ErrProjectExists                = errors.New("project already exists")
@@ -32,12 +34,12 @@ const (
 	OwnerRole   TeamRoleOptions = "owner"
 )
 
-type TeamRoleIDs int
+type TeamRoleID int
 
 const (
-	ManagerRoleID TeamRoleIDs = 1
-	MemberRoleID  TeamRoleIDs = 2
-	OwnerRoleID   TeamRoleIDs = 3
+	MemberRoleID  TeamRoleID = 1
+	ManagerRoleID TeamRoleID = 2
+	OwnerRoleID   TeamRoleID = 3
 )
 
 type Project struct {
