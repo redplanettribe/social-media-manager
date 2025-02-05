@@ -35,11 +35,11 @@ func NewSession(userID, deviceFingerprint string) *Session {
 		ID:                uuid.New().String(),
 		UserID:            userID,
 		DeviceFingerprint: deviceFingerprint,
-		CreatedAt:         time.Now(),
-		ExpiresAt:         time.Now().Add(time.Hour * 24 * 7),
+		CreatedAt:         time.Now().UTC(),
+		ExpiresAt:         time.Now().Add(time.Hour * 24 * 7).UTC(),
 	}
 }
 
 func (s *Session) IsValid() bool {
-	return time.Now().Before(s.ExpiresAt)
+	return time.Now().UTC().Before(s.ExpiresAt)
 }

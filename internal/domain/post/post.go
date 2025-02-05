@@ -141,8 +141,8 @@ func NewPost(
 		Status:      string(PostStatusDraft),
 		CreatedBy:   userID,
 		ScheduledAt: scheduledAt,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
 	}, nil
 }
 
@@ -157,6 +157,6 @@ func (p *Post) Update(title, content string, scheduledAt time.Time) error {
 	p.Title = title
 	p.TextContent = content
 	p.ScheduledAt = scheduledAt
-	p.UpdatedAt = time.Now()
+	p.UpdatedAt = time.Now().UTC()
 	return nil
 }

@@ -152,11 +152,11 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("DELETE /projects/{project_id}/disable-social-platform/{platform_id}", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.DisableSocialPlatform),
 	))
-	r.Handle("PATCH /projects/{project_id}/time-zone", r.projectPermissions("write:projects").Chain(
-		http.HandlerFunc(h.SetTimeZone),
-	))
-	r.Handle("PATCH /projects/{project_id}/time-slots", r.projectPermissions("write:projects").Chain(
+	r.Handle("PATCH /projects/{project_id}/add-time-slot", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.AddTimeSlot),
+	))
+	r.Handle("GET /projects/{project_id}/schedule", r.projectPermissions("read:projects").Chain(
+		http.HandlerFunc(h.GetProjectSchedule),
 	))
 	r.Handle("PATCH /projects/{project_id}/default-user/{user_id}", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.SetDefaultUser),

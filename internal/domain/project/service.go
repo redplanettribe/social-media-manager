@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
@@ -24,8 +25,8 @@ type Service interface {
 	EnableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	DisableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error)
-	SetTimeZone(ctx context.Context, projectID, timeZone string) error
 	AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
+	GetProjectSchedule(ctx context.Context, projectID string) (*WeeklyPostSchedule, error)
 	IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error)
 	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
 	SetDefaultUser(ctx context.Context, projectID, userID string) error
@@ -66,7 +67,7 @@ func (s *service) CreateProject(ctx context.Context, name, description string) (
 		return nil, err
 	}
 
-	shc := NewWeeklyPostSchedule("America/New_York", []TimeSlot{}) // TODO: get timezone from request
+	shc := NewWeeklyPostSchedule([]TimeSlot{})
 	err = s.repo.CreateProjectSettings(ctx, project.ID, shc)
 	if err != nil {
 		return nil, err
@@ -292,12 +293,22 @@ func (s *service) GetEnabledSocialPlatforms(ctx context.Context, projectID strin
 	return s.repo.GetEnabledSocialPlatforms(ctx, projectID)
 }
 
-func (s *service) SetTimeZone(ctx context.Context, projectID, timeZone string) error {
+func (s *service) AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error {
+	fmt.Println("Day of week:", dayOfWeek)
+	fmt.Println("Hour:", hour)
+	fmt.Println("Minute:", minute)
+
 	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
 	if err != nil {
 		return err
 	}
-	sch.SetTimeZone(timeZone)
+	fmt.Println("Schedule:", sch)
+	err = sch.AddSlot(dayOfWeek, hour, minute)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Schedule after:", sch)
+
 	err = s.repo.SaveSchedule(ctx, projectID, sch)
 	if err != nil {
 		return err
@@ -305,20 +316,8 @@ func (s *service) SetTimeZone(ctx context.Context, projectID, timeZone string) e
 	return nil
 }
 
-func (s *service) AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error {
-	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
-	if err != nil {
-		return err
-	}
-	err = sch.AddSlot(dayOfWeek, hour, minute)
-	if err != nil {
-		return err
-	}
-	err = s.repo.SaveSchedule(ctx, projectID, sch)
-	if err != nil {
-		return err
-	}
-	return nil
+func (s *service) GetProjectSchedule(ctx context.Context, projectID string) (*WeeklyPostSchedule, error) {
+	return s.repo.GetProjectSchedule(ctx, projectID)
 }
 
 func (s *service) IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error) {
@@ -326,7 +325,7 @@ func (s *service) IsProjectTimeToPublish(ctx context.Context, projectID string) 
 	if err != nil {
 		return false, err
 	}
-	return sch.IsTime(time.Now()), nil
+	return sch.IsTime(time.Now().UTC()), nil
 }
 
 func (s *service) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error) {

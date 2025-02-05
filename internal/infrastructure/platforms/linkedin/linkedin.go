@@ -173,7 +173,7 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	}
 
 	// Store expiration
-	expiresAt := time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second)
+	expiresAt := time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second).UTC()
 	expiresAtStr := expiresAt.Format(time.RFC3339)
 	secretStr, err := l.addSecret("token_expires_at", expiresAtStr)
 	if err != nil {

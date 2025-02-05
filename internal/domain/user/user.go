@@ -76,8 +76,8 @@ func NewUser(username, hashedPw, salt, email string) (*User, error) {
 		PaswordHash: hashedPw,
 		Salt:        salt,
 		Email:       email,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
 	}, nil
 }
 

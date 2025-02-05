@@ -78,7 +78,7 @@ func NewMetadata(postID, userID, fileName, altText string, data []byte, mediaInf
 		Size:      mediaInfo.Size,
 		AltText:   altText,
 		AddedBy:   userID,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().UTC(),
 	}, nil
 }
 

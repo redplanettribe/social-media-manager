@@ -23,7 +23,7 @@ func (r *ProjectRepository) Save(ctx context.Context, p *project.Project) (*proj
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		INSERT INTO %s (id, name, description, post_queue, idea_queue, created_by, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-	`, Projects), p.ID, p.Name, p.Description, p.PostQueue, p.IdeaQueue, p.CreatedBy, time.Now(), time.Now())
+	`, Projects), p.ID, p.Name, p.Description, p.PostQueue, p.IdeaQueue, p.CreatedBy, time.Now().UTC(), time.Now().UTC())
 	if err != nil {
 		return &project.Project{}, err
 	}
@@ -102,7 +102,7 @@ func (r *ProjectRepository) AssignProjectOwner(ctx context.Context, projectID, u
         VALUES ($1, $2, $3)
     `, TeamMembers)
 
-	_, err = tx.Exec(ctx, insertMember, projectID, userID, time.Now())
+	_, err = tx.Exec(ctx, insertMember, projectID, userID, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -267,7 +267,7 @@ func (r *ProjectRepository) AddUserToProject(ctx context.Context, projectID, use
 	_, err = tx.Exec(ctx, fmt.Sprintf(`
 		INSERT INTO %s (project_id, user_id, added_at)
 		VALUES ($1, $2, $3)
-	`, TeamMembers), projectID, userID, time.Now())
+	`, TeamMembers), projectID, userID, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -476,7 +476,7 @@ func (r *ProjectRepository) GetProjectSchedule(ctx context.Context, projectID st
 		return nil, err
 	}
 
-	schedule, err := project.Decode(encoded)
+	schedule, err := project.DecodeSchedule(encoded)
 	if err != nil {
 		return nil, err
 	}

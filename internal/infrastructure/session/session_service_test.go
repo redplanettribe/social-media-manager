@@ -16,7 +16,7 @@ func TestManager_ValidateSession(t *testing.T) {
 	ctx := context.Background()
 	sessionID := "test-session-id"
 	validSession := &Session{
-		ExpiresAt: time.Now().Add(time.Hour * 24),
+		ExpiresAt: time.Now().Add(time.Hour * 24).UTC(),
 	}
 	invalidSession := &Session{}
 

@@ -24,7 +24,7 @@ func (r *PostRepository) Save(ctx context.Context, p *post.Post) error {
 	_, err := r.db.Exec(ctx, fmt.Sprintf(`
 		INSERT INTO %s (id, project_id, title, type, text_content, is_idea, status, scheduled_at, created_by, created_at, updated_at)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-	`, Posts), p.ID, p.ProjectID, p.Title, p.Type, p.TextContent, p.IsIdea, p.Status, p.ScheduledAt, p.CreatedBy, time.Now(), time.Now())
+	`, Posts), p.ID, p.ProjectID, p.Title, p.Type, p.TextContent, p.IsIdea, p.Status, p.ScheduledAt, p.CreatedBy, time.Now().UTC(), time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func (r *PostRepository) ArchivePost(ctx context.Context, id string) error {
 		UPDATE %s
 		SET status = $2, updated_at = $3
 		WHERE id = $1
-	`, Posts), id, post.PostStatusArchived, time.Now())
+	`, Posts), id, post.PostStatusArchived, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (r *PostRepository) RestorePost(ctx context.Context, id string) error {
 		UPDATE %s
 		SET status = $2, updated_at = $3
 		WHERE id = $1
-	`, Posts), id, post.PostStatusDraft, time.Now())
+	`, Posts), id, post.PostStatusDraft, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -276,7 +276,7 @@ func (r *PostRepository) SchedulePost(ctx context.Context, id string, scheduledA
 		UPDATE %s
 		SET scheduled_at = $2, status = $3, updated_at = $4
 		WHERE id = $1
-	`, Posts), id, scheduledAt, post.PostStatusScheduled, time.Now())
+	`, Posts), id, scheduledAt, post.PostStatusScheduled, time.Now().UTC())
 	if err != nil {
 		return err
 	}
@@ -288,7 +288,7 @@ func (r *PostRepository) UnschedulePost(ctx context.Context, id string) error {
 		UPDATE %s
 		SET scheduled_at = $2, status = $3, updated_at = $4
 		WHERE id = $1
-	`, Posts), id, time.Time{}, post.PostStatusDraft, time.Now())
+	`, Posts), id, time.Time{}, post.PostStatusDraft, time.Now().UTC())
 	if err != nil {
 		return err
 	}

@@ -10,7 +10,6 @@ var (
 	ErrInvalidDayOfWeek = errors.New("invalid day of week")
 	ErrInvalidHour      = errors.New("invalid hour")
 	ErrInvalidMinute    = errors.New("invalid minute")
-	ErrIvalidTimeZone   = errors.New("invalid time zone")
 )
 
 type TimeSlot struct {
@@ -20,15 +19,13 @@ type TimeSlot struct {
 }
 
 type WeeklyPostSchedule struct {
-	TimeZone   string        `json:"time_zone"`
 	Slots      []TimeSlot    `json:"slots"`
-	TimeMargin time.Duration `json:"time_margin"`
+	TimeMargin time.Duration `json:"time_margin"` // currently a fixed 5 minutes
 }
 
 // NewWeeklyPostSchedule creates a new WeeklyPostSchedule.
-func NewWeeklyPostSchedule(timeZone string, slots []TimeSlot) *WeeklyPostSchedule {
+func NewWeeklyPostSchedule(slots []TimeSlot) *WeeklyPostSchedule {
 	return &WeeklyPostSchedule{
-		TimeZone:   timeZone,
 		Slots:      slots,
 		TimeMargin: 5 * time.Minute,
 	}
@@ -43,8 +40,8 @@ func (w *WeeklyPostSchedule) Encode() (string, error) {
 	return string(data), nil
 }
 
-// Decode populates a WeeklyPostSchedule from a JSON string.
-func Decode(encoded string) (*WeeklyPostSchedule, error) {
+// DecodeSchedule populates a WeeklyPostSchedule from a JSON string.
+func DecodeSchedule(encoded string) (*WeeklyPostSchedule, error) {
 	var schedule WeeklyPostSchedule
 	err := json.Unmarshal([]byte(encoded), &schedule)
 	if err != nil {
@@ -55,16 +52,13 @@ func Decode(encoded string) (*WeeklyPostSchedule, error) {
 
 // IsTime checks if the given time matches any scheduled slot within the time margin.
 func (w *WeeklyPostSchedule) IsTime(t time.Time) bool {
-	loc, err := time.LoadLocation(w.TimeZone)
-	if err != nil {
-		return false
-	}
-	localT := t.In(loc)
+	utcTime := t.UTC()
 	for _, slot := range w.Slots {
-		slotTime := time.Date(localT.Year(), localT.Month(), localT.Day(), slot.Hour, slot.Minute, 0, 0, loc)
-		if localT.Weekday() == slot.DayOfWeek &&
-			localT.After(slotTime.Add(-w.TimeMargin)) &&
-			localT.Before(slotTime.Add(w.TimeMargin)) {
+		slotTime := time.Date(utcTime.Year(), utcTime.Month(), utcTime.Day(),
+			slot.Hour, slot.Minute, 0, 0, time.UTC)
+		if utcTime.Weekday() == slot.DayOfWeek &&
+			utcTime.After(slotTime.Add(-w.TimeMargin)) &&
+			utcTime.Before(slotTime.Add(w.TimeMargin)) {
 			return true
 		}
 	}
@@ -77,7 +71,6 @@ func (w *WeeklyPostSchedule) AddSlot(dayOfWeek time.Weekday, hour, minute int) e
 		return ErrInvalidDayOfWeek
 	}
 
-	// validate hour and minute
 	if hour < 0 || hour > 23 {
 		return ErrInvalidHour
 	}
@@ -85,7 +78,6 @@ func (w *WeeklyPostSchedule) AddSlot(dayOfWeek time.Weekday, hour, minute int) e
 		return ErrInvalidMinute
 	}
 
-	// make sure the slot doesn't already exist
 	for _, slot := range w.Slots {
 		if slot.DayOfWeek == dayOfWeek && slot.Hour == hour && slot.Minute == minute {
 			return nil
@@ -93,16 +85,5 @@ func (w *WeeklyPostSchedule) AddSlot(dayOfWeek time.Weekday, hour, minute int) e
 	}
 
 	w.Slots = append(w.Slots, TimeSlot{DayOfWeek: dayOfWeek, Hour: hour, Minute: minute})
-	return nil
-}
-
-// SetTimeZone sets the timezone of the schedule
-func (w *WeeklyPostSchedule) SetTimeZone(timeZone string) error {
-	_, err := time.LoadLocation(timeZone)
-	if err != nil {
-		return errors.Join(ErrIvalidTimeZone, err)
-	}
-
-	w.TimeZone = timeZone
 	return nil
 }

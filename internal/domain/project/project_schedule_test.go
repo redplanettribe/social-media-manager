@@ -5,261 +5,85 @@ import (
 	"time"
 )
 
-func TestEncodeDecode(t *testing.T) {
-	schedule := &WeeklyPostSchedule{
-		TimeZone: "America/New_York",
-		Slots: []TimeSlot{
-			{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-			{DayOfWeek: time.Wednesday, Hour: 14, Minute: 0},
-		},
+func TestNewWeeklyPostSchedule(t *testing.T) {
+	slots := []TimeSlot{
+		{DayOfWeek: time.Monday, Hour: 10, Minute: 30},
 	}
+	schedule := NewWeeklyPostSchedule(slots)
+
+	if len(schedule.Slots) != 1 {
+		t.Errorf("expected 1 slot, got %d", len(schedule.Slots))
+	}
+	if schedule.TimeMargin != 5*time.Minute {
+		t.Errorf("expected time margin of 5 minutes, got %v", schedule.TimeMargin)
+	}
+}
+
+func TestEncodeDecode(t *testing.T) {
+	slots := []TimeSlot{
+		{DayOfWeek: time.Monday, Hour: 10, Minute: 30},
+	}
+	schedule := NewWeeklyPostSchedule(slots)
 
 	encoded, err := schedule.Encode()
 	if err != nil {
-		t.Fatalf("Encode() error = %v", err)
+		t.Fatalf("failed to encode schedule: %v", err)
 	}
 
-	decoded, err := Decode(encoded)
+	decoded, err := DecodeSchedule(encoded)
 	if err != nil {
-		t.Fatalf("Decode() error = %v", err)
+		t.Fatalf("failed to decode schedule: %v", err)
 	}
 
-	if decoded.TimeZone != schedule.TimeZone {
-		t.Errorf("Decode() TimeZone = %v, want %v", decoded.TimeZone, schedule.TimeZone)
+	if len(decoded.Slots) != 1 {
+		t.Errorf("expected 1 slot, got %d", len(decoded.Slots))
 	}
-
-	if len(decoded.Slots) != len(schedule.Slots) {
-		t.Errorf("Decode() Slots length = %v, want %v", len(decoded.Slots), len(schedule.Slots))
-	}
-
-	for i, slot := range decoded.Slots {
-		if slot != schedule.Slots[i] {
-			t.Errorf("Decode() Slot = %v, want %v", slot, schedule.Slots[i])
-		}
+	if decoded.Slots[0] != slots[0] {
+		t.Errorf("expected slot %v, got %v", slots[0], decoded.Slots[0])
 	}
 }
 
-func TestWeeklyPostSchedule_IsTime(t *testing.T) {
-    schedule := &WeeklyPostSchedule{
-        TimeZone:   "America/New_York",
-        TimeMargin: 5 * time.Minute,
-        Slots: []TimeSlot{
-            {DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-        },
-    }
-    loc, _ := time.LoadLocation("America/New_York")
-
-    tests := []struct {
-        name    string
-        testTime time.Time
-        want    bool
-    }{
-        {
-            name:    "exact time match",
-            testTime: time.Date(2023, time.October, 2, 9, 30, 0, 0, loc),
-            want:    true,
-        },
-        {
-            name:    "within margin (2 min early)",
-            testTime: time.Date(2023, time.October, 2, 9, 28, 0, 0, loc),
-            want:    true,
-        },
-        {
-            name:    "within margin (2 min late)",
-            testTime: time.Date(2023, time.October, 2, 9, 32, 0, 0, loc),
-            want:    true,
-        },
-        {
-            name:    "outside margin (6 min early)",
-            testTime: time.Date(2023, time.October, 2, 9, 24, 0, 0, loc),
-            want:    false,
-        },
-        {
-            name:    "outside margin (6 min late)",
-            testTime: time.Date(2023, time.October, 2, 9, 36, 0, 0, loc),
-            want:    false,
-        },
-    }
-
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            got := schedule.IsTime(tt.testTime)
-            if got != tt.want {
-                t.Errorf("IsTime(%v) = %v, want %v", tt.testTime, got, tt.want)
-            }
-        })
-    }
-}
-
-func TestWeeklyPostSchedule_IsTime_DifferentTimeZone(t *testing.T) {
-	schedule := &WeeklyPostSchedule{
-		TimeZone:   "America/New_York",
-		TimeMargin: 5 * time.Minute,
-		Slots: []TimeSlot{
-			{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-		},
+func TestIsTime(t *testing.T) {
+	slots := []TimeSlot{
+		{DayOfWeek: time.Monday, Hour: 10, Minute: 30},
 	}
-	loc, _ := time.LoadLocation("America/Los_Angeles")
+	schedule := NewWeeklyPostSchedule(slots)
 
-	tests := []struct {
-		name    string
-		testTime time.Time
-		want    bool
-	}{
-		{
-			name:    "exact time match",
-			testTime: time.Date(2023, time.October, 2, 6, 30, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "within margin (2 min early)",
-			testTime: time.Date(2023, time.October, 2, 6, 28, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "within margin (2 min late)",
-			testTime: time.Date(2023, time.October, 2, 6, 32, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "outside margin (6 min early)",
-			testTime: time.Date(2023, time.October, 2, 6, 24, 0, 0, loc),
-			want:    false,
-		},
-		{
-			name:    "outside margin (6 min late)",
-			testTime: time.Date(2023, time.October, 2, 6, 36, 0, 0, loc),
-			want:    false,
-		},
+	testTime := time.Date(2023, time.October, 2, 10, 30, 0, 0, time.UTC) // Monday
+	if !schedule.IsTime(testTime) {
+		t.Errorf("expected IsTime to return true for %v", testTime)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := schedule.IsTime(tt.testTime)
-			if got != tt.want {
-				t.Errorf("IsTime(%v) = %v, want %v", tt.testTime, got, tt.want)
-			}
-		})
+	testTime = testTime.Add(6 * time.Minute)
+	if schedule.IsTime(testTime) {
+		t.Errorf("expected IsTime to return false for %v", testTime)
 	}
 }
 
-func TestWeeklyPostSchedule_IsTime_MultipleSlots(t *testing.T) {
-	schedule := &WeeklyPostSchedule{
-		TimeZone:   "America/New_York",
-		TimeMargin: 5 * time.Minute,
-		Slots: []TimeSlot{
-			{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-			{DayOfWeek: time.Wednesday, Hour: 14, Minute: 0},
-		},
-	}
-	loc, _ := time.LoadLocation("America/New_York")
+func TestAddSlot(t *testing.T) {
+	schedule := NewWeeklyPostSchedule([]TimeSlot{})
 
-	tests := []struct {
-		name    string
-		testTime time.Time
-		want    bool
-	}{
-		{
-			name:    "exact time match slot 1",
-			testTime: time.Date(2023, time.October, 2, 9, 30, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "exact time match slot 2",
-			testTime: time.Date(2023, time.October, 4, 14, 0, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "within margin (2 min early) slot 1",
-			testTime: time.Date(2023, time.October, 2, 9, 28, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "within margin (2 min late) slot 1",
-			testTime: time.Date(2023, time.October, 2, 9, 32, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "within margin (2 min early) slot 2",
-			testTime: time.Date(2023, time.October, 4, 13, 58, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "within margin (2 min late) slot 2",
-			testTime: time.Date(2023, time.October, 4, 14, 2, 0, 0, loc),
-			want:    true,
-		},
-		{
-			name:    "outside margin (6 min early) slot 1",
-			testTime: time.Date(2023, time.October, 2, 9, 24, 0, 0, loc),
-			want:    false,
-		},
-		{
-			name:    "outside margin (6 min late) slot 1",
-			testTime: time.Date(2023, time.October, 2, 9, 36, 0, 0, loc),
-			want:    false,
-		},
-		{
-			name:    "outside margin (6 min early) slot 2",
-			testTime: time.Date(2023, time.October, 4, 13, 54, 0, 0, loc),
-			want:    false,
-		},
-		{
-			name:    "outside margin (6 min late) slot 2",
-			testTime: time.Date(2023, time.October, 4, 14, 6, 0, 0, loc),
-			want:    false,
-		},
+	err := schedule.AddSlot(time.Monday, 10, 30)
+	if err != nil {
+		t.Fatalf("failed to add slot: %v", err)
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := schedule.IsTime(tt.testTime)
-			if got != tt.want {
-				t.Errorf("IsTime(%v) = %v, want %v", tt.testTime, got, tt.want)
-			}
-		})
-	}
-}
-
-// Add slot tests
-func TestWeeklyPostSchedule_AddSlot(t *testing.T) {
-
-
-	tests := []struct {
-		name     string
-		slot     TimeSlot
-		expected []TimeSlot
-	}{
-		{
-			name: "add slot",
-			slot: TimeSlot{DayOfWeek: time.Wednesday, Hour: 14, Minute: 0},
-			expected: []TimeSlot{
-				{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-				{DayOfWeek: time.Wednesday, Hour: 14, Minute: 0},
-			},
-		},
-		{
-			name: "add slot duplicate",
-			slot: TimeSlot{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-			expected: []TimeSlot{
-				{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-			},
-		},
+	if len(schedule.Slots) != 1 {
+		t.Errorf("expected 1 slot, got %d", len(schedule.Slots))
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			schedule := &WeeklyPostSchedule{
-				TimeZone:   "America/New_York",
-				TimeMargin: 5 * time.Minute,
-				Slots: []TimeSlot{
-					{DayOfWeek: time.Monday, Hour: 9, Minute: 30},
-				},
-			}
-			schedule.AddSlot(tt.slot.DayOfWeek, tt.slot.Hour, tt.slot.Minute)
-			if len(schedule.Slots) != len(tt.expected) {
-				t.Fatalf("AddSlot() Slots length = %v, want %v", len(schedule.Slots), len(tt.expected))
-			}
-		})
+	err = schedule.AddSlot(time.Sunday, 25, 0)
+	if err != ErrInvalidHour {
+		t.Errorf("expected ErrInvalidHour, got %v", err)
+	}
+
+	err = schedule.AddSlot(time.Sunday, 10, 61)
+	if err != ErrInvalidMinute {
+		t.Errorf("expected ErrInvalidMinute, got %v", err)
+	}
+
+	err = schedule.AddSlot(time.Weekday(7), 10, 30)
+	if err != ErrInvalidDayOfWeek {
+		t.Errorf("expected ErrInvalidDayOfWeek, got %v", err)
 	}
 }

@@ -95,7 +95,7 @@ func NewProject(name, description, createdBy string) (*Project, error) {
 		PostQueue:   []string{},
 		IdeaQueue:   []string{},
 		CreatedBy:   createdBy,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		CreatedAt:   time.Now().UTC(),
+		UpdatedAt:   time.Now().UTC(),
 	}, nil
 }
