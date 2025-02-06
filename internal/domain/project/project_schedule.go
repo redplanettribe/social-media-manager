@@ -13,14 +13,14 @@ var (
 )
 
 type TimeSlot struct {
-	DayOfWeek time.Weekday `json:"day_of_week"`
+	DayOfWeek time.Weekday `json:"day_of_week" swaggertype:"integer" example:"1"` // 0 = Sunday, 1 = Monday, etc.
 	Hour      int          `json:"hour"`
 	Minute    int          `json:"minute"`
 }
 
 type WeeklyPostSchedule struct {
 	Slots      []TimeSlot    `json:"slots"`
-	TimeMargin time.Duration `json:"time_margin"` // currently a fixed 5 minutes
+	TimeMargin time.Duration `json:"time_margin" swaggertype:"integer" example:"300000000"` // 5 minutes in nanoseconds
 }
 
 // NewWeeklyPostSchedule creates a new WeeklyPostSchedule.
@@ -85,5 +85,27 @@ func (w *WeeklyPostSchedule) AddSlot(dayOfWeek time.Weekday, hour, minute int) e
 	}
 
 	w.Slots = append(w.Slots, TimeSlot{DayOfWeek: dayOfWeek, Hour: hour, Minute: minute})
+	return nil
+}
+
+func (w *WeeklyPostSchedule) RemoveSlot(dayOfWeek time.Weekday, hour, minute int) error {
+	if dayOfWeek < time.Sunday || dayOfWeek > time.Saturday {
+		return ErrInvalidDayOfWeek
+	}
+
+	if hour < 0 || hour > 23 {
+		return ErrInvalidHour
+	}
+	if minute < 0 || minute > 59 {
+		return ErrInvalidMinute
+	}
+
+	for i, slot := range w.Slots {
+		if slot.DayOfWeek == dayOfWeek && slot.Hour == hour && slot.Minute == minute {
+			w.Slots = append(w.Slots[:i], w.Slots[i+1:]...)
+			return nil
+		}
+	}
+
 	return nil
 }

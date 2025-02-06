@@ -1917,6 +1917,76 @@ const docTemplate = `{
                 }
             }
         },
+        "/projects/{project_id}/add-time-slot": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add a time slot to a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Add a time slot to a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Time slot request",
+                        "name": "time_slot",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.addTimeSlotRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "410": {
+                        "description": "Project not found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{project_id}/add-user": {
             "post": {
                 "security": [
@@ -2352,6 +2422,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/projects/{project_id}/remove-time-slot": {
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Remove a time slot from a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Remove a time slot from a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Time slot request",
+                        "name": "time_slot",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handlers.addTimeSlotRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "410": {
+                        "description": "Project not found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{project_id}/remove-user/{user_id}": {
             "delete": {
                 "security": [
@@ -2420,6 +2557,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/projects/{project_id}/schedule": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get the project schedule for a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Get the project schedule",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/project.WeeklyPostSchedule"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "410": {
+                        "description": "Project not found",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/errors.APIError"
+                        }
+                    }
+                }
+            }
+        },
         "/projects/{project_id}/social-platforms": {
             "get": {
                 "security": [
@@ -2455,146 +2653,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/project.SocialPlatform"
                             }
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "410": {
-                        "description": "Project not found",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/projects/{project_id}/time-slots": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Add a time slot to a project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "projects"
-                ],
-                "summary": "Add a time slot to a project",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Time slot request",
-                        "name": "time_slot",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handlers.addTimeSlotRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "410": {
-                        "description": "Project not found",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/errors.APIError"
-                        }
-                    }
-                }
-            }
-        },
-        "/projects/{project_id}/time-zone": {
-            "patch": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Set the time zone for a project",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "projects"
-                ],
-                "summary": "Set the time zone for a project",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Time zone request",
-                        "name": "time_zone",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handlers.setTimeZoneRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No content",
-                        "schema": {
-                            "type": "string"
                         }
                     },
                     "400": {
@@ -3459,14 +3517,6 @@ const docTemplate = `{
                 }
             }
         },
-        "handlers.setTimeZoneRequest": {
-            "type": "object",
-            "properties": {
-                "time_zone": {
-                    "type": "string"
-                }
-            }
-        },
         "media.DownloadMetaData": {
             "type": "object",
             "properties": {
@@ -3740,6 +3790,22 @@ const docTemplate = `{
                 }
             }
         },
+        "project.TimeSlot": {
+            "type": "object",
+            "properties": {
+                "day_of_week": {
+                    "description": "0 = Sunday, 1 = Monday, etc.",
+                    "type": "integer",
+                    "example": 1
+                },
+                "hour": {
+                    "type": "integer"
+                },
+                "minute": {
+                    "type": "integer"
+                }
+            }
+        },
         "project.UserPlatformInfo": {
             "type": "object",
             "properties": {
@@ -3748,6 +3814,22 @@ const docTemplate = `{
                 },
                 "isAuthenticated": {
                     "type": "boolean"
+                }
+            }
+        },
+        "project.WeeklyPostSchedule": {
+            "type": "object",
+            "properties": {
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/project.TimeSlot"
+                    }
+                },
+                "time_margin": {
+                    "description": "5 minutes in nanoseconds",
+                    "type": "integer",
+                    "example": 300000000
                 }
             }
         },

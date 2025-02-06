@@ -2,7 +2,6 @@ package project
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
@@ -26,6 +25,7 @@ type Service interface {
 	DisableSocialPlatform(ctx context.Context, projectID, socialPlatformID string) error
 	GetEnabledSocialPlatforms(ctx context.Context, projectID string) ([]SocialPlatform, error)
 	AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
+	RemoveTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error
 	GetProjectSchedule(ctx context.Context, projectID string) (*WeeklyPostSchedule, error)
 	IsProjectTimeToPublish(ctx context.Context, projectID string) (bool, error)
 	FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*Project, error)
@@ -294,21 +294,30 @@ func (s *service) GetEnabledSocialPlatforms(ctx context.Context, projectID strin
 }
 
 func (s *service) AddTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error {
-	fmt.Println("Day of week:", dayOfWeek)
-	fmt.Println("Hour:", hour)
-	fmt.Println("Minute:", minute)
-
 	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Schedule:", sch)
 	err = sch.AddSlot(dayOfWeek, hour, minute)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Schedule after:", sch)
+	err = s.repo.SaveSchedule(ctx, projectID, sch)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
+func (s *service) RemoveTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour, minute int) error {
+	sch, err := s.repo.GetProjectSchedule(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	err = sch.RemoveSlot(dayOfWeek, hour, minute)
+	if err != nil {
+		return err
+	}
 	err = s.repo.SaveSchedule(ctx, projectID, sch)
 	if err != nil {
 		return err

@@ -160,6 +160,7 @@ func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.
 		if err != nil {
 			return err
 		}
+		fmt.Println("Found", len(projs), "active projects")
 		if len(projs) == 0 {
 			break
 		}
@@ -178,7 +179,7 @@ func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.
 				if !ok {
 					return nil // not time to publish
 				}
-
+				fmt.Println("Project", projectID, "is ready to publish")
 				// Each post can have multiple platforms to publish
 				qps, err := s.postService.DequeuePostsToPublish(gCtx, projectID)
 				if err != nil {
@@ -187,6 +188,8 @@ func (s *PostScheduler) scanProjectQueues(ctx context.Context, out chan<- *post.
 				if qps == nil {
 					return nil // no post to enqueue
 				}
+
+				fmt.Println("Found", len(qps), "posts to publish for project", projectID)
 
 				// Send each post to the out channel to enqueue
 				for _, qp := range qps {

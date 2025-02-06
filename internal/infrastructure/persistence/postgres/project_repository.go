@@ -513,7 +513,7 @@ func (r *ProjectRepository) CreateProjectSettings(ctx context.Context, projectID
 	return err
 }
 
-func (r *ProjectRepository) FindActiveProjectsChunk(ctx context.Context, limit, offset int) ([]*project.Project, error) {
+func (r *ProjectRepository) FindActiveProjectsChunk(ctx context.Context, offset, chunkSize int) ([]*project.Project, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
 		SELECT id, name, description, post_queue, idea_queue, created_by, created_at, updated_at
 		FROM %s
@@ -521,7 +521,7 @@ func (r *ProjectRepository) FindActiveProjectsChunk(ctx context.Context, limit, 
 		AND cardinality(post_queue) > 0
 		ORDER BY created_at DESC
 		LIMIT $1 OFFSET $2
-	`, Projects), limit, offset)
+	`, Projects), chunkSize, offset)
 	if err != nil {
 		return nil, err
 	}

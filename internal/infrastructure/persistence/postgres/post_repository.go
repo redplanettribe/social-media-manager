@@ -465,28 +465,28 @@ func (r *PostRepository) GetProjectQueuedPosts(ctx context.Context, projectID st
 
 func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID string) ([]*post.PublishPost, error) {
 	rows, err := r.db.Query(ctx, fmt.Sprintf(`
-		SELECT
-			p.id,
-			p.project_id,
-			p.title,
-			p.type,
-			p.text_content,
-			p.is_idea,
-			p.status,
-			p.scheduled_at,
-			p.created_by,
-			p.created_at,
-			p.updated_at,
-			prpl.secrets,
-			plat.id,
-			popl.status publish_status
-		FROM %s p
-		INNER JOIN %s popl ON p.id = popl.post_id
-		INNER JOIN %s plat ON popl.platform_id = plat.id
-		INNER JOIN %s prpl ON plat.id = prpl.platform_id
-		WHERE p.id = $1
-		AND prpl.secrets IS NOT NULL
-	`, Posts, PostPlatforms, Platforms, ProjectPlatforms), postID)
+        SELECT
+            p.id,
+            p.project_id,
+            p.title,
+            p.type,
+            p.text_content,
+            p.is_idea,
+            p.status,
+            p.scheduled_at,
+            p.created_by,
+            p.created_at,
+            p.updated_at,
+            prpl.secrets,
+            plat.id,
+            popl.status publish_status
+        FROM %s p
+        INNER JOIN %s popl ON p.id = popl.post_id
+        INNER JOIN %s plat ON popl.platform_id = plat.id
+        INNER JOIN %s prpl ON plat.id = prpl.platform_id AND prpl.project_id = p.project_id
+        WHERE p.id = $1
+        AND prpl.secrets IS NOT NULL
+    `, Posts, PostPlatforms, Platforms, ProjectPlatforms), postID)
 	if err != nil {
 		return nil, err
 	}
@@ -494,7 +494,9 @@ func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID str
 
 	var posts []*post.PublishPost
 	for rows.Next() {
-		p := &post.PublishPost{}
+		p := &post.PublishPost{
+			Post: &post.Post{},
+		}
 		err = rows.Scan(
 			&p.Post.ID,
 			&p.Post.ProjectID,
@@ -506,6 +508,7 @@ func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID str
 			&p.Post.ScheduledAt,
 			&p.Post.CreatedBy,
 			&p.Post.CreatedAt,
+			&p.Post.UpdatedAt,
 			&p.Secrets,
 			&p.Platform,
 			&p.PublishStatus,

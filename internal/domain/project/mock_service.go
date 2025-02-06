@@ -272,6 +272,36 @@ func (_m *MockService) GetProject(ctx context.Context, projectID string) (*Proje
 	return r0, r1
 }
 
+// GetProjectSchedule provides a mock function with given fields: ctx, projectID
+func (_m *MockService) GetProjectSchedule(ctx context.Context, projectID string) (*WeeklyPostSchedule, error) {
+	ret := _m.Called(ctx, projectID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetProjectSchedule")
+	}
+
+	var r0 *WeeklyPostSchedule
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*WeeklyPostSchedule, error)); ok {
+		return rf(ctx, projectID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *WeeklyPostSchedule); ok {
+		r0 = rf(ctx, projectID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*WeeklyPostSchedule)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, projectID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetUserRoles provides a mock function with given fields: ctx, userID, projectID
 func (_m *MockService) GetUserRoles(ctx context.Context, userID string, projectID string) ([]string, error) {
 	ret := _m.Called(ctx, userID, projectID)
@@ -360,6 +390,24 @@ func (_m *MockService) ListProjects(ctx context.Context) ([]*Project, error) {
 	return r0, r1
 }
 
+// RemoveTimeSlot provides a mock function with given fields: ctx, projectID, dayOfWeek, hour, minute
+func (_m *MockService) RemoveTimeSlot(ctx context.Context, projectID string, dayOfWeek time.Weekday, hour int, minute int) error {
+	ret := _m.Called(ctx, projectID, dayOfWeek, hour, minute)
+
+	if len(ret) == 0 {
+		panic("no return value specified for RemoveTimeSlot")
+	}
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, time.Weekday, int, int) error); ok {
+		r0 = rf(ctx, projectID, dayOfWeek, hour, minute)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // RemoveUserFromProject provides a mock function with given fields: ctx, projectID, userID
 func (_m *MockService) RemoveUserFromProject(ctx context.Context, projectID string, userID string) error {
 	ret := _m.Called(ctx, projectID, userID)
@@ -407,24 +455,6 @@ func (_m *MockService) SetDefaultUser(ctx context.Context, projectID string, use
 	var r0 error
 	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
 		r0 = rf(ctx, projectID, userID)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
-}
-
-// SetTimeZone provides a mock function with given fields: ctx, projectID, timeZone
-func (_m *MockService) SetTimeZone(ctx context.Context, projectID string, timeZone string) error {
-	ret := _m.Called(ctx, projectID, timeZone)
-
-	if len(ret) == 0 {
-		panic("no return value specified for SetTimeZone")
-	}
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
-		r0 = rf(ctx, projectID, timeZone)
 	} else {
 		r0 = ret.Error(0)
 	}

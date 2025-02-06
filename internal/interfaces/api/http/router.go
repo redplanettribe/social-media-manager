@@ -155,6 +155,9 @@ func (r *Router) setupProjectRoutes(h *handlers.ProjectHandler) {
 	r.Handle("PATCH /projects/{project_id}/add-time-slot", r.projectPermissions("write:projects").Chain(
 		http.HandlerFunc(h.AddTimeSlot),
 	))
+	r.Handle("PATCH /projects/{project_id}/remove-time-slot", r.projectPermissions("write:projects").Chain(
+		http.HandlerFunc(h.RemoveTimeSlot),
+	))
 	r.Handle("GET /projects/{project_id}/schedule", r.projectPermissions("read:projects").Chain(
 		http.HandlerFunc(h.GetProjectSchedule),
 	))

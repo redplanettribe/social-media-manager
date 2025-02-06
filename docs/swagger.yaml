@@ -80,11 +80,6 @@ definitions:
       scheduled_at:
         type: string
     type: object
-  handlers.setTimeZoneRequest:
-    properties:
-      time_zone:
-        type: string
-    type: object
   media.DownloadMetaData:
     properties:
       added_by:
@@ -272,12 +267,34 @@ definitions:
       name:
         type: string
     type: object
+  project.TimeSlot:
+    properties:
+      day_of_week:
+        description: 0 = Sunday, 1 = Monday, etc.
+        example: 1
+        type: integer
+      hour:
+        type: integer
+      minute:
+        type: integer
+    type: object
   project.UserPlatformInfo:
     properties:
       authTTL:
         type: string
       isAuthenticated:
         type: boolean
+    type: object
+  project.WeeklyPostSchedule:
+    properties:
+      slots:
+        items:
+          $ref: '#/definitions/project.TimeSlot'
+        type: array
+      time_margin:
+        description: 5 minutes in nanoseconds
+        example: 300000000
+        type: integer
     type: object
   publisher.Platform:
     properties:
@@ -1603,6 +1620,51 @@ paths:
       summary: Add a role to a user
       tags:
       - projects
+  /projects/{project_id}/add-time-slot:
+    patch:
+      consumes:
+      - application/json
+      description: Add a time slot to a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Time slot request
+        in: body
+        name: time_slot
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.addTimeSlotRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+          schema:
+            type: string
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add a time slot to a project
+      tags:
+      - projects
   /projects/{project_id}/add-user:
     post:
       consumes:
@@ -1885,6 +1947,49 @@ paths:
       summary: Remove a role from a user
       tags:
       - projects
+  /projects/{project_id}/remove-time-slot:
+    patch:
+      consumes:
+      - application/json
+      description: Remove a time slot from a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Time slot request
+        in: body
+        name: time_slot
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.addTimeSlotRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Remove a time slot from a project
+      tags:
+      - projects
   /projects/{project_id}/remove-user/{user_id}:
     delete:
       consumes:
@@ -1929,6 +2034,45 @@ paths:
       summary: Remove a user from a project
       tags:
       - projects
+  /projects/{project_id}/schedule:
+    get:
+      consumes:
+      - application/json
+      description: Get the project schedule for a project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/project.WeeklyPostSchedule'
+        "400":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "410":
+          description: Project not found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Get the project schedule
+      tags:
+      - projects
   /projects/{project_id}/social-platforms:
     get:
       consumes:
@@ -1968,96 +2112,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get enabled social platforms
-      tags:
-      - projects
-  /projects/{project_id}/time-slots:
-    patch:
-      consumes:
-      - application/json
-      description: Add a time slot to a project
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Time slot request
-        in: body
-        name: time_slot
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.addTimeSlotRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No content
-          schema:
-            type: string
-        "400":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "410":
-          description: Project not found
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Add a time slot to a project
-      tags:
-      - projects
-  /projects/{project_id}/time-zone:
-    patch:
-      consumes:
-      - application/json
-      description: Set the time zone for a project
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Time zone request
-        in: body
-        name: time_zone
-        required: true
-        schema:
-          $ref: '#/definitions/handlers.setTimeZoneRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No content
-          schema:
-            type: string
-        "400":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "410":
-          description: Project not found
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Set the time zone for a project
       tags:
       - projects
   /projects/{project_id}/user-roles/{user_id}:
