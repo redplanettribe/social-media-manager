@@ -1,0 +1,32 @@
+@startuml C4_Container
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Container diagram for Post Pilot
+
+Person(user, "Team Member", "A user who manages social media content")
+
+System_Boundary(system, "Post Pilot System") {
+    Container(web, "Web Application", "React", "Provides social media management functionality to users via web browser")    
+    Container(api, "API Application", "Go", "Handles API requests and business logic")
+    ContainerDb(db, "Database", "PostgreSQL", "Stores users, projects, posts, and platform configurations")
+    ContainerDb(objectstore, "Object Store", "MinIO/S3", "Stores media files")
+}
+
+System_Ext(linkedin, "LinkedIn API", "Social media platform API")
+System_Ext(twitter, "Twitter API", "Social media platform API")
+System_Ext(socialPlatforms, "Other Social Platforms", "Various social media APIs")
+
+Rel(user, web, "Uses", "HTTPS")
+
+Rel(web, api, "Makes API calls to", "HTTPS/JSON")
+
+Rel(api, db, "Reads from and writes to", "SQL/TCP")
+Rel(api, objectstore, "Reads from and writes to", "AWS S3 API")
+
+Rel(api, linkedin, "Publishes content to", "HTTPS/OAuth2")
+Rel(api, twitter, "Publishes content to", "HTTPS/OAuth2")
+Rel(api, socialPlatforms, "Publishes content to", "HTTPS/OAuth2")
+
+@enduml

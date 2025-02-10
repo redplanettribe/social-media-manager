@@ -1,0 +1,27 @@
+@startuml C4_Context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+title System Context diagram for Post Pilot (tentative name) (Open Community Social Media Management)
+
+Person(user, "Team Member", "A user who manages social media content")
+
+System(web, "Web", "Web application for managing social media content")
+System(mobile, "Mobile", "Mobile application for managing social media content")
+System(api, "API", "Allows teams to create, review, schedule and publish social media content")
+
+
+System_Ext(linkedin, "LinkedIn", "Social media platform for professional networking")
+System_Ext(twitter, "Twitter", "Social media platform for microblogging")
+System_Ext(socialPlatforms, "Social Platforms", "Social media platforms for sharing content")
+
+Rel(user, web, "Uses")
+Rel(user, mobile, "Uses")
+Rel(mobile, api, "Uses")
+Rel(web, api, "Uses")
+Rel(api, linkedin, "Publishes")
+Rel(api, twitter, "Publishes")
+Rel(api, socialPlatforms, "Publishes")
+
+@endumlas

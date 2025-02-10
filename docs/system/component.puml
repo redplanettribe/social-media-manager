@@ -1,0 +1,109 @@
+@startuml C4_Components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Component diagram for Post Pilot API Application
+
+Container_Boundary(api, "API Application") {
+    ' Core Services
+    Boundary(services, "Core Services") {
+        Component(userService, "User Service", "Go", "Handles user management and authentication")
+        Component(projectService, "Project Service", "Go", "Manages projects and team members")
+        Component(postService, "Post Service", "Go", "Handles post management")
+        Component(mediaService, "Media Service", "Go", "Manages media files")
+        Component(publisherService, "Publisher Service", "Go", "Handles social media integration")
+        Component(sessionManager, "Session Manager", "Go", "Manages user sessions")
+        Component(schedulerService, "Scheduler Service", "Go", "Background Task. Handles post scheduling")
+        Component(publisherQueue, "Publisher Queue", "Go", "Manages publishing tasks")
+        Component(publisherFactory, "Publisher Factory", "Go", "Creates platform-specific publishers")
+    }
+
+
+    ' Infrastructure Components
+    Boundary(infrastructure, "Infrastructure") {
+        Component(config, "Config", "Go", "Application configuration")
+        Component(encrypter, "Encrypter", "Go", "Handles data encryption")
+    }
+
+    ' HTTP Layer
+    Boundary(http, "HTTP Layer") {
+        Component(router, "HTTP Router", "Go", "Routes HTTP requests")
+        Component(handlers, "HTTP Handlers", "Go", "Handles HTTP requests")
+
+    }
+
+    ' Middleware
+    Boundary(middleware, "Middleware") {
+        Component(logger, "Logger", "Go", "Logs requests")
+        Component(recovery, "Recovery", "Go", "Recovers from panics")
+        Component(cors, "CORS", "Go", "Handles CORS")
+        Component(auth, "Authentication", "Go", "Authenticates requests")
+        Component(authz, "Authorization", "Go", "Authorizes operations")
+    }
+
+    ' Repositories
+     Boundary(dal, "Data Access Layer") {
+        Component(userRepo, "User Repository", "Go", "User data access")
+        Component(projectRepo, "Project Repository", "Go", "Project data access")
+        Component(postRepo, "Post Repository", "Go", "Post data access")
+        Component(mediaRepo, "Media Repository", "Go", "Media metadata access")
+        Component(mediaObjectRepo, "Media Object Repository", "Go", "Media object data access")
+        Component(sessionRepo, "Session Repository", "Go", "Session data access")
+        Component(publisherRepo, "Publisher Repository", "Go", "Publisher data access")
+    }
+
+    ' Concrete Social Media Platforms
+    Boundary(platforms, "Social Media Platforms") {
+        Component(linkedinImpl, "LinkedIn Publisher", "Go", "Publishes to LinkedIn")
+        Component(twitterImpl, "Twitter Publisher", "Go", "Publishes to Twitter")
+    }
+}
+
+' External Systems
+ContainerDb(db, "PostgreSQL", "Database", "Stores application data")
+ContainerDb(objectstore, "MinIO/S3", "Object Store", "Stores media files")
+System_Ext(linkedin, "LinkedIn API", "Social platform")
+System_Ext(twitter, "Twitter API", "Social platform")
+
+' Internal Relationships
+Rel(router, handlers, "Routes to")
+Rel(http,middleware, "Uses")
+
+Rel(handlers, userService, "Uses")
+Rel(handlers, projectService, "Uses")
+Rel(handlers, postService, "Uses")
+Rel(handlers, mediaService, "Uses")
+Rel(handlers, publisherService, "Uses")
+
+Rel(userService, userRepo, "Uses")
+Rel(userService, sessionManager, "Uses")
+Rel(projectService, projectRepo, "Uses")
+Rel(postService, postRepo, "Uses")
+Rel(mediaService, mediaRepo, "Uses")
+Rel(mediaService, mediaObjectRepo, "Uses")
+Rel(publisherService, publisherRepo, "Uses")
+Rel(publisherService, mediaService, "Uses")
+Rel(publisherService, postService, "Uses")
+Rel(publisherFactory, platforms, "Gets implementations from")
+Rel(sessionManager, sessionRepo, "Uses")
+
+Rel(publisherService, publisherFactory, "Uses")
+Rel(services, infrastructure, "Uses")
+Rel(publisherQueue, publisherService, "Uses")
+Rel(schedulerService, postService, "Uses")
+Rel(schedulerService, publisherQueue, "Push Posts to")
+
+' External Relationships
+Rel_Down(userRepo, db, "Reads/Writes", "SQL")
+Rel_Down(projectRepo, db, "Reads/Writes", "SQL")
+Rel_Down(postRepo, db, "Reads/Writes", "SQL")
+Rel_Down(mediaRepo, db, "Reads/Writes", "SQL")
+Rel_Down(sessionRepo, db, "Reads/Writes", "SQL")
+Rel_Down(publisherRepo, db, "Reads/Writes", "SQL")
+
+Rel_Down(mediaObjectRepo, objectstore, "Stores files", "S3 API")
+Rel_Down(publisherService, linkedin, "Publishes to", "OAuth2/REST")
+Rel_Down(publisherService, twitter, "Publishes to", "OAuth2/REST")
+
+@enduml
