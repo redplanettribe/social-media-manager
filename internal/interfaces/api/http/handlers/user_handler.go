@@ -24,9 +24,35 @@ type createUserRequest struct {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 }
+
+func (r createUserRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.Username == "" {
+		errors["username"] = "Username is required"
+	}
+	if r.Password == "" {
+		errors["password"] = "Password is required"
+	}
+	if r.Email == "" {
+		errors["email"] = "Email is required"
+	}
+	return errors
+}
+
 type loginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+func (r loginRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.Email == "" {
+		errors["email"] = "Email is required"
+	}
+	if r.Password == "" {
+		errors["password"] = "Password is required"
+	}
+	return errors
 }
 
 // SignUp godoc
@@ -43,20 +69,14 @@ type loginRequest struct {
 // @Router /users [post]
 func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req createUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
-		return
-	}
-
-	if req.Username == "" || req.Password == "" || req.Email == "" {
-		e.WriteHttpError(w, e.NewValidationError("Missing username, password or email", nil))
+	req, ok := validateRequestBody[createUserRequest](w, r)
+	if !ok {
 		return
 	}
 
 	u, err := h.Service.CreateUser(ctx, req.Username, req.Password, req.Email)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -83,7 +103,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	u, err := h.Service.GetUser(ctx)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -108,14 +128,8 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 // @Router /users/login [post]
 func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req loginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
-		return
-	}
-
-	if req.Email == "" || req.Password == "" {
-		e.WriteHttpError(w, e.NewValidationError("Missing email or password", nil))
+	req, ok := validateRequestBody[loginRequest](w, r)
+	if !ok {
 		return
 	}
 
@@ -161,7 +175,7 @@ func (h *UserHandler) Logout(w http.ResponseWriter, r *http.Request) {
 
 	err = h.Service.Logout(ctx, sessionID.Value)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -190,7 +204,7 @@ func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	roles, err := h.Service.GetAllAppRoles(ctx)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -204,6 +218,17 @@ func (h *UserHandler) GetRoles(w http.ResponseWriter, r *http.Request) {
 type assignRoleRequest struct {
 	UserID string `json:"user_id"`
 	RoleID string `json:"role_id"`
+}
+
+func (r assignRoleRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.UserID == "" {
+		errors["user_id"] = "User ID is required"
+	}
+	if r.RoleID == "" {
+		errors["role_id"] = "Role ID is required"
+	}
+	return errors
 }
 
 // AssignRoleToUser godoc
@@ -220,20 +245,14 @@ type assignRoleRequest struct {
 // @Router /users/roles [post]
 func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req assignRoleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
-		return
-	}
-
-	if req.UserID == "" || req.RoleID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Missing user ID or role ID", nil))
+	req, ok := validateRequestBody[assignRoleRequest](w, r)
+	if !ok {
 		return
 	}
 
 	err := h.Service.AssignAppRoleToUser(ctx, req.UserID, req.RoleID)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
@@ -254,23 +273,16 @@ func (h *UserHandler) AssignRoleToUser(w http.ResponseWriter, r *http.Request) {
 // @Router /users/roles [delete]
 func (h *UserHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	var req assignRoleRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
-		return
-	}
-	userID, roleID := req.UserID, req.RoleID
-	if userID == "" || roleID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Missing user ID or role ID", nil))
+	req, ok := validateRequestBody[assignRoleRequest](w, r)
+	if !ok {
 		return
 	}
 
-	err := h.Service.RemoveAppRoleFromUser(ctx, userID, roleID)
+	err := h.Service.RemoveAppRoleFromUser(ctx, req.UserID, req.RoleID)
 	if err != nil {
-		e.WriteBusinessError(w, err,mapErrorToAPIError)
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
 }
-

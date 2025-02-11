@@ -25,6 +25,17 @@ type createPostRequest struct {
 	ScheduledAt time.Time `json:"scheduled_at"`
 }
 
+func (req createPostRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if req.Title == "" {
+		errors["title"] = "required"
+	}
+	if req.Type == "" {
+		errors["type"] = "required"
+	}
+	return errors
+}
+
 // CreatePost godoc
 // @Summary Create a new post
 // @Description Create a new post with the given title, text content, image links, video links, is idea and scheduled at
@@ -41,9 +52,8 @@ type createPostRequest struct {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/add [post]
 func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
-	var req createPostRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+	req, ok := validateRequestBody[createPostRequest](w, r)
+	if !ok {
 		return
 	}
 
@@ -51,13 +61,6 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 	if projectID == "" {
 		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
 			"project_id": "required",
-		}))
-		return
-	}
-
-	if req.Title == "" {
-		e.WriteHttpError(w, e.NewValidationError("Title is required", map[string]string{
-			"title": "required",
 		}))
 		return
 	}
@@ -101,12 +104,10 @@ func (h *PostHandler) CreatePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id} [patch]
 func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
-	var req createPostRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+	req, ok := validateRequestBody[createPostRequest](w, r)
+	if !ok {
 		return
 	}
-
 	projectID := r.PathValue("project_id")
 	if projectID == "" {
 		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
@@ -406,6 +407,14 @@ type schedulePostRequest struct {
 	ScheduledAt time.Time `json:"scheduled_at"`
 }
 
+func (spr schedulePostRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if spr.ScheduledAt.IsZero() {
+		errors["scheduled_at"] = "required"
+	}
+	return errors
+}
+
 // SchedulePost godoc
 // @Summary Schedule a post
 // @Description Schedule a post by its id
@@ -423,7 +432,10 @@ type schedulePostRequest struct {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/schedule [patch]
 func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
-	var req schedulePostRequest
+	req, ok := validateRequestBody[schedulePostRequest](w, r)
+	if !ok {
+		return
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
 		return
@@ -606,6 +618,17 @@ type moveInQueueRequest struct {
 	NewIndex     int `json:"new_index"`
 }
 
+func (req moveInQueueRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if req.CurrentIndex < 0 {
+		errors["current_index"] = "invalid"
+	}
+	if req.NewIndex < 0 {
+		errors["new_index"] = "invalid"
+	}
+	return errors
+}
+
 // MovePostInQueue godoc
 // @Summary Move a post in the project queue
 // @Description Move a post in the project queue by its current and new index
@@ -623,9 +646,8 @@ type moveInQueueRequest struct {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/post-queue/move [patch]
 func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
-	var req moveInQueueRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+	req, ok := validateRequestBody[moveInQueueRequest](w, r)
+	if !ok {
 		return
 	}
 
@@ -660,9 +682,8 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/idea-queue/move [patch]
 func (h *PostHandler) MoveIdeaInQueue(w http.ResponseWriter, r *http.Request) {
-	var req moveInQueueRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+	req, ok := validateRequestBody[moveInQueueRequest](w, r)
+	if !ok {
 		return
 	}
 

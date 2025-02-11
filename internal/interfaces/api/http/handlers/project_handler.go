@@ -598,6 +598,20 @@ type addTimeSlotRequest struct {
 	Minute    int `json:"minute"`
 }
 
+func (r addTimeSlotRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.DayOfWeek < 0 || r.DayOfWeek > 6 {
+		errors["day_of_week"] = "Invalid day of week"
+	}
+	if r.Hour < 0 || r.Hour > 23 {
+		errors["hour"] = "Invalid hour"
+	}
+	if r.Minute < 0 || r.Minute > 59 {
+		errors["minute"] = "Invalid minute"
+	}
+	return errors
+}
+
 // AddTimeSlot godoc
 // @Summary Add a time slot to a project
 // @Description Add a time slot to a project
@@ -623,9 +637,8 @@ func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req addTimeSlotRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+	req, ok := validateRequestBody[addTimeSlotRequest](w, r)
+	if !ok {
 		return
 	}
 
@@ -663,9 +676,8 @@ func (h *ProjectHandler) RemoveTimeSlot(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var req addTimeSlotRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+	req, ok := validateRequestBody[addTimeSlotRequest](w, r)
+	if !ok {
 		return
 	}
 
