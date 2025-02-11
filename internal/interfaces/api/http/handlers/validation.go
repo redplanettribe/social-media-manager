@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"time"
 
 	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
 )
@@ -24,4 +25,33 @@ func validateRequestBody[T Validator](w http.ResponseWriter, r *http.Request) (*
 	}
 
 	return &req, true
+}
+
+func requirePathParams(w http.ResponseWriter, params map[string]string) bool {
+	errors := make(map[string]string)
+	for key, value := range params {
+		if value == "" {
+			errors[key] = "required"
+		}
+	}
+	if len(errors) > 0 {
+		e.WriteHttpError(w, e.NewValidationError("Missing required path parameters", errors))
+		return false
+	}
+	return true
+}
+
+func validateDate(date time.Time, field string) map[string]string {
+	errors := make(map[string]string)
+
+	if date.IsZero() {
+		errors[field] = "required"
+		return errors
+	}
+
+	if date.Before(time.Now()) {
+		errors[field] = "must be in the future"
+		return errors
+	}
+	return nil
 }

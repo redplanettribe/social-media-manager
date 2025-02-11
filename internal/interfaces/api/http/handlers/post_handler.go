@@ -108,21 +108,16 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
+	postID := params["post_id"]
+	projectID := params["project_id"]
 
 	p, err := h.Service.UpdatePost(
 		r.Context(),
@@ -161,15 +156,15 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router  /posts/{project_id}/{post_id} [get]
 func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	post, err := h.Service.GetPost(r.Context(), postID)
+	post, err := h.Service.GetPost(r.Context(), params["post_id"])
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -197,13 +192,13 @@ func (h *PostHandler) GetPost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id} [get]
 func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := params["project_id"]
 
 	posts, err := h.Service.ListProjectPosts(r.Context(), projectID)
 	if err != nil {
@@ -233,14 +228,16 @@ func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/archive [patch]
 func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id") // not checking for this bc middleware should have already checked
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+
+	postID := params["post_id"]
+	projectID := params["project_id"]
 
 	err := h.Service.ArchivePost(r.Context(), projectID, postID)
 	if err != nil {
@@ -266,14 +263,16 @@ func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/restore [patch]
 func (h *PostHandler) RestorePost(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id") // not checking for this bc middleware should have already checked
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+
+	postID := params["post_id"]
+	projectID := params["project_id"]
 
 	err := h.Service.RestorePost(r.Context(), projectID, postID)
 	if err != nil {
@@ -299,14 +298,15 @@ func (h *PostHandler) RestorePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id} [delete]
 func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
+	postID := params["post_id"]
 	err := h.Service.DeletePost(r.Context(), postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -332,23 +332,18 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/platforms/{platform_id} [post]
 func (h *PostHandler) AddSocialMediaPublisherPlatform(w http.ResponseWriter, r *http.Request) {
-	platformID := r.PathValue("platform_id")
-	if platformID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Publisher ID is required", map[string]string{
-			"platform_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":     r.PathValue("post_id"),
+		"project_id":  r.PathValue("project_id"),
+		"platform_id": r.PathValue("platform_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-
-	projectID := r.PathValue("project_id")
+	postID := params["post_id"]
+	projectID := params["project_id"]
+	platformID := params["platform_id"]
 
 	err := h.Service.AddSocialMediaPublisher(r.Context(), projectID, postID, platformID)
 	if err != nil {
@@ -376,23 +371,18 @@ func (h *PostHandler) AddSocialMediaPublisherPlatform(w http.ResponseWriter, r *
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/platforms/{platform_id} [delete]
 func (h *PostHandler) RemoveSocialMediaPublisherPlatform(w http.ResponseWriter, r *http.Request) {
-	platformID := r.PathValue("platform_id")
-	if platformID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Publisher ID is required", map[string]string{
-			"platform_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":     r.PathValue("post_id"),
+		"project_id":  r.PathValue("project_id"),
+		"platform_id": r.PathValue("platform_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-
-	projectID := r.PathValue("project_id")
+	postID := params["post_id"]
+	projectID := params["project_id"]
+	platformID := params["platform_id"]
 
 	err := h.Service.RemoveSocialMediaPublisher(r.Context(), projectID, postID, platformID)
 	if err != nil {
@@ -408,11 +398,7 @@ type schedulePostRequest struct {
 }
 
 func (spr schedulePostRequest) Validate() map[string]string {
-	errors := make(map[string]string)
-	if spr.ScheduledAt.IsZero() {
-		errors["scheduled_at"] = "required"
-	}
-	return errors
+	return validateDate(spr.ScheduledAt, "scheduled_at")
 }
 
 // SchedulePost godoc
@@ -436,25 +422,16 @@ func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 	if !ok {
 		return
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request payload", nil))
+
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	if req.ScheduledAt.IsZero() {
-		e.WriteHttpError(w, e.NewValidationError("Scheduled at is required", map[string]string{
-			"scheduled_at": "required",
-		}))
-		return
-	}
-
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
+	postID := params["post_id"]
 
 	err := h.Service.SchedulePost(r.Context(), postID, req.ScheduledAt)
 	if err != nil {
@@ -480,13 +457,14 @@ func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/unschedule [patch]
 func (h *PostHandler) UnschedulePost(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	postID := params["post_id"]
 
 	err := h.Service.UnschedulePost(r.Context(), postID)
 	if err != nil {
@@ -513,22 +491,16 @@ func (h *PostHandler) UnschedulePost(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/enqueue [patch]
 func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
-		return
-	}
-
+	postID := params["post_id"]
+	projectID := params["project_id"]
 	err := h.Service.AddToProjectQueue(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -553,22 +525,16 @@ func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Reque
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/{post_id}/dequeue [patch]
 func (h *PostHandler) RemovePostFromProjectQueue(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
+	params := map[string]string{
+		"post_id":    r.PathValue("post_id"),
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
-		return
-	}
-
+	postID := params["post_id"]
+	projectID := params["project_id"]
 	err := h.Service.RemovePostFromProjectQueue(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -592,14 +558,13 @@ func (h *PostHandler) RemovePostFromProjectQueue(w http.ResponseWriter, r *http.
 // @Security ApiKeyAuth
 // @Router /posts/{project_id}/queue [get]
 func (h *PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-
+	projectID := params["project_id"]
 	posts, err := h.Service.GetProjectQueuedPosts(r.Context(), projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -651,13 +616,13 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := params["project_id"]
 
 	err := h.Service.MovePostInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
 	if err != nil {
@@ -687,13 +652,13 @@ func (h *PostHandler) MoveIdeaInQueue(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := params["project_id"]
 
 	err := h.Service.MoveIdeaInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
 	if err != nil {

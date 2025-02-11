@@ -54,16 +54,20 @@ func (h *PublisherHandler) GetAvailableSocialNetworks(w http.ResponseWriter, r *
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /publishers/{project_id}/{post_id}/{social_network_id} [post]
+// @Router /publishers/{project_id}/{post_id}/{platform_id} [post]
 func (h *PublisherHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	socialNetworkID := r.PathValue("social_network_id")
-	projectID := r.PathValue("project_id")
-
-	if postID == "" || socialNetworkID == "" || projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+	params := map[string]string{
+		"project_id":  "required",
+		"post_id":     "required",
+		"platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+
+	postID := params["post_id"]
+	socialNetworkID := params["platform_id"]
+	projectID := params["project_id"]
 
 	err := h.Service.PublishPostToSocialNetwork(r.Context(), projectID, postID, socialNetworkID)
 	if err != nil {
@@ -75,13 +79,16 @@ func (h *PublisherHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *
 }
 
 func (h *PublisherHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	projectID := r.PathValue("project_id")
-
-	if postID == "" || projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+	params := map[string]string{
+		"project_id": "required",
+		"post_id":    "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+
+	postID := params["post_id"]
+	projectID := params["project_id"]
 
 	err := h.Service.PublishPostToAssignedSocialNetworks(r.Context(), projectID, postID)
 	if err != nil {
@@ -108,15 +115,20 @@ func (h *PublisherHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWr
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code} [post]
 func (h *PublisherHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	userID := r.PathValue("user_id")
-	platformID := r.PathValue("platform_id")
-	code := r.PathValue("code")
-
-	if projectID == "" || userID == "" || platformID == "" || code == "" {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+	params := map[string]string{
+		"project_id":  "required",
+		"platform_id": "required",
+		"user_id":     "required",
+		"code":        "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+
+	platformID := params["platform_id"]
+	projectID := params["project_id"]
+	userID := params["user_id"]
+	code := params["code"]
 
 	err := h.Service.Authenticate(r.Context(), platformID, projectID, userID, code)
 	if err != nil {
@@ -141,13 +153,16 @@ func (h *PublisherHandler) Authenticate(w http.ResponseWriter, r *http.Request) 
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/{post_id}/validate [get]
 func (h *PublisherHandler) ValidatePostForAssignedSocialNetworks(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	projectID := r.PathValue("project_id")
-
-	if postID == "" || projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+	params := map[string]string{
+		"project_id": "required",
+		"post_id":    "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+
+	projectID := params["project_id"]
+	postID := params["post_id"]
 
 	err := h.Service.ValidatePostForAssignedSocialNetworks(r.Context(), projectID, postID)
 	if err != nil {
@@ -173,16 +188,20 @@ func (h *PublisherHandler) ValidatePostForAssignedSocialNetworks(w http.Response
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/{post_id}/{platform_id}/validate [get]
 func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	socialNetworkID := r.PathValue("platform_id")
-	projectID := r.PathValue("project_id")
-
-	if postID == "" || socialNetworkID == "" || projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+	params := map[string]string{
+		"project_id":  "required",
+		"post_id":     "required",
+		"platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	err := h.Service.ValidatePostForSocialNetwork(r.Context(), projectID, postID, socialNetworkID)
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	platformID := params["platform_id"]
+
+	err := h.Service.ValidatePostForSocialNetwork(r.Context(), projectID, postID, platformID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -206,16 +225,20 @@ func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r
 // @Security ApiKeyAuth
 // @Router /publishers/{project_id}/{post_id}/{platform_id}/info [get]
 func (h *PublisherHandler) GetPublishPostInfo(w http.ResponseWriter, r *http.Request) {
-	postID := r.PathValue("post_id")
-	socialNetworkID := r.PathValue("platform_id")
-	projectID := r.PathValue("project_id")
-
-	if postID == "" || socialNetworkID == "" || projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Invalid request", nil))
+	params := map[string]string{
+		"project_id":  "required",
+		"post_id":     "required",
+		"platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
 
-	info, err := h.Service.GetPublishPostInfo(r.Context(), projectID, postID, socialNetworkID)
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	platformID := params["platform_id"]
+
+	info, err := h.Service.GetPublishPostInfo(r.Context(), projectID, postID, platformID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

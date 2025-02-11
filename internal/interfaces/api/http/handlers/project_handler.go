@@ -23,6 +23,14 @@ type createProjectRequest struct {
 	Description string `json:"description"`
 }
 
+func (r createProjectRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.Name == "" {
+		errors["name"] = "Name is required"
+	}
+	return errors
+}
+
 // CreateProject godoc
 // @Summary Create a new project
 // @Description Create a new project with the given name and description
@@ -38,19 +46,10 @@ type createProjectRequest struct {
 // @Security ApiKeyAuth
 // @Router /projects [post]
 func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
-	var req createProjectRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteBusinessError(w, e.NewValidationError("Invalid request payload", nil), nil)
+	req, ok := validateRequestBody[createProjectRequest](w, r)
+	if !ok {
 		return
 	}
-
-	if req.Name == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Name is required", map[string]string{
-			"name": "required",
-		}), nil)
-		return
-	}
-
 	p, err := h.Service.CreateProject(r.Context(), req.Name, req.Description)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -81,29 +80,19 @@ func (h *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id} [patch]
 func (h *ProjectHandler) UpdateProject(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	req, ok := validateRequestBody[createProjectRequest](w, r)
+	if !ok {
+		return
+	}
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
 
-	var req createProjectRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteBusinessError(w, e.NewValidationError("Invalid request payload", nil), nil)
-		return
-	}
-
-	if req.Name == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Name is required", map[string]string{
-			"name": "required",
-		}), nil)
-		return
-	}
-
-	p, err := h.Service.UpdateProject(ctx, projectID, req.Name, req.Description)
+	p, err := h.Service.UpdateProject(r.Context(), projectID, req.Name, req.Description)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -131,16 +120,15 @@ func (h *ProjectHandler) UpdateProject(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id} [delete]
 func (h *ProjectHandler) DeleteProject(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := r.PathValue("project_id")
 
-	err := h.Service.DeleteProject(ctx, projectID)
+	err := h.Service.DeleteProject(r.Context(), projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -190,16 +178,15 @@ func (h *ProjectHandler) ListProjects(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id} [get]
 func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := r.PathValue("project_id")
 
-	p, err := h.Service.GetProject(ctx, projectID)
+	p, err := h.Service.GetProject(r.Context(), projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -214,6 +201,14 @@ func (h *ProjectHandler) GetProject(w http.ResponseWriter, r *http.Request) {
 
 type addUserRequest struct {
 	Email string `json:"email"`
+}
+
+func (r addUserRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.Email == "" {
+		errors["email"] = "Email is required"
+	}
+	return errors
 }
 
 // AddUserToProject godoc
@@ -233,28 +228,20 @@ type addUserRequest struct {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/add-user [post]
 func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
+
+	req, ok := validateRequestBody[addUserRequest](w, r)
+	if !ok {
 		return
 	}
 
-	var req addUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		e.WriteBusinessError(w, e.NewValidationError("Invalid request payload", nil), nil)
-		return
-	}
-	if req.Email == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Email is required", map[string]string{
-			"email": "required",
-		}), nil)
-		return
-	}
-
-	err := h.Service.AddUserToProject(ctx, projectID, req.Email)
+	err := h.Service.AddUserToProject(r.Context(), projectID, req.Email)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -279,24 +266,16 @@ func (h *ProjectHandler) AddUserToProject(w http.ResponseWriter, r *http.Request
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/user-roles/{user_id} [get]
 func (h *ProjectHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id": "required",
+		"user_id":    "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
-
 	userID := r.PathValue("user_id")
-	if userID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
-			"user_id": "required",
-		}), nil)
-		return
-	}
-
-	roles, err := h.Service.GetUserRoles(ctx, userID, projectID)
+	roles, err := h.Service.GetUserRoles(r.Context(), userID, projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -326,30 +305,17 @@ func (h *ProjectHandler) GetUserRoles(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/add-role/{user_id}/{role_id} [post]
 func (h *ProjectHandler) AddRoleToUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id": "required",
+		"user_id":    "required",
+		"role_id":    "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
-
 	userID := r.PathValue("user_id")
-	if userID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
-			"user_id": "required",
-		}), nil)
-		return
-	}
-
 	roleIDStr := r.PathValue("role_id")
-	if roleIDStr == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Role id is required", map[string]string{
-			"role_id": "required",
-		}), nil)
-		return
-	}
 
 	roleID, err := strconv.Atoi(roleIDStr)
 	if err != nil {
@@ -359,7 +325,7 @@ func (h *ProjectHandler) AddRoleToUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.Service.AddUserRole(ctx, projectID, userID, roleID)
+	err = h.Service.AddUserRole(r.Context(), projectID, userID, roleID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -385,30 +351,17 @@ func (h *ProjectHandler) AddRoleToUser(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/remove-role/{user_id}/{role_id} [delete]
 func (h *ProjectHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id": "required",
+		"user_id":    "required",
+		"role_id":    "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
-
 	userID := r.PathValue("user_id")
-	if userID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
-			"user_id": "required",
-		}), nil)
-		return
-	}
-
 	roleIDStr := r.PathValue("role_id")
-	if roleIDStr == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Role id is required", map[string]string{
-			"role_id": "required",
-		}), nil)
-		return
-	}
 
 	roleID, err := strconv.Atoi(roleIDStr)
 	if err != nil {
@@ -418,7 +371,7 @@ func (h *ProjectHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	err = h.Service.RemoveUserRole(ctx, projectID, userID, roleID)
+	err = h.Service.RemoveUserRole(r.Context(), projectID, userID, roleID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -443,24 +396,17 @@ func (h *ProjectHandler) RemoveRoleFromUser(w http.ResponseWriter, r *http.Reque
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/remove-user/{user_id} [delete]
 func (h *ProjectHandler) RemoveUserFromProject(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id": "required",
+		"user_id":    "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
-
 	userID := r.PathValue("user_id")
-	if userID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("User id is required", map[string]string{
-			"user_id": "required",
-		}), nil)
-		return
-	}
 
-	err := h.Service.RemoveUserFromProject(ctx, projectID, userID)
+	err := h.Service.RemoveUserFromProject(r.Context(), projectID, userID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -484,26 +430,19 @@ func (h *ProjectHandler) RemoveUserFromProject(w http.ResponseWriter, r *http.Re
 // @Failure 409 {object} errors.APIError "User already exists"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /projects/{project_id}/enable-social-platform/{social_platform_id} [post]
+// @Router /projects/{project_id}/enable-social-platform/{platform_id} [post]
 func (h *ProjectHandler) EnableSocialPlatform(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id":  "required",
+		"platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
-
 	socialPlatformID := r.PathValue("platform_id")
-	if socialPlatformID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Social platform id is required", map[string]string{
-			"platform_id": "required",
-		}), nil)
-		return
-	}
 
-	err := h.Service.EnableSocialPlatform(ctx, projectID, socialPlatformID)
+	err := h.Service.EnableSocialPlatform(r.Context(), projectID, socialPlatformID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -529,24 +468,17 @@ func (h *ProjectHandler) EnableSocialPlatform(w http.ResponseWriter, r *http.Req
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/disable-social-platform/{platform_id} [delete]
 func (h *ProjectHandler) DisableSocialPlatform(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id":  "required",
+		"platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
-		return
-	}
-
 	socialPlatformID := r.PathValue("platform_id")
-	if socialPlatformID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Social platform id is required", map[string]string{
-			"platform_id": "required",
-		}), nil)
-		return
-	}
 
-	err := h.Service.DisableSocialPlatform(ctx, projectID, socialPlatformID)
+	err := h.Service.DisableSocialPlatform(r.Context(), projectID, socialPlatformID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -570,16 +502,14 @@ func (h *ProjectHandler) DisableSocialPlatform(w http.ResponseWriter, r *http.Re
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/social-platforms [get]
 func (h *ProjectHandler) GetEnabledSocialPlatforms(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteBusinessError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}), nil)
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-
-	platforms, err := h.Service.GetEnabledSocialPlatforms(ctx, projectID)
+	projectID := r.PathValue("project_id")
+	platforms, err := h.Service.GetEnabledSocialPlatforms(r.Context(), projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -628,21 +558,20 @@ func (r addTimeSlotRequest) Validate() map[string]string {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/add-time-slot [patch]
 func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := r.PathValue("project_id")
 
 	req, ok := validateRequestBody[addTimeSlotRequest](w, r)
 	if !ok {
 		return
 	}
 
-	err := h.Service.AddTimeSlot(ctx, projectID, time.Weekday(req.DayOfWeek), req.Hour, req.Minute)
+	err := h.Service.AddTimeSlot(r.Context(), projectID, time.Weekday(req.DayOfWeek), req.Hour, req.Minute)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -667,21 +596,20 @@ func (h *ProjectHandler) AddTimeSlot(w http.ResponseWriter, r *http.Request) {
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/remove-time-slot [patch]
 func (h *ProjectHandler) RemoveTimeSlot(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := r.PathValue("project_id")
 
 	req, ok := validateRequestBody[addTimeSlotRequest](w, r)
 	if !ok {
 		return
 	}
 
-	err := h.Service.RemoveTimeSlot(ctx, projectID, time.Weekday(req.DayOfWeek), req.Hour, req.Minute)
+	err := h.Service.RemoveTimeSlot(r.Context(), projectID, time.Weekday(req.DayOfWeek), req.Hour, req.Minute)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -705,16 +633,15 @@ func (h *ProjectHandler) RemoveTimeSlot(w http.ResponseWriter, r *http.Request) 
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/schedule [get]
 func (h *ProjectHandler) GetProjectSchedule(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": "required",
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
+	projectID := r.PathValue("project_id")
 
-	schedule, err := h.Service.GetProjectSchedule(ctx, projectID)
+	schedule, err := h.Service.GetProjectSchedule(r.Context(), projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -743,24 +670,17 @@ func (h *ProjectHandler) GetProjectSchedule(w http.ResponseWriter, r *http.Reque
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/default-user/{user_id} [patch]
 func (h *ProjectHandler) SetDefaultUser(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id": "required",
+		"user_id":    "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
-		return
-	}
-
 	userID := r.PathValue("user_id")
-	if userID == "" {
-		e.WriteHttpError(w, e.NewValidationError("User id is required", map[string]string{
-			"user_id": "required",
-		}))
-		return
-	}
 
-	err := h.Service.SetDefaultUser(ctx, projectID, userID)
+	err := h.Service.SetDefaultUser(r.Context(), projectID, userID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -785,24 +705,17 @@ func (h *ProjectHandler) SetDefaultUser(w http.ResponseWriter, r *http.Request) 
 // @Security ApiKeyAuth
 // @Router /projects/{project_id}/default-user-platform-info/{platform_id} [get]
 func (h *ProjectHandler) GetDefaultUserPlatformInfo(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	params := map[string]string{
+		"project_id":  "required",
+		"platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
 	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
-		return
-	}
-
 	platformID := r.PathValue("platform_id")
-	if platformID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Platform id is required", map[string]string{
-			"platform_id": "required",
-		}))
-		return
-	}
 
-	info, err := h.Service.GetDefaultUserPlatformInfo(ctx, projectID, platformID)
+	info, err := h.Service.GetDefaultUserPlatformInfo(r.Context(), projectID, platformID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

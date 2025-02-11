@@ -37,20 +37,15 @@ func NewMediaHandler(service media.Service) *MediaHandler {
 // @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id} [post]
 func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+		"post_id":    r.PathValue("post_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
+	projectID := params["project_id"]
+	postID := params["post_id"]
 
 	altText := r.FormValue("alt_text")
 
@@ -97,30 +92,19 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 // @Failure 403 {object} errors.APIError
 // @Failure 404 {object} errors.APIError
 // @Failure 500 {object} errors.APIError
-// @Router /media/{project_id}/{post_id}/{platform_id}/{media_id}/unlink [get]
+// @Router /media/{project_id}/{post_id}/{platform_id}/{file_name}/unlink [get]
 func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+		"post_id":    r.PathValue("post_id"),
+		"file_name":  r.PathValue("file_name"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-
-	filename := r.PathValue("file_name")
-	if filename == "" {
-		e.WriteHttpError(w, e.NewValidationError("Filename is required", map[string]string{
-			"file_name": "required",
-		}))
-		return
-	}
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	filename := params["file_name"]
 
 	m, err := h.Service.GetMediaFile(r.Context(), projectID, postID, filename)
 	if err != nil {
@@ -155,37 +139,19 @@ func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id}/{platform_id}/{media_id}/link [post]
 func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id":  r.PathValue("project_id"),
+		"post_id":     r.PathValue("post_id"),
+		"media_id":    r.PathValue("media_id"),
+		"platform_id": r.PathValue("platform_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-
-	platformID := r.PathValue("platform_id")
-	if platformID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Platform id is required", map[string]string{
-			"platform_id": "required",
-		}))
-		return
-	}
-
-	mediaID := r.PathValue("media_id")
-	if mediaID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Media id is required", map[string]string{
-			"media_id": "required",
-		}))
-		return
-	}
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	mediaID := params["media_id"]
+	platformID := params["platform_id"]
 
 	err := h.Service.LinkMediaToPublishPost(r.Context(), projectID, postID, mediaID, platformID)
 	if err != nil {
@@ -213,38 +179,19 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 // @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id}/{platform_id}/{media_id} [delete]
 func (h *MediaHandler) UnLinkMediaFromPublishPost(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("UnLinkMediaFromPublishPost")
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id":  r.PathValue("project_id"),
+		"post_id":     r.PathValue("post_id"),
+		"media_id":    r.PathValue("media_id"),
+		"platform_id": r.PathValue("platform_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-
-	platformID := r.PathValue("platform_id")
-	if platformID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Platform id is required", map[string]string{
-			"platform_id": "required",
-		}))
-		return
-	}
-
-	mediaID := r.PathValue("media_id")
-	if mediaID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Media id is required", map[string]string{
-			"media_id": "required",
-		}))
-		return
-	}
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	mediaID := params["media_id"]
+	platformID := params["platform_id"]
 
 	err := h.Service.UnLinkMediaFromPublishPost(r.Context(), projectID, postID, mediaID, platformID)
 	if err != nil {
@@ -271,27 +218,17 @@ func (h *MediaHandler) UnLinkMediaFromPublishPost(w http.ResponseWriter, r *http
 // @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id}/{file_name}/meta [get]
 func (h *MediaHandler) GetDownloadMetaData(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+		"post_id":    r.PathValue("post_id"),
+		"file_name":  r.PathValue("file_name"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-	filename := r.PathValue("file_name")
-	if filename == "" {
-		e.WriteHttpError(w, e.NewValidationError("Filename is required", map[string]string{
-			"file_name": "required",
-		}))
-		return
-	}
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	filename := params["file_name"]
 
 	downloadMetadata, err := h.Service.GetDownloadMetaData(r.Context(), projectID, postID, filename)
 	if err != nil {
@@ -308,21 +245,15 @@ func (h *MediaHandler) GetDownloadMetaData(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *MediaHandler) GetDownloadMetadataDataForPost(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+		"post_id":    r.PathValue("post_id"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-
+	projectID := params["project_id"]
+	postID := params["post_id"]
 	downloadMetadata, err := h.Service.GetDownloadMetadataDataForPost(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -353,27 +284,17 @@ func (h *MediaHandler) GetDownloadMetadataDataForPost(w http.ResponseWriter, r *
 // @Failure 500 {object} errors.APIError
 // @Router /media/{project_id}/{post_id}/{file_name} [delete]
 func (h *MediaHandler) DeleteMedia(w http.ResponseWriter, r *http.Request) {
-	projectID := r.PathValue("project_id")
-	if projectID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Project id is required", map[string]string{
-			"project_id": "required",
-		}))
+	params := map[string]string{
+		"project_id": r.PathValue("project_id"),
+		"post_id":    r.PathValue("post_id"),
+		"file_name":  r.PathValue("file_name"),
+	}
+	if !requirePathParams(w, params) {
 		return
 	}
-	postID := r.PathValue("post_id")
-	if postID == "" {
-		e.WriteHttpError(w, e.NewValidationError("Post id is required", map[string]string{
-			"post_id": "required",
-		}))
-		return
-	}
-	filename := r.PathValue("file_name")
-	if filename == "" {
-		e.WriteHttpError(w, e.NewValidationError("Filename is required", map[string]string{
-			"file_name": "required",
-		}))
-		return
-	}
+	projectID := params["project_id"]
+	postID := params["post_id"]
+	filename := params["file_name"]
 
 	err := h.Service.DeleteMedia(r.Context(), projectID, postID, filename)
 	if err != nil {

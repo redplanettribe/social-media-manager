@@ -235,7 +235,7 @@ func (r *Router) setupPostRoutes(h *handlers.PostHandler) {
 
 /*PUBLISHER ROUTES*/
 func (r *Router) setupPublisherRoutes(h *handlers.PublisherHandler) {
-	r.Handle("POST /publishers/{project_id}/{post_id}/{social_network_id}", r.projectPermissions("write:publishers").Chain(
+	r.Handle("POST /publishers/{project_id}/{post_id}/{platform_id}", r.projectPermissions("write:publishers").Chain(
 		http.HandlerFunc(h.PublishPostToSocialNetwork),
 	))
 	r.Handle("POST /publishers/{project_id}/{post_id}", r.projectPermissions("write:publishers").Chain(
