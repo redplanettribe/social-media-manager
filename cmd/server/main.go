@@ -109,6 +109,7 @@ func main() {
 
 	appAuthorizer := authorization.NewAppAuthorizer(authorization.GetAppPermissions(), userService.GetUserAppRoles)
 	projectAuthorizer := authorization.NewTeamAthorizer(authorization.GetTeamPermissions(), projectService.GetUserRoles)
+	supportHandler := handlers.NewSupportHandler()
 	httpRouter := api.NewRouter(
 		healthHandler,
 		userHandler,
@@ -119,6 +120,7 @@ func main() {
 		authenticator,
 		appAuthorizer,
 		projectAuthorizer,
+		supportHandler,
 	)
 	// Initialize the publisher queue
 	publisherQueue := publisher.NewPublisherQueue(&cfg.Publisher, publisherFactory, publisherService)

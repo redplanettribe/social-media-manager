@@ -36,6 +36,7 @@ func NewRouter(
 	authenticator authentication.Authenticator,
 	appAuthorizer authorization.AppAuthorizer,
 	projectAuthorizer authorization.ProjectAuthorizer,
+	supportHandler *handlers.SupportHandler,
 ) http.Handler {
 	r := &Router{
 		ServeMux:          http.NewServeMux(),
@@ -63,6 +64,7 @@ func NewRouter(
 	r.setupPostRoutes(postHandler)
 	r.setupPublisherRoutes(platformHandler)
 	r.setupMediaRoutes(mediaHandler)
+	r.setupSupportRoutes(supportHandler)
 
 	return r
 }
@@ -244,7 +246,7 @@ func (r *Router) setupPublisherRoutes(h *handlers.PublisherHandler) {
 	r.Handle("GET /publishers", r.appPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.GetAvailableSocialNetworks),
 	))
-	r.Handle("POST /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code}", r.projectPermissions("write:publishers").Chain(
+	r.Handle("POST /publishers/{project_id}/{user_id}/{platform_id}/authenticate", r.projectPermissions("write:publishers").Chain(
 		http.HandlerFunc(h.Authenticate),
 	))
 	r.Handle("GET /publishers/{project_id}/{post_id}/{platform_id}/validate", r.projectPermissions("read:publishers").Chain(
@@ -282,6 +284,13 @@ func (r *Router) setupMediaRoutes(h *handlers.MediaHandler) {
 		http.HandlerFunc(h.DeleteMedia),
 	))
 
+}
+
+/*SUPPORT ROUTES*/
+func (r *Router) setupSupportRoutes(h *handlers.SupportHandler) {
+	r.Handle("GET /support/x/get-request-token", r.baseStack.Chain(
+		http.HandlerFunc(h.GetXRequestToken),
+	))
 }
 
 // appPermissions returns a middleware stack that checks if the user has the required permission for the desired action

@@ -77,7 +77,25 @@ type linkedinOAuthResponse struct {
 	Scope       string `json:"scope"`
 }
 
-func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.Time, error) {
+func (l *Linkedin) Authenticate(ctx context.Context, params any) (string, time.Time, error) {
+	paramsMap, ok := params.(map[string]interface{})
+	if !ok {
+		return "", time.Time{}, errors.New("params must be a map[string]interface{}")
+	}
+
+	// Get code from params map
+	codeVal, ok := paramsMap["code"]
+	if !ok {
+		return "", time.Time{}, errors.New("code is required in params")
+	}
+
+	// Type assert code to string
+	codeStr, ok := codeVal.(string)
+	if !ok {
+		return "", time.Time{}, errors.New("code must be a string")
+	}
+
+	fmt.Println("Code", codeStr)
 	clientID := os.Getenv("LINKEDIN_CLIENT_ID")
 	clientSecret := os.Getenv("LINKEDIN_CLIENT_SECRET")
 	redirectURI := os.Getenv("LINKEDIN_REDIRECT_URI")
@@ -85,7 +103,7 @@ func (l *Linkedin) Authenticate(ctx context.Context, code string) (string, time.
 	// Prepare form data
 	formData := url.Values{}
 	formData.Set("grant_type", "authorization_code")
-	formData.Set("code", code)
+	formData.Set("code", codeStr)
 	formData.Set("client_id", clientID)
 	formData.Set("client_secret", clientSecret)
 	formData.Set("redirect_uri", redirectURI)

@@ -116,9 +116,8 @@ func (h *PostHandler) UpdatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
-
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
 	p, err := h.Service.UpdatePost(
 		r.Context(),
 		postID,
@@ -198,7 +197,7 @@ func (h *PostHandler) ListProjectPosts(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
+	projectID := r.PathValue("project_id")
 
 	posts, err := h.Service.ListProjectPosts(r.Context(), projectID)
 	if err != nil {
@@ -236,8 +235,8 @@ func (h *PostHandler) ArchivePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
 
 	err := h.Service.ArchivePost(r.Context(), projectID, postID)
 	if err != nil {
@@ -271,8 +270,8 @@ func (h *PostHandler) RestorePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
 
 	err := h.Service.RestorePost(r.Context(), projectID, postID)
 	if err != nil {
@@ -306,7 +305,7 @@ func (h *PostHandler) DeletePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID := params["post_id"]
+	postID := r.PathValue("post_id")
 	err := h.Service.DeletePost(r.Context(), postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -341,9 +340,9 @@ func (h *PostHandler) AddSocialMediaPublisherPlatform(w http.ResponseWriter, r *
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
-	platformID := params["platform_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
+	platformID := r.PathValue("platform_id")
 
 	err := h.Service.AddSocialMediaPublisher(r.Context(), projectID, postID, platformID)
 	if err != nil {
@@ -380,9 +379,9 @@ func (h *PostHandler) RemoveSocialMediaPublisherPlatform(w http.ResponseWriter, 
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
-	platformID := params["platform_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
+	platformID := r.PathValue("platform_id")
 
 	err := h.Service.RemoveSocialMediaPublisher(r.Context(), projectID, postID, platformID)
 	if err != nil {
@@ -431,7 +430,7 @@ func (h *PostHandler) SchedulePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	postID := params["post_id"]
+	postID := r.PathValue("post_id")
 
 	err := h.Service.SchedulePost(r.Context(), postID, req.ScheduledAt)
 	if err != nil {
@@ -464,7 +463,7 @@ func (h *PostHandler) UnschedulePost(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	postID := params["post_id"]
+	postID := r.PathValue("post_id")
 
 	err := h.Service.UnschedulePost(r.Context(), postID)
 	if err != nil {
@@ -499,8 +498,9 @@ func (h *PostHandler) AddPostToProjectQueue(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
+
 	err := h.Service.AddToProjectQueue(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -533,8 +533,8 @@ func (h *PostHandler) RemovePostFromProjectQueue(w http.ResponseWriter, r *http.
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
 	err := h.Service.RemovePostFromProjectQueue(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -564,7 +564,8 @@ func (h *PostHandler) GetProjectQueuedPosts(w http.ResponseWriter, r *http.Reque
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
+	projectID := r.PathValue("project_id")
+
 	posts, err := h.Service.GetProjectQueuedPosts(r.Context(), projectID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -622,7 +623,7 @@ func (h *PostHandler) MovePostInQueue(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
+	projectID := r.PathValue("project_id")
 
 	err := h.Service.MovePostInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
 	if err != nil {
@@ -658,7 +659,7 @@ func (h *PostHandler) MoveIdeaInQueue(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
+	projectID := r.PathValue("project_id")
 
 	err := h.Service.MoveIdeaInQueue(r.Context(), projectID, req.CurrentIndex, req.NewIndex)
 	if err != nil {

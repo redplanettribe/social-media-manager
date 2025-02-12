@@ -65,9 +65,9 @@ func (h *PublisherHandler) PublishPostToSocialNetwork(w http.ResponseWriter, r *
 		return
 	}
 
-	postID := params["post_id"]
-	socialNetworkID := params["platform_id"]
-	projectID := params["project_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
+	socialNetworkID := r.PathValue("platform_id")
 
 	err := h.Service.PublishPostToSocialNetwork(r.Context(), projectID, postID, socialNetworkID)
 	if err != nil {
@@ -87,8 +87,8 @@ func (h *PublisherHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWr
 		return
 	}
 
-	postID := params["post_id"]
-	projectID := params["project_id"]
+	postID := r.PathValue("post_id")
+	projectID := r.PathValue("project_id")
 
 	err := h.Service.PublishPostToAssignedSocialNetworks(r.Context(), projectID, postID)
 	if err != nil {
@@ -99,38 +99,53 @@ func (h *PublisherHandler) PublishPostToAssignedSocialNetworks(w http.ResponseWr
 	w.WriteHeader(http.StatusOK)
 }
 
+type authenticationRequest struct {
+	Params map[string]interface{} `json:"params"`
+}
+
+func (r authenticationRequest) Validate() map[string]string {
+	errors := make(map[string]string)
+	if r.Params == nil {
+		errors["params"] = "required"
+	}
+	return errors
+}
+
 // Authenticate godoc
-// @Summary Authenticate user
-// @Description Authenticate user
+// @Summary Authenticate
+// @Description Authenticate
 // @Tags publishers
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param user_id path string true "User ID"
 // @Param platform_id path string true "Platform ID"
-// @Param code path string true "Code"
+// @Param user_id path string true "User ID"
+// @Param authentication body authenticationRequest true "Authentication request"
 // @Success 200
 // @Failure 400 {object} errors.APIError "Bad request"
 // @Failure 500 {object} errors.APIError "Internal server error"
 // @Security ApiKeyAuth
-// @Router /publishers/{project_id}/{user_id}/{platform_id}/authenticate/{code} [post]
+// @Router /publishers/{project_id}/{platform_id}/{user_id}/authenticate [post]
 func (h *PublisherHandler) Authenticate(w http.ResponseWriter, r *http.Request) {
 	params := map[string]string{
 		"project_id":  "required",
 		"platform_id": "required",
 		"user_id":     "required",
-		"code":        "required",
 	}
 	if !requirePathParams(w, params) {
 		return
 	}
 
-	platformID := params["platform_id"]
-	projectID := params["project_id"]
-	userID := params["user_id"]
-	code := params["code"]
+	platformID := r.PathValue("platform_id")
+	userID := r.PathValue("user_id")
+	projectID := r.PathValue("project_id")
 
-	err := h.Service.Authenticate(r.Context(), platformID, projectID, userID, code)
+	req, ok := validateRequestBody[authenticationRequest](w, r)
+	if !ok {
+		return
+	}
+
+	err := h.Service.Authenticate(r.Context(), platformID, projectID, userID, req.Params)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return
@@ -161,8 +176,8 @@ func (h *PublisherHandler) ValidatePostForAssignedSocialNetworks(w http.Response
 		return
 	}
 
-	projectID := params["project_id"]
-	postID := params["post_id"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
 
 	err := h.Service.ValidatePostForAssignedSocialNetworks(r.Context(), projectID, postID)
 	if err != nil {
@@ -197,9 +212,9 @@ func (h *PublisherHandler) ValidatePostForSocialNetwork(w http.ResponseWriter, r
 		return
 	}
 
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	platformID := params["platform_id"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	platformID := r.PathValue("platform_id")
 
 	err := h.Service.ValidatePostForSocialNetwork(r.Context(), projectID, postID, platformID)
 	if err != nil {
@@ -234,9 +249,9 @@ func (h *PublisherHandler) GetPublishPostInfo(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	platformID := params["platform_id"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	platformID := r.PathValue("platform_id")
 
 	info, err := h.Service.GetPublishPostInfo(r.Context(), projectID, postID, platformID)
 	if err != nil {

@@ -13,17 +13,17 @@ type MockService struct {
 	mock.Mock
 }
 
-// Authenticate provides a mock function with given fields: ctx, platformID, projectID, userID, code
-func (_m *MockService) Authenticate(ctx context.Context, platformID string, projectID string, userID string, code string) error {
-	ret := _m.Called(ctx, platformID, projectID, userID, code)
+// Authenticate provides a mock function with given fields: ctx, platformID, projectID, userID, params
+func (_m *MockService) Authenticate(ctx context.Context, platformID string, projectID string, userID string, params interface{}) error {
+	ret := _m.Called(ctx, platformID, projectID, userID, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Authenticate")
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, string) error); ok {
-		r0 = rf(ctx, platformID, projectID, userID, code)
+	if rf, ok := ret.Get(0).(func(context.Context, string, string, string, interface{}) error); ok {
+		r0 = rf(ctx, platformID, projectID, userID, params)
 	} else {
 		r0 = ret.Error(0)
 	}

@@ -533,6 +533,56 @@ paths:
       summary: Get download metadata
       tags:
       - media
+  /media/{project_id}/{post_id}/{platform_id}/{file_name}/unlink:
+    get:
+      description: Get media file. This endpoint shouldn't be used. Use the frontend
+        to get the media file directly from the bucket.
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: File name
+        in: path
+        name: file_name
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      summary: Get media file
+      tags:
+      - media
   /media/{project_id}/{post_id}/{platform_id}/{media_id}:
     delete:
       consumes:
@@ -635,56 +685,6 @@ paths:
           schema:
             $ref: '#/definitions/errors.APIError'
       summary: Link media to publish post
-      tags:
-      - media
-  /media/{project_id}/{post_id}/{platform_id}/{media_id}/unlink:
-    get:
-      description: Get media file. This endpoint shouldn't be used. Use the frontend
-        to get the media file directly from the bucket.
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Post ID
-        in: path
-        name: post_id
-        required: true
-        type: string
-      - description: File name
-        in: path
-        name: file_name
-        required: true
-        type: string
-      produces:
-      - application/octet-stream
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "403":
-          description: Forbidden
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      summary: Get media file
       tags:
       - media
   /posts:
@@ -1850,7 +1850,7 @@ paths:
       summary: Disable a social platform
       tags:
       - projects
-  /projects/{project_id}/enable-social-platform/{social_platform_id}:
+  /projects/{project_id}/enable-social-platform/{platform_id}:
     post:
       consumes:
       - application/json
@@ -2183,6 +2183,45 @@ paths:
       summary: Get available social networks
       tags:
       - publishers
+  /publishers/{project_id}/{post_id}/{platform_id}:
+    post:
+      consumes:
+      - application/json
+      description: Publish post to social network
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Social Network ID
+        in: path
+        name: social_network_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Publish post to social network
+      tags:
+      - publishers
   /publishers/{project_id}/{post_id}/{platform_id}/info:
     get:
       consumes:
@@ -2261,45 +2300,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Validate post for social network
-      tags:
-      - publishers
-  /publishers/{project_id}/{post_id}/{social_network_id}:
-    post:
-      consumes:
-      - application/json
-      description: Publish post to social network
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Post ID
-        in: path
-        name: post_id
-        required: true
-        type: string
-      - description: Social Network ID
-        in: path
-        name: social_network_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/errors.APIError'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/errors.APIError'
-      security:
-      - ApiKeyAuth: []
-      summary: Publish post to social network
       tags:
       - publishers
   /publishers/{project_id}/{post_id}/validate:

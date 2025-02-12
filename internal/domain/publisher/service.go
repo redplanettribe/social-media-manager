@@ -17,7 +17,7 @@ type Service interface {
 	ValidatePostForAssignedSocialNetworks(ctx context.Context, projecID, postID string) error
 	PublishPostToSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
 	ValidatePostForSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
-	Authenticate(ctx context.Context, platformID, projectID, userID, code string) error
+	Authenticate(ctx context.Context, platformID, projectID, userID string, params any) error
 	GetPublishPostInfo(ctx context.Context, projectID, postID, platformID string) (*PublishPostInfo, error)
 }
 
@@ -74,8 +74,11 @@ func (s *service) GetPublishPostInfo(ctx context.Context, projectID, postID, pla
 	}, nil
 }
 
-func (s *service) Authenticate(ctx context.Context, platformID, projectID, userID, code string) error {
-
+func (s *service) Authenticate(ctx context.Context, platformID, projectID, userID string, params any) error {
+	fmt.Println("Authenticate")
+	fmt.Println("PlatformID", platformID)
+	fmt.Println("ProjectID", projectID)
+	fmt.Println("UserID", userID)
 	var (
 		isEnabled   bool
 		userSecrets string
@@ -107,8 +110,9 @@ func (s *service) Authenticate(ctx context.Context, platformID, projectID, userI
 	if err != nil {
 		return err
 	}
-
-	encryptedSecrets, toknTtl, err := publisher.Authenticate(ctx, code)
+	// print params
+	fmt.Println("Params", params)
+	encryptedSecrets, toknTtl, err := publisher.Authenticate(ctx, params)
 	if err != nil {
 		return err
 	}

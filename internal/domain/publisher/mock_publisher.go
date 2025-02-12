@@ -18,9 +18,9 @@ type MockPublisher struct {
 	mock.Mock
 }
 
-// Authenticate provides a mock function with given fields: ctx, code
-func (_m *MockPublisher) Authenticate(ctx context.Context, code string) (string, time.Time, error) {
-	ret := _m.Called(ctx, code)
+// Authenticate provides a mock function with given fields: ctx, params
+func (_m *MockPublisher) Authenticate(ctx context.Context, params interface{}) (string, time.Time, error) {
+	ret := _m.Called(ctx, params)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Authenticate")
@@ -29,23 +29,23 @@ func (_m *MockPublisher) Authenticate(ctx context.Context, code string) (string,
 	var r0 string
 	var r1 time.Time
 	var r2 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (string, time.Time, error)); ok {
-		return rf(ctx, code)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}) (string, time.Time, error)); ok {
+		return rf(ctx, params)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
-		r0 = rf(ctx, code)
+	if rf, ok := ret.Get(0).(func(context.Context, interface{}) string); ok {
+		r0 = rf(ctx, params)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, string) time.Time); ok {
-		r1 = rf(ctx, code)
+	if rf, ok := ret.Get(1).(func(context.Context, interface{}) time.Time); ok {
+		r1 = rf(ctx, params)
 	} else {
 		r1 = ret.Get(1).(time.Time)
 	}
 
-	if rf, ok := ret.Get(2).(func(context.Context, string) error); ok {
-		r2 = rf(ctx, code)
+	if rf, ok := ret.Get(2).(func(context.Context, interface{}) error); ok {
+		r2 = rf(ctx, params)
 	} else {
 		r2 = ret.Error(2)
 	}

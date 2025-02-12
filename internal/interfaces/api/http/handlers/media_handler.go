@@ -44,8 +44,8 @@ func (h *MediaHandler) UploadMedia(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
 
 	altText := r.FormValue("alt_text")
 
@@ -102,9 +102,9 @@ func (h *MediaHandler) GetMediaFile(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	filename := params["file_name"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	filename := r.PathValue("file_name")
 
 	m, err := h.Service.GetMediaFile(r.Context(), projectID, postID, filename)
 	if err != nil {
@@ -148,10 +148,11 @@ func (h *MediaHandler) LinkMediaToPublishPost(w http.ResponseWriter, r *http.Req
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	mediaID := params["media_id"]
-	platformID := params["platform_id"]
+
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	mediaID := r.PathValue("media_id")
+	platformID := r.PathValue("platform_id")
 
 	err := h.Service.LinkMediaToPublishPost(r.Context(), projectID, postID, mediaID, platformID)
 	if err != nil {
@@ -188,10 +189,10 @@ func (h *MediaHandler) UnLinkMediaFromPublishPost(w http.ResponseWriter, r *http
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	mediaID := params["media_id"]
-	platformID := params["platform_id"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	mediaID := r.PathValue("media_id")
+	platformID := r.PathValue("platform_id")
 
 	err := h.Service.UnLinkMediaFromPublishPost(r.Context(), projectID, postID, mediaID, platformID)
 	if err != nil {
@@ -226,9 +227,9 @@ func (h *MediaHandler) GetDownloadMetaData(w http.ResponseWriter, r *http.Reques
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	filename := params["file_name"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	filename := r.PathValue("file_name")
 
 	downloadMetadata, err := h.Service.GetDownloadMetaData(r.Context(), projectID, postID, filename)
 	if err != nil {
@@ -252,8 +253,8 @@ func (h *MediaHandler) GetDownloadMetadataDataForPost(w http.ResponseWriter, r *
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
 	downloadMetadata, err := h.Service.GetDownloadMetadataDataForPost(r.Context(), projectID, postID)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
@@ -292,9 +293,9 @@ func (h *MediaHandler) DeleteMedia(w http.ResponseWriter, r *http.Request) {
 	if !requirePathParams(w, params) {
 		return
 	}
-	projectID := params["project_id"]
-	postID := params["post_id"]
-	filename := params["file_name"]
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	filename := r.PathValue("file_name")
 
 	err := h.Service.DeleteMedia(r.Context(), projectID, postID, filename)
 	if err != nil {
