@@ -1,6 +1,6 @@
 module github.com/pedrodcsjostrom/opencm
 
-go 1.23.3
+go 1.24.0
 
 require (
 	github.com/aws/aws-sdk-go v1.55.5
@@ -12,6 +12,7 @@ require (
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.30.0
+	golang.org/x/image v0.23.0
 	golang.org/x/sync v0.10.0
 )
 
@@ -32,7 +33,6 @@ require (
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
-	golang.org/x/image v0.23.0 // indirect
 	golang.org/x/net v0.32.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
