@@ -14,6 +14,7 @@ var (
 	ErrInsufficientPermissions      = errors.New("insufficient permissions")
 	ErrBasicRoleCannotBeRemoved     = errors.New("basic role cannot be removed")
 	ErrUserNotInProject             = errors.New("user is not in project")
+	ErrNoDefaultUserForPlatform     = errors.New("no default user in project")
 	ErrUserNotFound                 = errors.New("user not found")
 	ErrProjectExists                = errors.New("project already exists")
 	ErrSocialPlatformNotFound       = errors.New("social network not found")

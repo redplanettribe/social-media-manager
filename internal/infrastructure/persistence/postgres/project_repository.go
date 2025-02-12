@@ -581,8 +581,10 @@ func (r *ProjectRepository) GetDefaultUserID(ctx context.Context, projectID stri
 		FROM %s
 		WHERE project_id = $1 AND default_user = true
 	`, TeamMembers), projectID).Scan(&userID)
-	if err != nil {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return "", err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return "", nil
 	}
 
 	return userID, nil

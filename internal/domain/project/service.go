@@ -357,6 +357,9 @@ func (s *service) GetDefaultUserPlatformInfo(ctx context.Context, projectID, pla
 	if err != nil {
 		return nil, err
 	}
+	if defaultUserID == "" {
+		return nil, ErrNoDefaultUserForPlatform
+	}
 	pInfo, err := s.repo.GetPlatformInfo(ctx, defaultUserID, platformID)
 	if err != nil {
 		return nil, err

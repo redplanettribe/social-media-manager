@@ -79,6 +79,8 @@ func mapErrorToAPIError(err error) *e.APIError {
 		post.ErrPostNotArchived,
 		project.ErrSocialPlatformNotEnabled,
 		project.ErrBasicRoleCannotBeRemoved,
+		project.ErrUserNotInProject,
+		project.ErrNoDefaultUserForPlatform,
 	):
 		return &e.APIError{
 			Status:  http.StatusUnprocessableEntity,
