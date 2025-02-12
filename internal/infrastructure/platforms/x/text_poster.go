@@ -31,7 +31,7 @@ func NewTextPoster(s Secrets) *TextPoster {
 	}
 }
 
-func (tp *TextPoster) Validate(ctx context.Context, pp *post.PublishPost, _ []*media.Media) error {
+func (tp *TextPoster) Validate(ctx context.Context, pp *post.PublishPost, m []*media.Media) error {
 	if pp == nil {
 		return errors.New("publish post is nil")
 	}
@@ -44,6 +44,12 @@ func (tp *TextPoster) Validate(ctx context.Context, pp *post.PublishPost, _ []*m
 	if pp.TextContent == "" {
 		return errors.New("text content is empty")
 	}
+	for _, media := range m {
+		if media.Size > 5242880 {
+			return errors.New(fmt.Sprintf("media size exceeds 5MB: %s", media.Filename))
+		}
+	}
+
 	return nil
 }
 

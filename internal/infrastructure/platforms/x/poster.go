@@ -27,6 +27,8 @@ func (pf *posterFactory) NewPoster(p *post.PublishPost, secrets Secrets) (XPoste
 	switch p.Type {
 	case post.PostTypeText:
 		return NewTextPoster(secrets), nil
+	case post.PostTypeImage, post.PostTypeMultiImage:
+		return NewMediaPoster(secrets), nil
 	default:
 		return nil, errors.New("invalid post type")
 	}
