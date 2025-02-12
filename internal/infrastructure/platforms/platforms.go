@@ -6,6 +6,7 @@ import (
 	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
 	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms/linkedin"
+	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms/x"
 )
 
 var (
@@ -30,6 +31,8 @@ func (pf *publisherFactory) Create(platform string, secrets string) (publisher.P
 	switch platform {
 	case "linkedin":
 		p = linkedin.NewLinkedin(secrets, e)
+	case "x":
+		p = x.NewX(secrets, e)
 	default:
 		return nil, errors.New("unknown platform")
 	}
