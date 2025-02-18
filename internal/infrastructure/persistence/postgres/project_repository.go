@@ -599,8 +599,10 @@ func (r *ProjectRepository) GetPlatformInfo(ctx context.Context, userID, platfor
 
 	pInfo := &project.UserPlatformInfo{}
 	err := row.Scan(&pInfo.IsAuthenticated, &pInfo.AuthTTL)
-	if err != nil {
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		return nil, nil
 	}
 
 	return pInfo, nil

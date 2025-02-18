@@ -75,10 +75,6 @@ func (s *service) GetPublishPostInfo(ctx context.Context, projectID, postID, pla
 }
 
 func (s *service) Authenticate(ctx context.Context, platformID, projectID, userID string, params any) error {
-	fmt.Println("Authenticate")
-	fmt.Println("PlatformID", platformID)
-	fmt.Println("ProjectID", projectID)
-	fmt.Println("UserID", userID)
 	var (
 		isEnabled   bool
 		userSecrets string
@@ -110,8 +106,6 @@ func (s *service) Authenticate(ctx context.Context, platformID, projectID, userI
 	if err != nil {
 		return err
 	}
-	// print params
-	fmt.Println("Params", params)
 	encryptedSecrets, toknTtl, err := publisher.Authenticate(ctx, params)
 	if err != nil {
 		return err
