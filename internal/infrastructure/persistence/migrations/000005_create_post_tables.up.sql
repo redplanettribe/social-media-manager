@@ -19,8 +19,9 @@ CREATE TABLE IF NOT EXISTS platforms (
 );
 
 INSERT INTO platforms (id, name)
-VALUES ('linkedin', 'LinkedIn');
-
+VALUES ('linkedin', 'LinkedIn'),
+       ('x', 'X'),
+     
 
 CREATE TABLE IF NOT EXISTS post_platforms (
     post_id uuid NOT NULL,

@@ -95,7 +95,6 @@ func (l *Linkedin) Authenticate(ctx context.Context, params any) (string, time.T
 		return "", time.Time{}, errors.New("code must be a string")
 	}
 
-	fmt.Println("Code", codeStr)
 	clientID := os.Getenv("LINKEDIN_CLIENT_ID")
 	clientSecret := os.Getenv("LINKEDIN_CLIENT_SECRET")
 	redirectURI := os.Getenv("LINKEDIN_REDIRECT_URI")
