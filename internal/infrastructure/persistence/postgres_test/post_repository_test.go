@@ -10,7 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 )
 
 var dbPool *pgxpool.Pool

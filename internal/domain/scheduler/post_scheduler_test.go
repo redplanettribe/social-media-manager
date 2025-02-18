@@ -9,10 +9,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/domain/project"
+	pq "github.com/redplanettribe/social-media-manager/internal/domain/publisher"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 )
 
 func TestPostScheduler_Start(t *testing.T) {

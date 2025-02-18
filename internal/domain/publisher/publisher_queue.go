@@ -6,11 +6,11 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 )
 
-//go:generate mockery --name=PublisherQueue --case=underscore --inpackage
+//go:generate mockery --name=PublisherQueue --config=../../../mockery.yaml
 type PublisherQueue interface {
 	Start(ctx context.Context)
 	Stop()

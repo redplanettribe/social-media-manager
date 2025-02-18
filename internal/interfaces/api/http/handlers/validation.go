@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	e "github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 type Validator interface {

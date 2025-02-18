@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 	"testing"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 	"github.com/stretchr/testify/assert"
 )
 

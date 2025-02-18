@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
-	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/domain/publisher"
+	e "github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 type PublisherHandler struct {

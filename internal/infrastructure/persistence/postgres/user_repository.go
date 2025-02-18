@@ -3,7 +3,7 @@ package postgres
 import (
 	"context"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
+	"github.com/redplanettribe/social-media-manager/internal/domain/user"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

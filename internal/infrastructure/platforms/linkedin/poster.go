@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/domain/media"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
 )
 
 type LinkedinPoster interface {

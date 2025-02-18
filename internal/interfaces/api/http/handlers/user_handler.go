@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
-	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/domain/user"
+	e "github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 const sessionCookieName = "session_id"

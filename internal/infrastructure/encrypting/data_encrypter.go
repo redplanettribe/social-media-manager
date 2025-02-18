@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 	"golang.org/x/crypto/pbkdf2"
 )
 

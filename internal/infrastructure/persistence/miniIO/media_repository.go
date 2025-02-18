@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/domain/media"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"

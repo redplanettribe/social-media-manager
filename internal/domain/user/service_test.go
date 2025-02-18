@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/session"
 )
 
 func TestGetUser(t *testing.T) {

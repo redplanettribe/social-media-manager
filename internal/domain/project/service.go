@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
+	"github.com/redplanettribe/social-media-manager/internal/domain/user"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/api/http/middlewares"
 	"golang.org/x/sync/errgroup"
 )
 
-//go:generate mockery --name=Service --case=underscore --inpackage
+//go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
 	UpdateProject(ctx context.Context, projectID, name, description string) (*Project, error)

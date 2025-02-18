@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 )
 
 func NewLogger(cfg *config.LoggerConfig) *logrus.Logger {

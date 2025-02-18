@@ -3,12 +3,12 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/user"
-	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/domain/media"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/domain/project"
+	"github.com/redplanettribe/social-media-manager/internal/domain/publisher"
+	"github.com/redplanettribe/social-media-manager/internal/domain/user"
+	e "github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 func mapErrorToAPIError(err error) *e.APIError {

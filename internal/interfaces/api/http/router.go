@@ -5,10 +5,10 @@ import (
 
 	httpSwagger "github.com/swaggo/http-swagger"
 
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/handlers"
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/api/http/handlers"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/api/http/middlewares"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/authentication"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/authorization"
 )
 
 type middlewareStack []func(http.Handler) http.Handler

@@ -3,8 +3,8 @@ package middlewares
 import (
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authorization"
-	"github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/authorization"
+	"github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 func AppAuthorizationMiddleware(authorizer authorization.AppAuthorizer, requiredPermission string) func(http.Handler) http.Handler {

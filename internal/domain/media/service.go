@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/api/http/middlewares"
 	"golang.org/x/sync/errgroup"
 )
 

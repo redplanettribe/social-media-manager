@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/domain/project"
+	e "github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 type ProjectHandler struct {

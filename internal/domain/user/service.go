@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/api/http/middlewares"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/session"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/api/http/middlewares"
 )
 
-//go:generate mockery --name=Service --case=underscore --inpackage
+//go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
 	CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error)
 	GetUser(ctx context.Context) (*UserResponse, error)

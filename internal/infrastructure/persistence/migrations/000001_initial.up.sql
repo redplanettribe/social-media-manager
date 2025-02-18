@@ -1,6 +1,8 @@
 CREATE TABLE "users" (
   "id" uuid PRIMARY KEY,
   "username" varchar(50) NOT NULL,
+  "first_name" varchar(50) NOT NULL,
+  "last_name" varchar(50) NOT NULL,
   "email" varchar(255) UNIQUE NOT NULL,
   "password_hash" varchar(255) NOT NULL,
   "salt" varchar(32) NOT NULL,

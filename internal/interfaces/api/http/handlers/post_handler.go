@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	e "github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	e "github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 type PostHandler struct {

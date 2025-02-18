@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )

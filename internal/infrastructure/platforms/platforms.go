@@ -3,10 +3,10 @@ package platforms
 import (
 	"errors"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms/linkedin"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/platforms/x"
+	"github.com/redplanettribe/social-media-manager/internal/domain/publisher"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/encrypting"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/platforms/linkedin"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/platforms/x"
 )
 
 var (

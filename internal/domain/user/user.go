@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/session"
 )
 
 var (

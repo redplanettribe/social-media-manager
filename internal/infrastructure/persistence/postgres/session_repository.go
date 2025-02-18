@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/session"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/session"
 )
 
 type SessionRepository struct {

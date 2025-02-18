@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
+	"github.com/redplanettribe/social-media-manager/internal/domain/media"
 )
 
 type MediaRepository struct {

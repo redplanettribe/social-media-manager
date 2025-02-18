@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/interfaces/authentication"
-	"github.com/pedrodcsjostrom/opencm/internal/utils/errors"
+	"github.com/redplanettribe/social-media-manager/internal/interfaces/authentication"
+	"github.com/redplanettribe/social-media-manager/internal/utils/errors"
 )
 
 func AuthMiddleware(authenticator authentication.Authenticator) func(http.Handler) http.Handler {

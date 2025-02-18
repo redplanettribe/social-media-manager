@@ -6,10 +6,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/project"
-	pq "github.com/pedrodcsjostrom/opencm/internal/domain/publisher"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/domain/project"
+	pq "github.com/redplanettribe/social-media-manager/internal/domain/publisher"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 	"golang.org/x/sync/errgroup"
 )
 

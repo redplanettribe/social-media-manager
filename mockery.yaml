@@ -1,0 +1,6 @@
+version: 2
+all: true # generate mocks for all interfaces
+recursive: true
+case: underscore
+inpackage: true # set to false if you want mocks in a separate directory
+output: mocks # (optional) output folder relative to each package directory

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/config"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 )
 
 type Server interface {
@@ -57,8 +57,8 @@ type HttpServer struct {
 
 func (s *HttpServer) Serve() {
 	server := &http.Server{
-		Addr:    ":" + s.cfg.App.Port,
-		Handler: s.router,
+		Addr:                         ":" + s.cfg.App.Port,
+		Handler:                      s.router,
 		DisableGeneralOptionsHandler: true,
 	}
 

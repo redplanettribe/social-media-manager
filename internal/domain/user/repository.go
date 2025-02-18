@@ -2,7 +2,7 @@ package user
 
 import "context"
 
-//go:generate mockery --name=Repository --case=underscore --inpackage
+//go:generate mockery --name=Repository --config=../../../mockery.yaml
 type Repository interface {
 	Save(ctx context.Context, usr *User) (*UserResponse, error)
 	FindByID(ctx context.Context, id string) (*UserResponse, error)

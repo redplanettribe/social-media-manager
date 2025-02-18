@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/media"
-	"github.com/pedrodcsjostrom/opencm/internal/domain/post"
-	"github.com/pedrodcsjostrom/opencm/internal/infrastructure/encrypting"
+	"github.com/redplanettribe/social-media-manager/internal/domain/media"
+	"github.com/redplanettribe/social-media-manager/internal/domain/post"
+	"github.com/redplanettribe/social-media-manager/internal/infrastructure/encrypting"
 )
 
 var (

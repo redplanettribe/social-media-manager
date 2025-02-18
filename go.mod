@@ -1,4 +1,4 @@
-module github.com/pedrodcsjostrom/opencm
+module github.com/redplanettribe/social-media-manager
 
 go 1.24.0
 
