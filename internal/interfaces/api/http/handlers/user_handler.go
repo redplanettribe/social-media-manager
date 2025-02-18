@@ -20,15 +20,23 @@ func NewUserHandler(service user.Service) *UserHandler {
 }
 
 type createUserRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
 }
 
 func (r createUserRequest) Validate() map[string]string {
 	errors := make(map[string]string)
 	if r.Username == "" {
 		errors["username"] = "Username is required"
+	}
+	if r.FirstName == "" {
+		errors["first_name"] = "First name is required"
+	}
+	if r.LastName == "" {
+		errors["last_name"] = "Last name is required"
 	}
 	if r.Password == "" {
 		errors["password"] = "Password is required"
@@ -74,7 +82,7 @@ func (h *UserHandler) SignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.Service.CreateUser(ctx, req.Username, req.Password, req.Email)
+	u, err := h.Service.CreateUser(ctx, req.Username, req.FirstName, req.LastName, req.Password, req.Email)
 	if err != nil {
 		e.WriteBusinessError(w, err, mapErrorToAPIError)
 		return

@@ -50,6 +50,8 @@ func TestCreateUser(t *testing.T) {
 		mockHashPassword func(passwordHasher *MockPasswordHasher, password string)
 		mockSaveUser     func(mockRepo *MockRepository, ctx context.Context)
 		username         string
+		firstName        string
+		lastName         string
 		password         string
 		email            string
 		expectedErr      error
@@ -62,6 +64,8 @@ func TestCreateUser(t *testing.T) {
 			mockHashPassword: nil,
 			mockSaveUser:     nil,
 			username:         "testuser",
+			firstName:        "Test",
+			lastName:         "User",
 			password:         "password",
 			email:            "test@example.com",
 			expectedErr:      ErrExistingUser,
@@ -76,6 +80,8 @@ func TestCreateUser(t *testing.T) {
 			},
 			mockSaveUser: nil,
 			username:     "testuser",
+			firstName:    "Test",
+			lastName:     "User",
 			password:     "password",
 			email:        "test@example.com",
 			expectedErr:  assert.AnError,
@@ -92,6 +98,8 @@ func TestCreateUser(t *testing.T) {
 				mockRepo.On("Save", ctx, mock.Anything).Return(assert.AnError)
 			},
 			username:    "testuser",
+			firstName:   "Test",
+			lastName:    "User",
 			password:    "password",
 			email:       "test@example.com",
 			expectedErr: assert.AnError,
@@ -119,7 +127,7 @@ func TestCreateUser(t *testing.T) {
 			}
 
 			// Call the function under test
-			_, err := service.CreateUser(ctx, tt.username, tt.password, tt.email)
+			_, err := service.CreateUser(ctx, tt.username, tt.firstName, tt.lastName, tt.password, tt.email)
 
 			// Assertions
 			if tt.expectedErr != nil {
@@ -129,7 +137,7 @@ func TestCreateUser(t *testing.T) {
 				assert.NoError(t, err)
 			}
 
-			// Verify expectations
+			// Verify expectationsusername
 			mockRepo.AssertExpectations(t)
 			passwordHasher.AssertExpectations(t)
 		})

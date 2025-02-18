@@ -20,6 +20,8 @@ var (
 type User struct {
 	ID          string
 	Username    string
+	FirstName   string
+	LastName    string
 	PaswordHash string
 	Salt        string
 	Email       string
@@ -30,6 +32,8 @@ type User struct {
 type UserResponse struct {
 	ID        string    `json:"id"`
 	Username  string    `json:"username"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
 	Email     string    `json:"email"`
 	Roles     []AppRole `json:"roles"`
 	CreatedAt time.Time `json:"created_at"`
@@ -44,6 +48,8 @@ type LoginResponse struct {
 type FullUserResponse struct {
 	ID            string    `json:"id"`
 	Username      string    `json:"username"`
+	FirstName     string    `json:"first_name"`
+	LastName      string    `json:"last_name"`
 	Email         string    `json:"email"`
 	HashedPasword string    `json:"password"`
 	Salt          string    `json:"salt"`
@@ -56,7 +62,7 @@ type AppRole struct {
 	Name string
 }
 
-func NewUser(username, hashedPw, salt, email string) (*User, error) {
+func NewUser(username, firstName, lastName, hashedPw, salt, email string) (*User, error) {
 	if username == "" {
 		return nil, errors.New("username cannot be empty")
 	}
@@ -73,6 +79,8 @@ func NewUser(username, hashedPw, salt, email string) (*User, error) {
 	return &User{
 		ID:          uuid.New().String(),
 		Username:    username,
+		FirstName:   firstName,
+		LastName:    lastName,
 		PaswordHash: hashedPw,
 		Salt:        salt,
 		Email:       email,
@@ -85,6 +93,8 @@ func sanitize(fu *FullUserResponse) *UserResponse {
 	return &UserResponse{
 		ID:        fu.ID,
 		Username:  fu.Username,
+		FirstName: fu.FirstName,
+		LastName:  fu.LastName,
 		Email:     fu.Email,
 		CreatedAt: fu.CreatedAt,
 		UpdatedAt: fu.UpdatedAt,

@@ -19,16 +19,18 @@ func NewUserRepository(db *pgxpool.Pool) *UserRepository {
 
 func (r *UserRepository) Save(ctx context.Context, u *user.User) (*user.UserResponse, error) {
 	query := `
-		INSERT INTO users (id, username, password_hash, salt, email, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO users (id, username, first_name, last_name, password_hash, salt, email, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
-	_, err := r.db.Exec(ctx, query, u.ID, u.Username, u.PaswordHash, u.Salt, u.Email, u.CreatedAt, u.UpdatedAt)
+	_, err := r.db.Exec(ctx, query, u.ID, u.Username, u.FirstName, u.LastName, u.PaswordHash, u.Salt, u.Email, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return &user.UserResponse{}, err
 	}
 	return &user.UserResponse{
 		ID:        u.ID,
 		Username:  u.Username,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
 		Email:     u.Email,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
@@ -37,13 +39,13 @@ func (r *UserRepository) Save(ctx context.Context, u *user.User) (*user.UserResp
 
 func (r *UserRepository) FindByID(ctx context.Context, id string) (*user.UserResponse, error) {
 	query := `
-		SELECT id, username, email, created_at, updated_at
+		SELECT id, username,  first_name, last_name,  email, created_at, updated_at
 		FROM users
 		WHERE id = $1
 	`
 	row := r.db.QueryRow(ctx, query, id)
 	u := &user.UserResponse{}
-	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	err := row.Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +54,7 @@ func (r *UserRepository) FindByID(ctx context.Context, id string) (*user.UserRes
 
 func (r *UserRepository) FindByIDWithRoles(ctx context.Context, id string) (*user.UserResponse, error) {
 	query := `
-		SELECT u.id, u.username, u.email, u.created_at, u.updated_at, r.id, r.role
+		SELECT u.id, u.username, u.first_name, u last_name, u.email, u.created_at, u.updated_at, r.id, r.role
 		FROM users u
 		LEFT JOIN user_roles ur ON u.id = ur.user_id
 		LEFT JOIN roles r ON ur.role_id = r.id
@@ -67,7 +69,7 @@ func (r *UserRepository) FindByIDWithRoles(ctx context.Context, id string) (*use
 	u := &user.UserResponse{}
 	for rows.Next() {
 		var role user.AppRole
-		err := rows.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt, &role.ID, &role.Name)
+		err := rows.Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.CreatedAt, &u.UpdatedAt, &role.ID, &role.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -78,13 +80,13 @@ func (r *UserRepository) FindByIDWithRoles(ctx context.Context, id string) (*use
 
 func (r *UserRepository) FindByUsernameOrEmail(ctx context.Context, username, email string) (*user.UserResponse, error) {
 	query := `
-		SELECT id, username, email, created_at, updated_at
+		SELECT id, username, first_name, last_name,  email, created_at, updated_at
 		FROM users
 		WHERE username = $1 OR email = $2
 	`
 	row := r.db.QueryRow(ctx, query, username, email)
 	u := &user.UserResponse{}
-	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.CreatedAt, &u.UpdatedAt)
+	err := row.Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil && err != pgx.ErrNoRows {
 		return nil, err
 	} else if err == pgx.ErrNoRows {
@@ -95,13 +97,13 @@ func (r *UserRepository) FindByUsernameOrEmail(ctx context.Context, username, em
 
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (*user.FullUserResponse, error) {
 	query := `
-		SELECT id, username, email, password_hash, salt, created_at, updated_at
+		SELECT id, username, first_name, last_name, email, password_hash, salt, created_at, updated_at
 		FROM users
 		WHERE email = $1
 	`
 	row := r.db.QueryRow(ctx, query, email)
 	u := &user.FullUserResponse{}
-	err := row.Scan(&u.ID, &u.Username, &u.Email, &u.HashedPasword, &u.Salt, &u.CreatedAt, &u.UpdatedAt)
+	err := row.Scan(&u.ID, &u.Username, &u.FirstName, &u.LastName, &u.Email, &u.HashedPasword, &u.Salt, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil && err != pgx.ErrNoRows {
 		return nil, err
 	} else if err == pgx.ErrNoRows {

@@ -10,7 +10,7 @@ import (
 
 //go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
-	CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error)
+	CreateUser(ctx context.Context, username, firstName, lastName, password, email string) (*UserResponse, error)
 	GetUser(ctx context.Context) (*UserResponse, error)
 	Login(ctx context.Context, email, password string) (LoginResponse, error)
 	Logout(ctx context.Context, sessionID string) error
@@ -37,7 +37,7 @@ func NewService(repo Repository, session session.Manager, passwordHasher Passwor
 	}
 }
 
-func (s *service) CreateUser(ctx context.Context, username, password, email string) (*UserResponse, error) {
+func (s *service) CreateUser(ctx context.Context, username, firstName, lastName, password, email string) (*UserResponse, error) {
 	existingUser, err := s.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return &UserResponse{}, err
@@ -51,7 +51,7 @@ func (s *service) CreateUser(ctx context.Context, username, password, email stri
 		return &UserResponse{}, err
 	}
 
-	user, err := NewUser(username, hashedPassword, salt, email)
+	user, err := NewUser(username, firstName, lastName, hashedPassword, salt, email)
 	if err != nil {
 		return &UserResponse{}, err
 	}
