@@ -266,3 +266,44 @@ func (h *PublisherHandler) GetPublishPostInfo(w http.ResponseWriter, r *http.Req
 		e.WriteHttpError(w, e.NewInternalError("Failed to encode response"))
 	}
 }
+
+// AddProfileTagToPost godoc
+// @Summary Add profile tag to post
+// @Description Add profile tag to post
+// @Tags publishers
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param post_id path string true "Post ID"
+// @Param social_network_id path string true "Social Network ID"
+// @Param user_platform_id path string true "User Platform ID"
+// @Param tag path string true "Tag"
+// @Success 200
+// @Failure 400 {object} errors.APIError "Bad request"
+// @Failure 500 {object} errors.APIError "Internal server error"
+// @Security ApiKeyAuth
+// @Router /publishers/{project_id}/{post_id}/{platform_id}/{user_platform_id}/add-profile-tag [post]
+func (h *PublisherHandler) AddProfileTagToPost(w http.ResponseWriter, r *http.Request) {
+	params := map[string]string{
+		"project_id":       "required",
+		"post_id":          "required",
+		"platform_id":      "required",
+		"user_platform_id": "required",
+	}
+	if !requirePathParams(w, params) {
+		return
+	}
+
+	projectID := r.PathValue("project_id")
+	postID := r.PathValue("post_id")
+	platformID := r.PathValue("platform_id")
+	userPlatformID := r.PathValue("user_platform_id")
+
+	err := h.Service.AddProfileTagToPost(r.Context(), projectID, postID, platformID, userPlatformID)
+	if err != nil {
+		e.WriteBusinessError(w, err, mapErrorToAPIError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

@@ -20,13 +20,13 @@ CREATE TABLE IF NOT EXISTS platforms (
 
 INSERT INTO platforms (id, name)
 VALUES ('linkedin', 'LinkedIn'),
-       ('x', 'X'),
-     
+       ('x', 'X');
 
 CREATE TABLE IF NOT EXISTS post_platforms (
     post_id uuid NOT NULL,
     platform_id VARCHAR(10) NOT NULL,
     status VARCHAR(20) NOT NULL,
+    profile_tags TEXT[] DEFAULT '{}',
     PRIMARY KEY (post_id, platform_id),
     FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
     FOREIGN KEY (platform_id) REFERENCES platforms (id) ON DELETE CASCADE

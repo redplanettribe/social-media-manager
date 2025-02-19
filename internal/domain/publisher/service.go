@@ -19,6 +19,7 @@ type Service interface {
 	ValidatePostForSocialNetwork(ctx context.Context, projectID, postID, platformID string) error
 	Authenticate(ctx context.Context, platformID, projectID, userID string, params any) error
 	GetPublishPostInfo(ctx context.Context, projectID, postID, platformID string) (*PublishPostInfo, error)
+	AddProfileTagToPost(ctx context.Context, projectID, postID, platformID, userPlatformID string) error
 }
 
 type service struct {
@@ -346,6 +347,44 @@ func (s *service) ValidatePostForSocialNetwork(ctx context.Context, projectID, p
 	}
 
 	if err := publisher.ValidatePost(ctx, publishPost, media); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *service) AddProfileTagToPost(ctx context.Context, projectID, postID, platformID, userPlatformID string) error {
+	var (
+		isEnabled   bool
+		publishPost *post.PublishPost
+		g           errgroup.Group
+	)
+
+	g.Go(func() error {
+		var err error
+		isEnabled, err = s.repo.IsSocialNetworkEnabledForProject(ctx, projectID, platformID)
+		return err
+	})
+
+	g.Go(func() error {
+		var err error
+		publishPost, err = s.postService.GetPostToPublish(ctx, postID)
+		return err
+	})
+
+	if err := g.Wait(); err != nil {
+		return err
+	}
+
+	if !isEnabled {
+		return ErrSocialPlatformNotEnabledForProject
+	}
+
+	if publishPost == nil {
+		return post.ErrPostNotFound
+	}
+
+	if err := s.repo.AddProfileTag(ctx, platformID, postID, userPlatformID); err != nil {
 		return err
 	}
 

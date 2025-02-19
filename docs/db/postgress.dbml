@@ -1,6 +1,8 @@
 Table users {
   id uuid [pk]
   username varchar(50) [unique, not null]
+  first_name varchar(50) [not null]
+  last_name varchar(50) [not null]
   email varchar(255) [unique, not null]
   password_hash varchar(255) [not null]
   salt char(32) [not null]
@@ -120,10 +122,10 @@ Table post_platforms {
   post_id uuid [ref: > posts.id, not null]
   platform_id varchar(10) [ref: > platforms.id, not null]
   status varchar(20) [not null]
-
+  profile_tags varchar(20)[] [not null]
   Indexes {
     (post_id, platform_id) [pk]
-  }
+  }@
 
 }
 

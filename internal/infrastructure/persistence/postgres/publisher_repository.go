@@ -161,3 +161,13 @@ func (r *PublisherRepository) SetUserPlatformAuthSecretsWithTTL(ctx context.Cont
 	}
 	return nil
 }
+
+func (r *PublisherRepository) AddProfileTag(ctx context.Context, platformID, postID, tag string) error {
+	// Note: post_id and platform_id already exist so we use an UPDATE statement.
+	_, err := r.db.Exec(ctx, fmt.Sprintf(`
+        UPDATE %s
+        SET profile_tags = array_append(profile_tags, $3)
+        WHERE platform_id = $1 AND post_id = $2
+    `, PostPlatforms), platformID, postID, tag)
+	return err
+}

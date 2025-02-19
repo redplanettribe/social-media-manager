@@ -258,6 +258,9 @@ func (r *Router) setupPublisherRoutes(h *handlers.PublisherHandler) {
 	r.Handle("GET /publishers/{project_id}/{post_id}/{platform_id}/info", r.projectPermissions("read:publishers").Chain(
 		http.HandlerFunc(h.GetPublishPostInfo),
 	))
+	r.Handle("POST /publishers/{project_id}/{post_id}/{platform_id}/{user_platform_id}/add-profile-tag", r.projectPermissions("write:publishers").Chain(
+		http.HandlerFunc(h.AddProfileTagToPost),
+	))
 }
 
 /*MEDIA ROUTES*/

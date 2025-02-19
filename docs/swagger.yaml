@@ -227,6 +227,10 @@ definitions:
         type: boolean
       platform:
         type: string
+      profile_tags:
+        items:
+          type: string
+        type: array
       project_id:
         type: string
       publish_status:
@@ -2279,6 +2283,55 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Publish post to social network
+      tags:
+      - publishers
+  /publishers/{project_id}/{post_id}/{platform_id}/{user_platform_id}/add-profile-tag:
+    post:
+      consumes:
+      - application/json
+      description: Add profile tag to post
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Post ID
+        in: path
+        name: post_id
+        required: true
+        type: string
+      - description: Social Network ID
+        in: path
+        name: social_network_id
+        required: true
+        type: string
+      - description: User Platform ID
+        in: path
+        name: user_platform_id
+        required: true
+        type: string
+      - description: Tag
+        in: path
+        name: tag
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/errors.APIError'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/errors.APIError'
+      security:
+      - ApiKeyAuth: []
+      summary: Add profile tag to post
       tags:
       - publishers
   /publishers/{project_id}/{post_id}/{platform_id}/info:

@@ -51,6 +51,10 @@ func NewX(secrets string, e encrypting.Encrypter) *X {
 	return x
 }
 
+func (x *X) MemberLookup(ctx context.Context, username string) (string, error) {
+	return "", ErrNotImplemented
+}
+
 func (x *X) validateSecrets(secrets string) error {
 	if secrets == "" || secrets == "empty" {
 		return nil

@@ -107,9 +107,10 @@ type PublishPost struct {
 	// Post fields
 	*Post
 	// Additional fields
-	Secrets       string `json:"secrets"`
-	Platform      string `json:"platform"`
-	PublishStatus string `json:"publish_status"`
+	Secrets       string   `json:"secrets"`
+	Platform      string   `json:"platform"`
+	PublishStatus string   `json:"publish_status"`
+	ProfileTags   []string `json:"profile_tags"`
 }
 
 func NewPost(

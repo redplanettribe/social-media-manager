@@ -16,6 +16,8 @@ type Publisher interface {
 	Publish(ctx context.Context, post *post.PublishPost, media []*media.Media) error
 	// Validate Post
 	ValidatePost(ctx context.Context, post *post.PublishPost, media []*media.Media) error
+	// MemberLookup returns the platform user ID for the given username. This is useful for tagging users in posts
+	MemberLookup(ctx context.Context, username string) (string, error)
 }
 
 //go:generate mockery --name=PublisherFactory --config=../../../mockery.yaml

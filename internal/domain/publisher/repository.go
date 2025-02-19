@@ -15,4 +15,5 @@ type Repository interface {
 	SetUserPlatformSecrets(ctx context.Context, platformID, userID, secrets string) error
 	GetDefaultUserID(ctx context.Context, platformID string) (string, error)
 	SetUserPlatformAuthSecretsWithTTL(ctx context.Context, platformID, userID, secrets string, ttl time.Time) error
+	AddProfileTag(ctx context.Context, platformID, postID, tag string) error
 }

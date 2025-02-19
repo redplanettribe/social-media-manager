@@ -224,7 +224,8 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 		p.updated_at,
 		prpl.secrets,
 		plat.id,
-		popl.status publish_status
+		popl.status publish_status,
+		popl.profile_tags
 		FROM %s p
 		INNER JOIN %s popl ON p.id = popl.post_id
 		INNER JOIN %s plat ON popl.platform_id = plat.id
@@ -261,6 +262,7 @@ func (r *PostRepository) FindScheduledReadyPosts(ctx context.Context, offset, ch
 			&p.Secrets,
 			&p.Platform,
 			&p.PublishStatus,
+			&p.ProfileTags,
 		)
 		if err != nil {
 			return nil, err
@@ -479,7 +481,8 @@ func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID str
             p.updated_at,
             prpl.secrets,
             plat.id,
-            popl.status publish_status
+            popl.status publish_status,
+			popl.profile_tags
         FROM %s p
         INNER JOIN %s popl ON p.id = popl.post_id
         INNER JOIN %s plat ON popl.platform_id = plat.id
@@ -512,6 +515,7 @@ func (r *PostRepository) GetPostsForPublishQueue(ctx context.Context, postID str
 			&p.Secrets,
 			&p.Platform,
 			&p.PublishStatus,
+			&p.ProfileTags,
 		)
 		if err != nil {
 			return nil, err
@@ -538,7 +542,8 @@ func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post
 			p.updated_at,
 			prpl.secrets,
 			plat.id,
-			popl.status publish_status
+			popl.status publish_status,
+			popl.profile_tags
 		FROM %s p
 		INNER JOIN %s popl ON p.id = popl.post_id
 		INNER JOIN %s plat ON popl.platform_id = plat.id
@@ -563,6 +568,7 @@ func (r *PostRepository) GetPostToPublish(ctx context.Context, id string) (*post
 		&pp.Secrets,
 		&pp.Platform,
 		&pp.PublishStatus,
+		&pp.ProfileTags,
 	)
 	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return nil, err

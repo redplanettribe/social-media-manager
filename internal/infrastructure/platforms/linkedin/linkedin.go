@@ -48,6 +48,10 @@ func NewLinkedin(secrets string, e encrypting.Encrypter) *Linkedin {
 	return l
 }
 
+func (l *Linkedin) MemberLookup(ctx context.Context, username string) (string, error) {
+	return "", ErrNotImplemented
+}
+
 func (l *Linkedin) ValidatePost(ctx context.Context, pp *post.PublishPost, media []*media.Media) error {
 	posterFactory := NewLinkedinPosterFactory()
 	poster, err := posterFactory.NewPoster(pp, l.userSecrets)
