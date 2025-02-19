@@ -10,7 +10,6 @@ import (
 	"github.com/redplanettribe/social-media-manager/internal/infrastructure/config"
 )
 
-//go:generate mockery --name=PublisherQueue --config=../../../mockery.yaml
 type PublisherQueue interface {
 	Start(ctx context.Context)
 	Stop()

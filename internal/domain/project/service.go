@@ -9,7 +9,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-//go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
 	CreateProject(ctx context.Context, name, description string) (*Project, error)
 	UpdateProject(ctx context.Context, projectID, name, description string) (*Project, error)

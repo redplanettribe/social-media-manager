@@ -1,6 +1,28 @@
-version: 2
-all: true # generate mocks for all interfaces
-recursive: true
-case: underscore
-inpackage: true # set to false if you want mocks in a separate directory
-output: mocks # (optional) output folder relative to each package directory
+with-expecter: True
+inpackage: True
+dir: "{{.InterfaceDir}}"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "{{.PackageName}}"
+filename: "mock_{{.InterfaceName}}.go"
+all: True
+resolve-type-alias: False # Explicitly set to remove warning.
+issue-845-fix: True # Explicitly set to remove warning.
+packages:
+  github.com/redplanettribe/social-media-manager/internal/domain/publisher:
+    config:
+      recursive: True
+  github.com/redplanettribe/social-media-manager/internal/domain/post:
+    config:
+      recursive: True
+  github.com/redplanettribe/social-media-manager/internal/domain/media:
+    config:
+      recursive: True
+  github.com/redplanettribe/social-media-manager/internal/domain/project:
+    config:
+      recursive: True
+  github.com/redplanettribe/social-media-manager/internal/domain/scheduler:
+    config:
+      recursive: True
+  github.com/redplanettribe/social-media-manager/internal/domain/user:
+    config:
+      recursive: True

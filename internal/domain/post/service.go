@@ -8,7 +8,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-//go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
 	CreatePost(
 		ctx context.Context,

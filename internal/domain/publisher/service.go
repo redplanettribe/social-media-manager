@@ -10,7 +10,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-//go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
 	GetAvailableSocialNetworks(ctx context.Context) ([]Platform, error)
 	PublishPostToAssignedSocialNetworks(ctx context.Context, projecID, postID string) error

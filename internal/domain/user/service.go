@@ -8,7 +8,6 @@ import (
 	"github.com/redplanettribe/social-media-manager/internal/interfaces/api/http/middlewares"
 )
 
-//go:generate mockery --name=Service --config=../../../mockery.yaml
 type Service interface {
 	CreateUser(ctx context.Context, username, firstName, lastName, password, email string) (*UserResponse, error)
 	GetUser(ctx context.Context) (*UserResponse, error)

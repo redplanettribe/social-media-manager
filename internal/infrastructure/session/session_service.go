@@ -6,7 +6,6 @@ import (
 	"fmt"
 )
 
-//go:generate mockery --name=Repository --config=../../../mockery.yaml
 type Repository interface {
 	// CreateSession creates a new session for the user with the given ID.
 	CreateSession(ctx context.Context, session *Session) (string, error)
@@ -18,7 +17,6 @@ type Repository interface {
 	GetSessionByID(ctx context.Context, sessionID string) (*Session, error)
 }
 
-//go:generate mockery --name=Manager --config=../../../mockery.yaml
 type Manager interface {
 	// CreateSession creates a new session for the user with the given ID.
 	CreateSession(ctx context.Context, userID, fingerprint string) (*Session, error)

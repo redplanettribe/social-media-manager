@@ -9,6 +9,14 @@ type MockPublisherFactory struct {
 	mock.Mock
 }
 
+type MockPublisherFactory_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockPublisherFactory) EXPECT() *MockPublisherFactory_Expecter {
+	return &MockPublisherFactory_Expecter{mock: &_m.Mock}
+}
+
 // Create provides a mock function with given fields: platform, secrets
 func (_m *MockPublisherFactory) Create(platform string, secrets string) (Publisher, error) {
 	ret := _m.Called(platform, secrets)
@@ -37,6 +45,35 @@ func (_m *MockPublisherFactory) Create(platform string, secrets string) (Publish
 	}
 
 	return r0, r1
+}
+
+// MockPublisherFactory_Create_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Create'
+type MockPublisherFactory_Create_Call struct {
+	*mock.Call
+}
+
+// Create is a helper method to define mock.On call
+//   - platform string
+//   - secrets string
+func (_e *MockPublisherFactory_Expecter) Create(platform interface{}, secrets interface{}) *MockPublisherFactory_Create_Call {
+	return &MockPublisherFactory_Create_Call{Call: _e.mock.On("Create", platform, secrets)}
+}
+
+func (_c *MockPublisherFactory_Create_Call) Run(run func(platform string, secrets string)) *MockPublisherFactory_Create_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		run(args[0].(string), args[1].(string))
+	})
+	return _c
+}
+
+func (_c *MockPublisherFactory_Create_Call) Return(_a0 Publisher, _a1 error) *MockPublisherFactory_Create_Call {
+	_c.Call.Return(_a0, _a1)
+	return _c
+}
+
+func (_c *MockPublisherFactory_Create_Call) RunAndReturn(run func(string, string) (Publisher, error)) *MockPublisherFactory_Create_Call {
+	_c.Call.Return(run)
+	return _c
 }
 
 // NewMockPublisherFactory creates a new instance of MockPublisherFactory. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.

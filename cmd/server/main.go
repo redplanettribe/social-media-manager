@@ -28,6 +28,8 @@ import (
 	"github.com/redplanettribe/social-media-manager/internal/interfaces/authorization"
 )
 
+//go:generate mockery --config=../../mockery.yaml
+
 // cmd/server/main.go
 
 // @title OpenCM API
